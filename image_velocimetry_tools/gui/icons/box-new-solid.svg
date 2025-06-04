@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="box-new-solid.svg"
+   id="svg883"
+   version="1.1"
+   viewBox="0 0 640 512">
+  <metadata
+     id="metadata889">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs887" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg883"
+     inkscape:window-maximized="0"
+     inkscape:window-y="0"
+     inkscape:window-x="0"
+     inkscape:cy="219.36357"
+     inkscape:cx="300.93561"
+     inkscape:zoom="0.83359375"
+     showgrid="false"
+     id="namedview885"
+     inkscape:window-height="1212"
+     inkscape:window-width="1373"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+  <path
+     id="path881"
+     d="M58.9 42.1c3-6.1 9.6-9.6 16.3-8.7L320 64 564.8 33.4c6.7-.8 13.3 2.7 16.3 8.7l41.7 83.4c9 17.9-.6 39.6-19.8 45.1L439.6 217.3c-13.9 4-28.8-1.9-36.2-14.3L320 64 236.6 203c-7.4 12.4-22.3 18.3-36.2 14.3L37.1 170.6c-19.3-5.5-28.8-27.2-19.8-45.1L58.9 42.1zM321.1 128l54.9 91.4c14.9 24.8 44.6 36.6 72.5 28.6L576 211.6v167c0 22-15 41.2-36.4 46.6l-204.1 51c-10.2 2.6-20.9 2.6-31 0l-204.1-51C79 419.7 64 400.5 64 378.5v-167L191.6 248c27.8 8 57.6-3.8 72.5-28.6L318.9 128h2.2z" />
+  <path
+     style="fill:#ffffff;fill-opacity:1;stroke-width:0.682792"
+     d="m 342.14924,198.92898 c 0,-12.0854 -9.76392,-21.84931 -21.84933,-21.84931 -12.08541,0 -21.84933,9.76391 -21.84933,21.84931 v 98.32197 h -98.32197 c -12.0854,0 -21.84931,9.76392 -21.84931,21.84933 0,12.08541 9.76391,21.84933 21.84931,21.84933 h 98.32197 v 98.32197 c 0,12.0854 9.76392,21.84931 21.84933,21.84931 12.08541,0 21.84933,-9.76391 21.84933,-21.84931 v -98.32197 h 98.32197 c 12.0854,0 21.84931,-9.76392 21.84931,-21.84933 0,-12.08541 -9.76391,-21.84933 -21.84931,-21.84933 h -98.32197 z"
+     id="path1452" />
+</svg>

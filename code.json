@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Image Velocimetry Tools (IVy Tools)",
+    "organization": "U.S. Geological Survey",
+    "description": "Processing application for image velocimetry to compute river velocity and discharge from videos.",
+    "version": "1.0.0.0",
+    "status": "Development",
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy/-/raw/1.0.0.0/LICENSE.md"
+        }
+      ]
+    },
+    "homepageURL": "https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy",
+    "downloadURL": "https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy/-/archive/1.0.0.0/ivy-1.0.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy/-/raw/1.0.0.0/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy.git",
+    "vcs": "git",
+    "laborHours": 1500,
+    "tags": [
+      "Image velocimetry",
+      "Space-Time Image Velocimetry",
+      "discharge",
+      "streamflow",
+      "river",
+      "hydrometry",
+      "hydraulics",
+      "python",
+      "water",
+      "USGS",
+      "usgs_ma:Water",
+      "usgs_sc:WMA - Observing Systems Division",
+      "doi|https://doi.org/10.5066/P1KMVCNY",
+      "ipds|IP-173457"
+    ],
+    "languages": [
+      "python"
+    ],
+    "contact": {
+      "name": "Frank L. Engel",
+      "email": "fengel@usgs.gov"
+    },
+    "date": {
+      "metadataLastUpdated": "2025-06-03"
+    }
+  }
+]
