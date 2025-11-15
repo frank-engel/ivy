@@ -127,8 +127,9 @@ def main():
     if successful:
         print("\n✓ Successful discharges:")
         for r in successful:
-            print(f"  {r.video_filename}: Q={r.total_discharge:.2f} m³/s "
-                  f"(ISO unc: {r.iso_uncertainty*100:.1f}%)")
+            q_str = f"{r.total_discharge:.2f} m³/s" if r.total_discharge is not None else "N/A"
+            unc_str = f"{r.iso_uncertainty*100:.1f}%" if r.iso_uncertainty is not None else "N/A"
+            print(f"  {r.video_filename}: Q={q_str} (ISO unc: {unc_str})")
 
     if failed:
         print("\n✗ Failed videos:")

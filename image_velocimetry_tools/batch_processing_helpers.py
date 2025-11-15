@@ -563,14 +563,19 @@ def calculate_uncertainty_headless(
         uncertainty = Uncertainty()
         uncertainty.survey_units = survey_units
 
-        # Set discharge data
-        uncertainty.total_discharge = discharge_summary["total_discharge"]
-        uncertainty.total_area = discharge_summary["total_area"]
-        uncertainty.discharge_data = df
+        # Compute uncertainties using the driver method
+        # This calls iso_uncertainty() and ive_uncertainty() internally
+        uncertainty.compute_uncertainty(
+            stations_dict=discharge_results,
+            total_discharge=discharge_summary["total_discharge"],
+            ortho_info=None  # Could be populated with RMSE data if available
+        )
 
-        # Calculate uncertainties
-        u_iso, u_iso_contribution = uncertainty.calculate_iso()
-        u_ive, u_ive_contribution = uncertainty.calculate_ive()
+        # Access the calculated uncertainty results
+        u_iso = uncertainty.u_iso
+        u_iso_contribution = uncertainty.u_iso_contribution
+        u_ive = uncertainty.u_ive
+        u_ive_contribution = uncertainty.u_ive_contribution
 
         # Update discharge summary
         discharge_summary["ISO_uncertainty"] = u_iso["u95_q"]

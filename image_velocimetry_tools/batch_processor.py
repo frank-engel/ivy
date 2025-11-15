@@ -493,6 +493,15 @@ class BatchProcessor:
         temp_frame_dir = None
 
         try:
+            # Convert WSE from feet to meters if scaffold uses English units
+            wse_feet = config.gage_height if config.gage_height else config.water_surface_elevation
+            if self.scaffold_data.display_units == "English":
+                wse_m = wse_feet / 3.28084  # Convert feet to meters
+                logging.info(f"Converting WSE from {wse_feet:.3f} ft to {wse_m:.3f} m (English units)")
+            else:
+                wse_m = wse_feet
+                logging.info(f"Using WSE: {wse_m:.3f} m (Metric units)")
+
             if progress_callback:
                 progress_callback("Extracting frames...")
 
@@ -524,9 +533,6 @@ class BatchProcessor:
                     progress_callback("Orthorectifying frames...")
 
                 logging.info("Step 1b/6: Orthorectifying frames")
-
-                # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
-                wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
 
                 from image_velocimetry_tools.batch_processing_helpers import orthorectify_frames_headless
                 rectified_files = orthorectify_frames_headless(
@@ -586,10 +592,7 @@ class BatchProcessor:
             else:
                 raise ValueError("Cross-section bathymetry file not found in scaffold")
 
-            # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
-            wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
-
-            # Calculate discharge
+            # Calculate discharge (using wse_m converted earlier)
             discharge_results, discharge_summary = calculate_discharge_headless(
                 magnitudes_mps=magnitudes_mps,
                 directions_deg=directions_deg,
@@ -633,7 +636,8 @@ class BatchProcessor:
                 discharge_results=discharge_results,
                 discharge_summary=discharge_summary,
                 uncertainty_results=uncertainty_results,
-                temp_frame_dir=temp_frame_dir
+                temp_frame_dir=temp_frame_dir,
+                wse_m=wse_m
             )
 
             # Update result with success data
@@ -687,7 +691,8 @@ class BatchProcessor:
         discharge_results: Dict,
         discharge_summary: Dict,
         uncertainty_results: Dict,
-        temp_frame_dir: str
+        temp_frame_dir: str,
+        wse_m: float
     ):
         """Save processed results as an .ivy project file
 
@@ -769,9 +774,8 @@ class BatchProcessor:
                 "comments": config.comments,
             }
 
-            # Water surface elevation (THIS IS CRITICAL - new WSE for this flow!)
-            # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
-            wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
+            # Water surface elevation (THIS IS CRITICAL - use converted wse_m)
+            # wse_m has already been converted from feet to meters if needed
             project_dict["ortho_rectified_wse_m"] = wse_m
             project_dict["water_surface_elevation"] = wse_m
 
