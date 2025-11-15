@@ -278,40 +278,66 @@ class ImageBrowserTab:
         """Extract water ROI using current settings."""
         import numpy as np
 
+        print("=" * 80)
+        print("EXTRACT_ROI: Starting ROI extraction")
+        print(f"EXTRACT_ROI: Current cache state - _cached_roi_mask type: {type(self._cached_roi_mask) if hasattr(self, '_cached_roi_mask') else 'not set'}")
+
         try:
             threshold = float(self.ivy_framework.lineeditROIThreshold.text())
+            print(f"EXTRACT_ROI: Using threshold percentile: {threshold}")
 
             # Use cached variance if available, otherwise compute it
             if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
+                print("EXTRACT_ROI: No cached variance map, computing...")
                 self.compute_and_cache_variance()
 
             if self._cached_variance_map is not None:
+                print(f"EXTRACT_ROI: Variance map available, shape: {self._cached_variance_map.shape}")
+                print("EXTRACT_ROI: Calling extract_water_roi_auto...")
+
                 result = self.extract_water_roi_auto(
                     variance_map=self._cached_variance_map,
                     threshold_percentile=threshold,
                     min_area_percent=5.0
                 )
 
+                print(f"EXTRACT_ROI: extract_water_roi_auto returned type: {type(result)}")
+
                 # Validate result before caching
                 if result is not None and isinstance(result, np.ndarray):
                     self._cached_roi_mask = result
+                    print(f"EXTRACT_ROI: SUCCESS - ROI extracted, mask shape: {self._cached_roi_mask.shape}")
                     logging.info(f"ROI extracted successfully, mask shape: {self._cached_roi_mask.shape}")
+                    QtWidgets.QMessageBox.information(
+                        self.ivy_framework,
+                        "Success",
+                        f"ROI extracted successfully. Mask shape: {self._cached_roi_mask.shape}",
+                        QtWidgets.QMessageBox.Ok
+                    )
                 else:
+                    print(f"EXTRACT_ROI: FAILED - Invalid result type: {type(result)}")
                     logging.error(f"extract_water_roi_auto returned {type(result)} instead of numpy array")
                     self._cached_roi_mask = None
                     QtWidgets.QMessageBox.warning(
                         self.ivy_framework,
                         "Extraction Failed",
-                        "ROI extraction did not produce a valid mask. Please check your parameters.",
+                        f"ROI extraction returned invalid type: {type(result)}\nExpected numpy array. Please check the logs.",
                         QtWidgets.QMessageBox.Ok
                     )
-        except ValueError:
+            else:
+                print("EXTRACT_ROI: FAILED - No variance map available")
+        except Exception as e:
+            print(f"EXTRACT_ROI: EXCEPTION - {str(e)}")
+            import traceback
+            traceback.print_exc()
             QtWidgets.QMessageBox.warning(
                 self.ivy_framework,
-                "Invalid Input",
-                "Threshold must be a number between 0 and 100.",
+                "Error",
+                f"Error during extraction: {str(e)}",
                 QtWidgets.QMessageBox.Ok
             )
+
+        print("=" * 80)
 
 
     def show_motion_heatmap_wrapper(self):
@@ -855,6 +881,9 @@ class ImageBrowserTab:
                 return None
 
         try:
+            print(f"EXTRACT_WATER_ROI_AUTO: Starting with threshold={threshold_percentile}, min_area={min_area_percent}, use_color={use_color}")
+            print(f"EXTRACT_WATER_ROI_AUTO: Variance map type: {type(variance_map)}, shape: {variance_map.shape if hasattr(variance_map, 'shape') else 'no shape'}")
+
             # Extract ROI from variance
             roi_variance = extract_water_roi_from_variance(
                 variance_map,
@@ -862,12 +891,15 @@ class ImageBrowserTab:
                 min_area_percent=min_area_percent
             )
 
+            print(f"EXTRACT_WATER_ROI_AUTO: extract_water_roi_from_variance returned type: {type(roi_variance)}")
             logging.info(f"extract_water_roi_from_variance returned type: {type(roi_variance)}")
             if roi_variance is not None:
+                print(f"EXTRACT_WATER_ROI_AUTO: roi_variance shape: {roi_variance.shape if hasattr(roi_variance, 'shape') else 'no shape attr'}")
                 logging.info(f"roi_variance shape: {roi_variance.shape if hasattr(roi_variance, 'shape') else 'no shape attr'}")
 
             # Optionally combine with color segmentation
             if use_color and self.sequence:
+                print("EXTRACT_WATER_ROI_AUTO: Applying color-based segmentation")
                 current_image = image_file_to_opencv_image(self.sequence[0])
                 roi_color = extract_water_roi_by_color(
                     current_image,
@@ -878,10 +910,13 @@ class ImageBrowserTab:
                 # Combine masks
                 roi_mask = combine_roi_masks([roi_variance, roi_color], method='union')
             else:
+                print("EXTRACT_WATER_ROI_AUTO: Using variance-only mask (no color segmentation)")
                 roi_mask = roi_variance
 
+            print(f"EXTRACT_WATER_ROI_AUTO: Returning type: {type(roi_mask)}")
             logging.info(f"extract_water_roi_auto returning type: {type(roi_mask)}")
             if roi_mask is not None:
+                print(f"EXTRACT_WATER_ROI_AUTO: roi_mask shape: {roi_mask.shape if hasattr(roi_mask, 'shape') else 'no shape attr'}")
                 logging.info(f"roi_mask shape: {roi_mask.shape if hasattr(roi_mask, 'shape') else 'no shape attr'}")
 
             message = "IMAGE BROWSER: Water ROI extraction complete."
@@ -890,6 +925,9 @@ class ImageBrowserTab:
             return roi_mask
 
         except Exception as e:
+            print(f"EXTRACT_WATER_ROI_AUTO: EXCEPTION - {str(e)}")
+            import traceback
+            traceback.print_exc()
             QtWidgets.QMessageBox.critical(
                 self.ivy_framework,
                 "Error",
@@ -1038,27 +1076,41 @@ class ImageBrowserTab:
         """
         import numpy as np
 
+        print("=" * 80)
+        print("SHOW_ROI_OVERLAY: Starting")
+        print(f"SHOW_ROI_OVERLAY: Input roi_mask: {type(roi_mask)}")
+        print(f"SHOW_ROI_OVERLAY: Has _cached_roi_mask attr: {hasattr(self, '_cached_roi_mask')}")
+        if hasattr(self, '_cached_roi_mask'):
+            print(f"SHOW_ROI_OVERLAY: Cached mask type: {type(self._cached_roi_mask)}")
+
         # Check if we have a cached mask first
         if roi_mask is None and hasattr(self, '_cached_roi_mask') and self._cached_roi_mask is not None:
+            print(f"SHOW_ROI_OVERLAY: Checking cached mask - type: {type(self._cached_roi_mask)}")
             # Validate that cached mask is actually a numpy array
             if isinstance(self._cached_roi_mask, np.ndarray):
                 roi_mask = self._cached_roi_mask
+                print(f"SHOW_ROI_OVERLAY: Using cached ROI mask with shape {roi_mask.shape}")
                 logging.info(f"Using cached ROI mask with shape {roi_mask.shape}")
             else:
+                print(f"SHOW_ROI_OVERLAY: Cached mask is INVALID type: {type(self._cached_roi_mask)}")
                 logging.warning(f"Cached ROI mask is type {type(self._cached_roi_mask)}, not numpy array. Clearing cache.")
                 self._cached_roi_mask = None
 
         # If still no mask, try to extract one
         if roi_mask is None:
+            print("SHOW_ROI_OVERLAY: No valid cached mask, extracting new ROI")
             logging.info(f"No cached mask, extracting new ROI")
             roi_mask = self.extract_water_roi_auto()
+            print(f"SHOW_ROI_OVERLAY: extract_water_roi_auto returned type: {type(roi_mask)}")
             if roi_mask is None or not isinstance(roi_mask, np.ndarray):
+                print(f"SHOW_ROI_OVERLAY: Extraction failed - got type {type(roi_mask)}")
                 QtWidgets.QMessageBox.warning(
                     self.ivy_framework,
                     "No ROI",
                     "No water ROI available. Please compute variance and extract ROI first.",
                     QtWidgets.QMessageBox.Ok,
                 )
+                print("=" * 80)
                 return
 
         if not self.image_path:
@@ -1071,10 +1123,13 @@ class ImageBrowserTab:
             return
 
         try:
+            print(f"SHOW_ROI_OVERLAY: Loading current image from: {self.image_path}")
             cv_image = image_file_to_opencv_image(self.image_path)
 
             # Final validation before using the mask
+            print(f"SHOW_ROI_OVERLAY: Final validation - roi_mask type: {type(roi_mask)}")
             if not isinstance(roi_mask, np.ndarray):
+                print(f"SHOW_ROI_OVERLAY: FINAL VALIDATION FAILED - roi_mask is {type(roi_mask)}, not numpy array")
                 logging.error(f"roi_mask is {type(roi_mask)}, expected numpy array")
                 QtWidgets.QMessageBox.critical(
                     self.ivy_framework,
@@ -1082,15 +1137,19 @@ class ImageBrowserTab:
                     f"ROI mask has invalid type: {type(roi_mask)}. Expected numpy array.",
                     QtWidgets.QMessageBox.Ok,
                 )
+                print("=" * 80)
                 return
 
+            print(f"SHOW_ROI_OVERLAY: CV image shape: {cv_image.shape}, ROI mask shape: {roi_mask.shape}")
             logging.info(f"CV image shape: {cv_image.shape}, ROI mask shape: {roi_mask.shape}")
 
             # Create overlay
+            print("SHOW_ROI_OVERLAY: Creating overlay image...")
             overlay_image = overlay_roi_on_image(cv_image, roi_mask, color=(0, 255, 255), alpha=0.3)
 
             # Display in image browser
             height, width, _ = overlay_image.shape
+            print(f"SHOW_ROI_OVERLAY: Displaying overlay image with size {width}x{height}")
             pixmap = convert_opencv_image_to_qt_pixmap(
                 overlay_image, display_width=width, display_height=height
             )
@@ -1098,9 +1157,13 @@ class ImageBrowserTab:
 
             message = "IMAGE BROWSER: Showing water ROI overlay"
             self.ivy_framework.update_statusbar(message)
+            print("SHOW_ROI_OVERLAY: SUCCESS - Overlay displayed")
+            print("=" * 80)
 
         except Exception as e:
             import traceback
+            print(f"SHOW_ROI_OVERLAY: EXCEPTION - {str(e)}")
+            traceback.print_exc()
             logging.error(f"ROI overlay error: {str(e)}\n{traceback.format_exc()}")
             QtWidgets.QMessageBox.critical(
                 self.ivy_framework,
@@ -1108,6 +1171,7 @@ class ImageBrowserTab:
                 f"Failed to create ROI overlay: {str(e)}",
                 QtWidgets.QMessageBox.Ok,
             )
+            print("=" * 80)
 
     def apply_enhancement_to_current_frame(self, enhancement_type, **params):
         """
