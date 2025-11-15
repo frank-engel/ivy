@@ -1273,6 +1273,149 @@ def extract_water_roi_from_variance(variance_map, threshold_percentile=50,
     return cleaned_mask
 
 
+def invert_roi_mask(mask):
+    """
+    Invert a binary ROI mask (swap water/non-water regions).
+
+    Useful when the variance-based extraction identifies banks as "moving"
+    instead of water (e.g., vegetation moving in wind).
+
+    Args:
+        mask (ndarray): Binary mask (uint8, values 0 or 1)
+
+    Returns:
+        ndarray: Inverted binary mask
+    """
+    return 1 - mask
+
+
+def fill_roi_holes(mask, max_hole_size=None):
+    """
+    Fill holes in ROI mask using morphological closing.
+
+    Removes small gaps and holes within the water region to create
+    a more continuous mask.
+
+    Args:
+        mask (ndarray): Binary mask (uint8, values 0 or 1)
+        max_hole_size (int): Maximum hole size to fill (None = fill all)
+
+    Returns:
+        ndarray: Mask with filled holes
+    """
+    # Use morphological closing to fill holes
+    kernel_size = 15 if max_hole_size is None else max_hole_size
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    filled = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+    return filled
+
+
+def apply_convex_hull_to_roi(mask):
+    """
+    Apply convex hull to ROI mask to create a single convex region.
+
+    Creates a convex envelope around all water regions, which can help
+    eliminate small patches and create a more uniform ROI. Good for
+    river channels where you want to include the entire water body.
+
+    Args:
+        mask (ndarray): Binary mask (uint8, values 0 or 1)
+
+    Returns:
+        ndarray: Convex hull mask
+    """
+    # Find all points in the mask
+    points = cv2.findNonZero(mask.astype(np.uint8))
+
+    if points is None or len(points) < 3:
+        # Not enough points for convex hull
+        return mask
+
+    # Compute convex hull
+    hull = cv2.convexHull(points)
+
+    # Create new mask with convex hull
+    hull_mask = np.zeros_like(mask)
+    cv2.fillConvexPoly(hull_mask, hull, 1)
+
+    return hull_mask
+
+
+def keep_largest_roi_component(mask):
+    """
+    Keep only the largest connected component in the ROI mask.
+
+    Useful for eliminating small isolated regions and focusing on the
+    main water body. Assumes the largest component is the true water region.
+
+    Args:
+        mask (ndarray): Binary mask (uint8, values 0 or 1)
+
+    Returns:
+        ndarray: Mask with only largest component
+    """
+    # Find connected components
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+        mask.astype(np.uint8), connectivity=8
+    )
+
+    if num_labels <= 1:
+        # No components found (only background)
+        return mask
+
+    # Find largest component (skip label 0 which is background)
+    largest_label = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
+
+    # Create mask with only largest component
+    largest_mask = np.zeros_like(mask)
+    largest_mask[labels == largest_label] = 1
+
+    return largest_mask
+
+
+def refine_roi_mask(mask, invert=False, fill_holes=False, convex_hull=False,
+                    largest_only=False):
+    """
+    Apply multiple refinement operations to an ROI mask.
+
+    Operations are applied in this order:
+    1. Invert (if requested)
+    2. Fill holes (if requested)
+    3. Keep largest component (if requested)
+    4. Convex hull (if requested, applied last to encompass everything)
+
+    Args:
+        mask (ndarray): Binary mask (uint8, values 0 or 1)
+        invert (bool): Invert the mask (swap water/non-water)
+        fill_holes (bool): Fill small holes in the mask
+        convex_hull (bool): Apply convex hull to create single convex region
+        largest_only (bool): Keep only the largest connected component
+
+    Returns:
+        ndarray: Refined binary mask
+    """
+    refined = mask.copy()
+
+    # 1. Invert if requested
+    if invert:
+        refined = invert_roi_mask(refined)
+
+    # 2. Fill holes if requested
+    if fill_holes:
+        refined = fill_roi_holes(refined)
+
+    # 3. Keep largest component if requested
+    if largest_only:
+        refined = keep_largest_roi_component(refined)
+
+    # 4. Apply convex hull last (encompasses all previous operations)
+    if convex_hull:
+        refined = apply_convex_hull_to_roi(refined)
+
+    return refined
+
+
 def extract_water_roi_by_color(image, color_space='HSV',
                                 hue_range=(90, 140), sat_range=(20, 255),
                                 val_range=(20, 255)):

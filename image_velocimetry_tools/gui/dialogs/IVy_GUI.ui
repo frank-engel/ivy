@@ -1747,6 +1747,46 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="5" column="0" colspan="2">
+                   <widget class="QCheckBox" name="checkboxInvertROI">
+                    <property name="toolTip">
+                     <string>Invert ROI mask (swap water/non-water)</string>
+                    </property>
+                    <property name="text">
+                     <string>Invert ROI</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QCheckBox" name="checkboxFillHoles">
+                    <property name="toolTip">
+                     <string>Fill holes in ROI mask</string>
+                    </property>
+                    <property name="text">
+                     <string>Fill Holes</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0" colspan="2">
+                   <widget class="QCheckBox" name="checkboxConvexHull">
+                    <property name="toolTip">
+                     <string>Apply convex hull to ROI</string>
+                    </property>
+                    <property name="text">
+                     <string>Convex Hull</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="0" colspan="2">
+                   <widget class="QCheckBox" name="checkboxLargestOnly">
+                    <property name="toolTip">
+                     <string>Keep only largest component</string>
+                    </property>
+                    <property name="text">
+                     <string>Largest Only</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </widget>
                </item>
