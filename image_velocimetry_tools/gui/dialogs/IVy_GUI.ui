@@ -1522,6 +1522,283 @@
                  </layout>
                 </widget>
                </item>
+               <item row="1" column="0">
+                <widget class="QGroupBox" name="groupboxEnhancement">
+                 <property name="title">
+                  <string>Enhancement</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayoutEnhancement">
+                  <item row="0" column="0" colspan="3">
+                   <widget class="QCheckBox" name="checkboxUnsharpMask">
+                    <property name="toolTip">
+                     <string>Enhance edges and fine texture details</string>
+                    </property>
+                    <property name="text">
+                     <string>Unsharp Mask</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="labelUnsharpParams">
+                    <property name="text">
+                     <string>K:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="lineeditUnsharpKernel">
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Kernel size (3, 5, 7, 9...)</string>
+                    </property>
+                    <property name="text">
+                     <string>5</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLabel" name="labelUnsharpSigma">
+                    <property name="text">
+                     <string>σ:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="QLineEdit" name="lineeditUnsharpSigma">
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Gaussian sigma (0.5-2.0)</string>
+                    </property>
+                    <property name="text">
+                     <string>1.0</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="4">
+                   <widget class="QLabel" name="labelUnsharpAmount">
+                    <property name="text">
+                     <string>A:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="5">
+                   <widget class="QLineEdit" name="lineeditUnsharpAmount">
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Amount (0.5-2.0)</string>
+                    </property>
+                    <property name="text">
+                     <string>1.0</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="6">
+                   <widget class="QCheckBox" name="checkboxEdgeEnhancement">
+                    <property name="toolTip">
+                     <string>Enhance edges using Laplacian</string>
+                    </property>
+                    <property name="text">
+                     <string>Edge Enhancement</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="6">
+                   <widget class="QCheckBox" name="checkboxDoG">
+                    <property name="toolTip">
+                     <string>Difference of Gaussians (band-pass filter)</string>
+                    </property>
+                    <property name="text">
+                     <string>DoG Filter</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="6">
+                   <widget class="QCheckBox" name="checkboxBilateral">
+                    <property name="toolTip">
+                     <string>Edge-preserving smoothing</string>
+                    </property>
+                    <property name="text">
+                     <string>Bilateral Filter</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0" colspan="6">
+                   <widget class="QCheckBox" name="checkboxLocalStd">
+                    <property name="toolTip">
+                     <string>Local standard deviation (texture map)</string>
+                    </property>
+                    <property name="text">
+                     <string>Local Std Dev</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QGroupBox" name="groupboxWaterROI">
+                 <property name="title">
+                  <string>Water ROI</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayoutWaterROI">
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QPushButton" name="buttonComputeTemporalVariance">
+                    <property name="toolTip">
+                     <string>Compute motion variance across frames</string>
+                    </property>
+                    <property name="text">
+                     <string>Compute Variance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QPushButton" name="buttonExtractWaterROI">
+                    <property name="toolTip">
+                     <string>Extract water ROI automatically</string>
+                    </property>
+                    <property name="text">
+                     <string>Extract ROI</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QPushButton" name="buttonShowROIOverlay">
+                    <property name="toolTip">
+                     <string>Show ROI overlay on current frame</string>
+                    </property>
+                    <property name="text">
+                     <string>Show ROI Overlay</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="labelROIThreshold">
+                    <property name="text">
+                     <string>Threshold:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QLineEdit" name="lineeditROIThreshold">
+                    <property name="maximumSize">
+                     <size>
+                      <width>40</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Percentile threshold (0-100)</string>
+                    </property>
+                    <property name="text">
+                     <string>50</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="labelSampleRate">
+                    <property name="text">
+                     <string>Sample:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QLineEdit" name="lineeditSampleRate">
+                    <property name="maximumSize">
+                     <size>
+                      <width>40</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Use every Nth frame (1-20)</string>
+                    </property>
+                    <property name="text">
+                     <string>5</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QGroupBox" name="groupboxAnalysisViz">
+                 <property name="title">
+                  <string>Analysis &amp; Viz</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayoutAnalysisViz">
+                  <item row="0" column="0">
+                   <widget class="QPushButton" name="buttonFrameQuality">
+                    <property name="toolTip">
+                     <string>Analyze current frame quality (blur, exposure)</string>
+                    </property>
+                    <property name="text">
+                     <string>Frame Quality</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QPushButton" name="buttonMotionHeatmap">
+                    <property name="toolTip">
+                     <string>Show motion heatmap visualization</string>
+                    </property>
+                    <property name="text">
+                     <string>Motion Heatmap</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QPushButton" name="buttonTextureViz">
+                    <property name="toolTip">
+                     <string>Show texture visualization</string>
+                    </property>
+                    <property name="text">
+                     <string>Texture Viz</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QPushButton" name="buttonResetView">
+                    <property name="toolTip">
+                     <string>Reset to original image view</string>
+                    </property>
+                    <property name="text">
+                     <string>Reset View</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
