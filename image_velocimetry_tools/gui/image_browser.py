@@ -276,6 +276,8 @@ class ImageBrowserTab:
 
     def extract_roi(self):
         """Extract water ROI using current settings."""
+        import numpy as np
+
         try:
             threshold = float(self.ivy_framework.lineeditROIThreshold.text())
 
@@ -284,12 +286,25 @@ class ImageBrowserTab:
                 self.compute_and_cache_variance()
 
             if self._cached_variance_map is not None:
-                self._cached_roi_mask = self.extract_water_roi_auto(
+                result = self.extract_water_roi_auto(
                     variance_map=self._cached_variance_map,
                     threshold_percentile=threshold,
                     min_area_percent=5.0
                 )
-                logging.info(f"ROI extracted, mask shape: {self._cached_roi_mask.shape if self._cached_roi_mask is not None else 'None'}")
+
+                # Validate result before caching
+                if result is not None and isinstance(result, np.ndarray):
+                    self._cached_roi_mask = result
+                    logging.info(f"ROI extracted successfully, mask shape: {self._cached_roi_mask.shape}")
+                else:
+                    logging.error(f"extract_water_roi_auto returned {type(result)} instead of numpy array")
+                    self._cached_roi_mask = None
+                    QtWidgets.QMessageBox.warning(
+                        self.ivy_framework,
+                        "Extraction Failed",
+                        "ROI extraction did not produce a valid mask. Please check your parameters.",
+                        QtWidgets.QMessageBox.Ok
+                    )
         except ValueError:
             QtWidgets.QMessageBox.warning(
                 self.ivy_framework,
@@ -1013,16 +1028,23 @@ class ImageBrowserTab:
         """
         Overlay water ROI on current image (wrapper for button - uses cached mask).
         """
+        import numpy as np
+
         # Check if we have a cached mask first
         if roi_mask is None and hasattr(self, '_cached_roi_mask') and self._cached_roi_mask is not None:
-            roi_mask = self._cached_roi_mask
-            logging.info(f"Using cached ROI mask")
+            # Validate that cached mask is actually a numpy array
+            if isinstance(self._cached_roi_mask, np.ndarray):
+                roi_mask = self._cached_roi_mask
+                logging.info(f"Using cached ROI mask with shape {roi_mask.shape}")
+            else:
+                logging.warning(f"Cached ROI mask is type {type(self._cached_roi_mask)}, not numpy array. Clearing cache.")
+                self._cached_roi_mask = None
 
         # If still no mask, try to extract one
         if roi_mask is None:
             logging.info(f"No cached mask, extracting new ROI")
             roi_mask = self.extract_water_roi_auto()
-            if roi_mask is None:
+            if roi_mask is None or not isinstance(roi_mask, np.ndarray):
                 QtWidgets.QMessageBox.warning(
                     self.ivy_framework,
                     "No ROI",
@@ -1042,6 +1064,17 @@ class ImageBrowserTab:
 
         try:
             cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Final validation before using the mask
+            if not isinstance(roi_mask, np.ndarray):
+                logging.error(f"roi_mask is {type(roi_mask)}, expected numpy array")
+                QtWidgets.QMessageBox.critical(
+                    self.ivy_framework,
+                    "Invalid Mask",
+                    f"ROI mask has invalid type: {type(roi_mask)}. Expected numpy array.",
+                    QtWidgets.QMessageBox.Ok,
+                )
+                return
 
             logging.info(f"CV image shape: {cv_image.shape}, ROI mask shape: {roi_mask.shape}")
 
