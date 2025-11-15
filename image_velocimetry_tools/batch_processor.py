@@ -336,14 +336,26 @@ class BatchProcessor:
         """
         logging.info(f"Loading batch configuration from: {csv_path}")
 
+        # Get the directory containing the CSV file to resolve relative video paths
+        csv_dir = os.path.dirname(os.path.abspath(csv_path))
+
         configs = []
         with open(csv_path, 'r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
 
             for row_num, row in enumerate(reader, start=2):  # Start at 2 (header is row 1)
                 try:
+                    video_path = row['video_path'].strip()
+
+                    # If video path is relative, resolve it relative to the CSV file location
+                    if not os.path.isabs(video_path):
+                        video_path = os.path.join(csv_dir, video_path)
+
+                    # Normalize the path for the current OS
+                    video_path = os.path.normpath(video_path)
+
                     config = BatchVideoConfig(
-                        video_path=row['video_path'].strip(),
+                        video_path=video_path,
                         water_surface_elevation=float(row['water_surface_elevation']),
                         measurement_date=row.get('measurement_date', '').strip(),
                         measurement_number=int(row.get('measurement_number', 0)),

@@ -47,14 +47,19 @@ def main():
     # CONFIGURATION - Update these paths for your setup
     # ==================================================================
 
+    # Get the directory where this script is located
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    examples_dir = script_dir  # This script is in the examples directory
+
     # Path to scaffold .ivy project (template with camera calibration & cross-section)
-    scaffold_ivy_path = "./examples/scaffold_project.ivy"
+    scaffold_ivy_path = os.path.join(examples_dir, "scaffold_project.ivy")
 
     # Path to CSV file with batch configuration (video list + WSE)
-    batch_config_csv = "./examples/batch_boneyard.csv"
+    batch_config_csv = os.path.join(examples_dir, "batch_boneyard.csv")
 
     # Output directory for results
-    output_directory = "./examples/output"
+    output_directory = os.path.join(examples_dir, "output")
 
     # ==================================================================
     # OPTIONAL: Create a batch config template
