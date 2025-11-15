@@ -1,6 +1,6 @@
 # Project specific stuff
 *.ui.autosave
-examples/
+# examples/
 docs/word/
 bin/
 /bin/
