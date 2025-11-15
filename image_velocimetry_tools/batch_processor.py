@@ -32,8 +32,8 @@ from areacomp.gui.areasurvey import AreaSurvey
 from image_velocimetry_tools.file_management import (
     deserialize_numpy_array,
     serialize_numpy_array,
-    dict_arrays_to_list,
 )
+from image_velocimetry_tools.common_functions import dict_arrays_to_list
 from image_velocimetry_tools.batch_processing_helpers import (
     extract_frames_headless,
     get_video_metadata,
