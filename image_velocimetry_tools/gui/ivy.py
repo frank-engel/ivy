@@ -6806,6 +6806,27 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.imagebrowser.imageBrowser.actionComplete.connect(
             self.imagebrowser.editing_complete
         )
+        self.buttonComputeTemporalVariance.clicked.connect(
+            self.imagebrowser.compute_and_cache_variance
+        )
+        self.buttonExtractWaterROI.clicked.connect(
+            self.imagebrowser.extract_roi
+        )
+        self.buttonShowROIOverlay.clicked.connect(
+            self.imagebrowser.show_roi_overlay
+        )
+        self.buttonFrameQuality.clicked.connect(
+            self.imagebrowser.analyze_current_frame_quality
+        )
+        self.buttonMotionHeatmap.clicked.connect(
+            self.imagebrowser.show_motion_heatmap
+        )
+        self.buttonTextureViz.clicked.connect(
+            self.imagebrowser.show_texture_dialog
+        )
+        self.buttonResetView.clicked.connect(
+            self.imagebrowser.reset_image_view
+        )
 
         # Orthorectification
         self.signal_orthotable_changed.connect(self.ortho_original_refresh_plot)

@@ -64,6 +64,10 @@ class ImageBrowserWidget(QLabel):
         # self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         # self.setScaledContents(True)
 
+        
+        # Connect the image enhancement buttons to their handlers
+        # self.setup_image_processing_connections()
+
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignCenter)
@@ -71,6 +75,7 @@ class ImageBrowserWidget(QLabel):
         # Connect to the previous/next image signals
         parent.signal_previous_image.connect(self.loadPreviousImage)
         parent.signal_next_image.connect(self.loadNextImage)
+
 
     def openImage(self, image=None):
         """Load a new image into the"""
@@ -247,6 +252,88 @@ class ImageBrowserTab:
         self.current_pixel = []
         self.selected_color_hex = ""
 
+        # Initialize cache for ROI processing
+        self._cached_variance_map = None
+        self._cached_roi_mask = None
+
+    
+    def compute_and_cache_variance(self):
+        """Compute temporal variance and cache for reuse."""
+        try:
+            sample_rate = int(self.ivy_framework.lineeditSampleRate.text())
+            self._cached_variance_map = self.compute_water_roi_temporal_variance(
+                sample_rate=sample_rate
+            )
+            logging.info(f"Ran the variance")
+        except ValueError:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Sample rate must be an integer.",
+                QtWidgets.QMessageBox.Ok
+            )
+
+
+    def extract_roi(self):
+        """Extract water ROI using current settings."""
+        try:
+            threshold = float(self.ivy_framework.lineeditROIThreshold.text())
+
+            # Use cached variance if available, otherwise compute it
+            if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
+                self._compute_and_cache_variance()
+
+            if self._cached_variance_map is not None:
+                self._cached_roi_mask = self.extract_water_roi_auto(
+                    variance_map=self._cached_variance_map,
+                    threshold_percentile=threshold,
+                    min_area_percent=5.0
+                )
+        except ValueError:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Threshold must be a number between 0 and 100.",
+                QtWidgets.QMessageBox.Ok
+            )
+
+
+    def show_motion_heatmap(self):
+        """Show motion heatmap using cached or computed variance."""
+        if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
+            self._compute_and_cache_variance()
+
+        if self._cached_variance_map is not None:
+            self.show_motion_heatmap(self._cached_variance_map)
+
+
+    def show_texture_dialog(self):
+        """Show dialog to choose texture visualization method."""
+        # Simple implementation - you can make this fancier with a dialog
+        methods = ['local_std', 'dog', 'edges']
+
+        method, ok = QtWidgets.QInputDialog.getItem(
+            self,
+            "Texture Visualization",
+            "Select visualization method:",
+            methods,
+            0,
+            False
+        )
+
+        if ok:
+            self.show_texture_visualization(method=method)
+
+
+    def reset_image_view(self):
+        """Reset image view to original frame."""
+        # Reload current image
+        if self.sequence and self.sequence_index < len(sel.sequence):
+            current_path = self.sequence[self.sequence_index]
+            self.image = QtGui.QImage(current_path)
+            self.imageBrowser.scene.setImage(self.image)
+            self.update_statusbar("IMAGE BROWSER: View reset to original image")
+
     def open_image_folder(self):
         """Open a folder of images for the image browser"""
         logging.debug(
@@ -328,106 +415,135 @@ class ImageBrowserTab:
         self.glob_pattern = self.ivy_framework.lineeditFrameFiltering.text()
 
     def apply_to_this_frame(self):
-        """Applies the CLAHE and/or auto-contrast filtering to the current frame."""
-        if self.sequence:
-            current_image = self.sequence[self.sequence_index]
-            if (
-                self.ivy_framework.checkboxApplyClahe.isChecked()
-                or self.ivy_framework.checkboxAutoContrast.isChecked()
-            ):
-                cv_image = image_file_to_opencv_image(current_image)
-                height, width, _ = cv_image.shape
-                if self.ivy_framework.checkboxApplyClahe.isChecked():
-                    clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
-                    horz_tile_size = int(
-                        self.ivy_framework.lineeditClaheHorzTileSize.text()
-                    )
-                    vert_tile_size = int(
-                        self.ivy_framework.lineeditClaheVertTileSize.text()
-                    )
-                    cv_image = apply_clahe_to_image(
-                        cv_image,
-                        clip_size=clip,
-                        horz_tile_size=horz_tile_size,
-                        vert_tile_size=vert_tile_size,
-                    )
-                if self.ivy_framework.checkboxAutoContrast.isChecked():
-                    percent = float(
-                        self.ivy_framework.lineeditAutoContrastPercentClip.text()
-                    )
-                    cv_image, alpha, beta = (
-                        automatic_brightness_and_contrast_adjustment(
-                            cv_image, clip_histogram_percentage=percent
-                        )
-                    )
+        """Applies selected processing to the current frame for preview."""
 
-                pixmap = convert_opencv_image_to_qt_pixmap(
-                    cv_image, display_width=width, display_height=height
-                )
-                self.imageBrowser.scene.setImage(pixmap)
+        if not self.sequence:
+            return
 
-            else:
-                # Reset values when opening an image
-                self.zoom_factor = 1
-                self.imageBrowser.setEnabled(True)
+        current_image = self.sequence[self.sequence_index]
+        cv_image = image_file_to_opencv_image(current_image)
+        height, width = cv_image.shape[:2] if len(cv_image.shape) == 2 else cv_image.shape[:2]
 
-                # Get image format
-                current_QImage = QtGui.QImage(self.image_path)
-                self.original_image = self.image.copy()
+        # Apply existing enhancements (CLAHE, Auto Contrast)
+        if self.ivy_framework.checkboxApplyClahe.isChecked():
+            clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
+            horz = int(self.ivy_framework.lineeditClaheHorzTileSize.text())
+            vert = int(self.ivy_framework.lineeditClaheVertTileSize.text())
+            cv_image = apply_clahe_to_image(cv_image, clip_size=clip,
+                                            horz_tile_size=horz, vert_tile_size=vert)
 
-                # Set the image
-                self.imageBrowser.scene.setImage(current_QImage)
-                message = f"IMAGE BROWSER: Current image: {current_image}"
-                self.ivy_framework.update_statusbar(message)
+        if self.ivy_framework.checkboxAutoContrast.isChecked():
+            percent = float(self.ivy_framework.lineeditAutoContrastPercentClip.text())
+            cv_image, alpha, beta = automatic_brightness_and_contrast_adjustment(
+                cv_image, clip_histogram_percentage=percent
+            )
+
+        # NEW: Apply enhancement filters
+        if self.ivy_framework.checkboxUnsharpMask.isChecked():
+            try:
+                kernel = int(self.ivy_framework.lineeditUnsharpKernel.text())
+                sigma = float(self.ivy_framework.lineeditUnsharpSigma.text())
+                amount = float(self.ivy_framework.lineeditUnsharpAmount.text())
+                cv_image = apply_unsharp_mask(cv_image, kernel_size=kernel,
+                                            sigma=sigma, amount=amount)
+            except ValueError:
+                pass
+
+        if self.ivy_framework.checkboxEdgeEnhancement.isChecked():
+            cv_image = apply_edge_enhancement(cv_image, alpha=1.5)
+
+        if self.ivy_framework.checkboxDoG.isChecked():
+            cv_image = apply_difference_of_gaussians(cv_image, sigma1=1.0, sigma2=2.0)
+
+        if self.ivy_framework.checkboxBilateral.isChecked():
+            cv_image = apply_bilateral_filter_exposed(cv_image, d=9,
+                                                    sigma_color=75, sigma_space=75)
+
+        if self.ivy_framework.checkboxLocalStd.isChecked():
+            cv_image = apply_local_std_dev(cv_image, kernel_size=15)
+
+        # Display result
+        pixmap = convert_opencv_image_to_qt_pixmap(cv_image,
+                                                    display_width=width, display_height=height)
+        self.imageBrowser.scene.setImage(pixmap)
+
+        message = f"IMAGE BROWSER: Applied processing to current frame"
+        self.ivy_framework.update_statusbar(message)
 
     def apply_to_all_frames(self):
-        """Apply the image processing to all frames in the image sequence."""
-        message = (
-            f"IMAGE BROWSER: Applying image preprocessing to "
-            f"all frames and saving outputs, please be patient."
-        )
+        """Apply selected image processing to all frames."""
+
+        message = "IMAGE BROWSER: Applying image preprocessing to all frames..."
         self.ivy_framework.update_statusbar(message)
         self.ivy_framework.progressBar.show()
 
-        # Pull parameters from the gui
+        # Existing parameters
         do_clahe = self.ivy_framework.checkboxApplyClahe.isChecked()
         do_auto_contrast = self.ivy_framework.checkboxAutoContrast.isChecked()
         clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
         horz_tile_size = int(self.ivy_framework.lineeditClaheHorzTileSize.text())
         vert_tile_size = int(self.ivy_framework.lineeditClaheVertTileSize.text())
         clahe_parameters = (clip, horz_tile_size, vert_tile_size)
-        auto_contrast_percent = float(
-            self.ivy_framework.lineeditAutoContrastPercentClip.text()
-        )
+        auto_contrast_percent = float(self.ivy_framework.lineeditAutoContrastPercentClip.text())
 
-        # Keep track of the processing steps taken
-        self.preprocess_steps_number += 1
-        self.preprocess_steps.append(
-            (
-                self.preprocess_steps_number,
-                do_clahe,
-                clahe_parameters,
-                do_auto_contrast,
-                auto_contrast_percent,
-            )
-        )
+        # NEW: Get enhancement parameters
+        do_unsharp = self.ivy_framework.checkboxUnsharpMask.isChecked()
+        do_edge = self.ivy_framework.checkboxEdgeEnhancement.isChecked()
+        do_dog = self.ivy_framework.checkboxDoG.isChecked()
+        do_bilateral = self.ivy_framework.checkboxBilateral.isChecked()
+        do_local_std = self.ivy_framework.checkboxLocalStd.isChecked()
 
-        # Connect the progress signal
+        # Get unsharp mask parameters
+        if do_unsharp:
+            try:
+                unsharp_kernel = int(self.ivy_framework.lineeditUnsharpKernel.text())
+                unsharp_sigma = float(self.ivy_framework.lineeditUnsharpSigma.text())
+                unsharp_amount = float(self.ivy_framework.lineeditUnsharpAmount.text())
+                unsharp_parameters = (unsharp_kernel, unsharp_sigma, unsharp_amount)
+            except ValueError:
+                QtWidgets.QMessageBox.warning(
+                    self.ivy_framework,
+                    "Invalid Parameters",
+                    "Please check unsharp mask parameters.",
+                    QtWidgets.QMessageBox.Ok
+                )
+                self.ivy_framework.progressBar.hide()
+                return
+        else:
+            unsharp_parameters = (5, 1.0, 1.0)  # defaults
+
+        # For other enhancements, use defaults (or add more controls if needed)
+        edge_alpha = 1.5
+        dog_parameters = (1.0, 2.0)
+        bilateral_parameters = (9, 75, 75)
+        local_std_kernel = 15
+
+        # Create processor
         processing_thread = ImageProcessor()
         processing_thread.progress.connect(self.preprocessor_process_progress)
-
-        # Connect the finished signal to a slot for handling the result
         processing_thread.finished.connect(self.preprocessor_process_finished)
 
-        # TODO: this is the actual connected call for Apply to All!
+        # Process images with all parameters
         self.ivy_framework.progressBar.setValue(0)
         self.ivy_framework.progressBar.show()
+
         processing_thread.preprocess_images(
             image_paths=self.sequence,
             clahe_parameters=clahe_parameters,
             auto_contrast_percent=auto_contrast_percent,
             do_clahe=do_clahe,
             do_auto_contrast=do_auto_contrast,
+            # NEW PARAMETERS:
+            do_unsharp_mask=do_unsharp,
+            unsharp_parameters=unsharp_parameters,
+            do_edge_enhance=do_edge,
+            edge_enhance_alpha=edge_alpha,
+            do_dog=do_dog,
+            dog_parameters=dog_parameters,
+            do_bilateral=do_bilateral,
+            bilateral_parameters=bilateral_parameters,
+            do_local_std=do_local_std,
+            local_std_kernel=local_std_kernel
         )
 
         # # Create an instance of the ImageProcessorThread
