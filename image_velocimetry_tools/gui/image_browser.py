@@ -17,6 +17,20 @@ from image_velocimetry_tools.image_processing_tools import (
     automatic_brightness_and_contrast_adjustment,
     convert_opencv_image_to_qt_pixmap,
     ImageProcessor,
+    apply_unsharp_mask,
+    apply_edge_enhancement,
+    apply_difference_of_gaussians,
+    apply_bilateral_filter_exposed,
+    apply_local_std_dev,
+    compute_temporal_variance,
+    extract_water_roi_from_variance,
+    extract_water_roi_by_color,
+    combine_roi_masks,
+    detect_blur,
+    analyze_exposure,
+    create_motion_heatmap,
+    create_texture_visualization,
+    overlay_roi_on_image,
 )
 
 global icons_path
@@ -634,3 +648,335 @@ class ImageBrowserTab:
             current_image = self.image_path
             message = f"IMAGE BROWSER: Current image: {current_image}"
             self.ivy_framework.update_statusbar(message)
+
+    # ========================================================================
+    # New Methods for Enhanced Image Processing
+    # ========================================================================
+
+    def compute_water_roi_temporal_variance(self, sample_rate=5):
+        """
+        Compute temporal variance map to identify moving water regions.
+
+        Args:
+            sample_rate (int): Use every Nth frame for speed (default: 5)
+
+        Returns:
+            ndarray: Variance map showing motion intensity
+        """
+        if not self.sequence:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Images",
+                "Please load images first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+        message = "IMAGE BROWSER: Computing temporal variance for water ROI..."
+        self.ivy_framework.update_statusbar(message)
+        self.ivy_framework.progressBar.show()
+
+        def progress_callback(progress):
+            self.ivy_framework.progressBar.setValue(progress)
+
+        try:
+            variance_map = compute_temporal_variance(
+                self.sequence, sample_rate=sample_rate, progress_callback=progress_callback
+            )
+
+            self.ivy_framework.progressBar.hide()
+            message = "IMAGE BROWSER: Temporal variance computation complete."
+            self.ivy_framework.update_statusbar(message)
+
+            return variance_map
+
+        except Exception as e:
+            self.ivy_framework.progressBar.hide()
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to compute temporal variance: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def extract_water_roi_auto(self, variance_map=None, threshold_percentile=50,
+                                min_area_percent=5.0, use_color=False,
+                                hue_range=(90, 140)):
+        """
+        Extract water ROI using temporal variance and optionally color.
+
+        Args:
+            variance_map (ndarray): Pre-computed variance map (optional)
+            threshold_percentile (float): Variance threshold percentile (0-100)
+            min_area_percent (float): Minimum region area as % of image
+            use_color (bool): Also use color-based segmentation
+            hue_range (tuple): Hue range for water color (HSV)
+
+        Returns:
+            ndarray: Binary water ROI mask
+        """
+        if variance_map is None:
+            variance_map = self.compute_water_roi_temporal_variance()
+            if variance_map is None:
+                return None
+
+        try:
+            # Extract ROI from variance
+            roi_variance = extract_water_roi_from_variance(
+                variance_map,
+                threshold_percentile=threshold_percentile,
+                min_area_percent=min_area_percent
+            )
+
+            # Optionally combine with color segmentation
+            if use_color and self.sequence:
+                current_image = image_file_to_opencv_image(self.sequence[0])
+                roi_color = extract_water_roi_by_color(
+                    current_image,
+                    color_space='HSV',
+                    hue_range=hue_range
+                )
+
+                # Combine masks
+                roi_mask = combine_roi_masks([roi_variance, roi_color], method='union')
+            else:
+                roi_mask = roi_variance
+
+            message = "IMAGE BROWSER: Water ROI extraction complete."
+            self.ivy_framework.update_statusbar(message)
+
+            return roi_mask
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to extract water ROI: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def analyze_current_frame_quality(self):
+        """
+        Analyze quality metrics for the current frame.
+
+        Returns:
+            dict: Quality metrics (blur score, exposure info)
+        """
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Detect blur
+            is_blurry, blur_score = detect_blur(cv_image)
+
+            # Analyze exposure
+            exposure_info = analyze_exposure(cv_image)
+
+            quality_metrics = {
+                'is_blurry': is_blurry,
+                'blur_score': blur_score,
+                'exposure': exposure_info
+            }
+
+            # Display results
+            quality_text = f"Blur Score: {blur_score:.2f} ({'Blurry' if is_blurry else 'Sharp'})\n"
+            quality_text += f"Brightness: {exposure_info['mean_brightness']:.1f}\n"
+            quality_text += f"Contrast: {exposure_info['histogram_spread']:.1f}\n"
+
+            if exposure_info['is_underexposed']:
+                quality_text += "Warning: Image is underexposed\n"
+            if exposure_info['is_overexposed']:
+                quality_text += "Warning: Image is overexposed\n"
+
+            QtWidgets.QMessageBox.information(
+                self.ivy_framework,
+                "Frame Quality Analysis",
+                quality_text,
+                QtWidgets.QMessageBox.Ok,
+            )
+
+            return quality_metrics
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to analyze frame quality: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def show_motion_heatmap(self, variance_map=None):
+        """
+        Display motion heatmap overlay on current image.
+
+        Args:
+            variance_map (ndarray): Pre-computed variance map (optional)
+        """
+        if variance_map is None:
+            variance_map = self.compute_water_roi_temporal_variance()
+            if variance_map is None:
+                return
+
+        try:
+            # Create heatmap
+            heatmap = create_motion_heatmap(variance_map)
+
+            # Display in image browser
+            height, width, _ = heatmap.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                heatmap, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = "IMAGE BROWSER: Showing motion heatmap"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create motion heatmap: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def show_texture_visualization(self, method='local_std', **kwargs):
+        """
+        Display texture visualization for current frame.
+
+        Args:
+            method (str): Visualization method ('local_std', 'dog', 'edges')
+            **kwargs: Additional parameters for the chosen method
+        """
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Create texture visualization
+            texture_viz = create_texture_visualization(cv_image, method=method, **kwargs)
+
+            # Display in image browser
+            height, width, _ = texture_viz.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                texture_viz, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = f"IMAGE BROWSER: Showing texture visualization ({method})"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create texture visualization: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def show_roi_overlay(self, roi_mask=None):
+        """
+        Overlay water ROI on current image.
+
+        Args:
+            roi_mask (ndarray): Binary ROI mask (optional, will compute if None)
+        """
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return
+
+        if roi_mask is None:
+            roi_mask = self.extract_water_roi_auto()
+            if roi_mask is None:
+                return
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Create overlay
+            overlay_image = overlay_roi_on_image(cv_image, roi_mask, color=(0, 255, 255), alpha=0.3)
+
+            # Display in image browser
+            height, width, _ = overlay_image.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                overlay_image, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = "IMAGE BROWSER: Showing water ROI overlay"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create ROI overlay: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def apply_enhancement_to_current_frame(self, enhancement_type, **params):
+        """
+        Apply a specific enhancement to the current frame for preview.
+
+        Args:
+            enhancement_type (str): Type of enhancement ('unsharp', 'edge', 'dog', 'bilateral', 'local_std')
+            **params: Parameters for the enhancement
+        """
+        if not self.sequence or self.sequence_index >= len(self.sequence):
+            return
+
+        current_image = self.sequence[self.sequence_index]
+        cv_image = image_file_to_opencv_image(current_image)
+        height, width = cv_image.shape[:2] if len(cv_image.shape) == 2 else cv_image.shape[:2]
+
+        try:
+            if enhancement_type == 'unsharp':
+                enhanced = apply_unsharp_mask(cv_image, **params)
+            elif enhancement_type == 'edge':
+                enhanced = apply_edge_enhancement(cv_image, **params)
+            elif enhancement_type == 'dog':
+                enhanced = apply_difference_of_gaussians(cv_image, **params)
+            elif enhancement_type == 'bilateral':
+                enhanced = apply_bilateral_filter_exposed(cv_image, **params)
+            elif enhancement_type == 'local_std':
+                enhanced = apply_local_std_dev(cv_image, **params)
+            else:
+                raise ValueError(f"Unknown enhancement type: {enhancement_type}")
+
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                enhanced, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = f"IMAGE BROWSER: Applied {enhancement_type} enhancement to current frame"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to apply enhancement: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )

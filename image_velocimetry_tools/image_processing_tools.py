@@ -37,6 +37,16 @@ class ImageProcessor(QObject):
         auto_contrast_percent=None,
         do_clahe=False,
         do_auto_contrast=False,
+        do_unsharp_mask=False,
+        unsharp_parameters=(5, 1.0, 1.0),
+        do_edge_enhance=False,
+        edge_enhance_alpha=1.5,
+        do_dog=False,
+        dog_parameters=(1.0, 2.0),
+        do_bilateral=False,
+        bilateral_parameters=(9, 75, 75),
+        do_local_std=False,
+        local_std_kernel=15,
     ):
         """Class init
 
@@ -48,6 +58,16 @@ class ImageProcessor(QObject):
             auto_contrast_percent (float, optional): autocontrast parameter. Defaults to None.
             do_clahe (bool, optional): True if CLAHE is requested. Defaults to False.
             do_auto_contrast (bool, optional): True is autocontrast requested. Defaults to False.
+            do_unsharp_mask (bool, optional): True if unsharp masking is requested. Defaults to False.
+            unsharp_parameters (tuple, optional): Unsharp mask parameters (kernel_size, sigma, amount). Defaults to (5, 1.0, 1.0).
+            do_edge_enhance (bool, optional): True if edge enhancement is requested. Defaults to False.
+            edge_enhance_alpha (float, optional): Edge enhancement strength. Defaults to 1.5.
+            do_dog (bool, optional): True if Difference of Gaussians is requested. Defaults to False.
+            dog_parameters (tuple, optional): DoG parameters (sigma1, sigma2). Defaults to (1.0, 2.0).
+            do_bilateral (bool, optional): True if bilateral filtering is requested. Defaults to False.
+            bilateral_parameters (tuple, optional): Bilateral filter parameters (d, sigma_color, sigma_space). Defaults to (9, 75, 75).
+            do_local_std (bool, optional): True if local std dev is requested. Defaults to False.
+            local_std_kernel (int, optional): Local std dev kernel size. Defaults to 15.
         """
         super().__init__()
         self.image_paths = image_paths
@@ -62,6 +82,16 @@ class ImageProcessor(QObject):
         self.auto_contrast_percent = auto_contrast_percent
         self.do_clahe = do_clahe
         self.do_auto_contrast = do_auto_contrast
+        self.do_unsharp_mask = do_unsharp_mask
+        self.unsharp_parameters = unsharp_parameters
+        self.do_edge_enhance = do_edge_enhance
+        self.edge_enhance_alpha = edge_enhance_alpha
+        self.do_dog = do_dog
+        self.dog_parameters = dog_parameters
+        self.do_bilateral = do_bilateral
+        self.bilateral_parameters = bilateral_parameters
+        self.do_local_std = do_local_std
+        self.local_std_kernel = local_std_kernel
 
     def image_stack_creator(self, image_paths, map_file_path, map_file_size_thres):
         """Create an image stack for processing multiple images
@@ -89,6 +119,16 @@ class ImageProcessor(QObject):
         auto_contrast_percent,
         do_clahe,
         do_auto_contrast,
+        do_unsharp_mask=False,
+        unsharp_parameters=(5, 1.0, 1.0),
+        do_edge_enhance=False,
+        edge_enhance_alpha=1.5,
+        do_dog=False,
+        dog_parameters=(1.0, 2.0),
+        do_bilateral=False,
+        bilateral_parameters=(9, 75, 75),
+        do_local_std=False,
+        local_std_kernel=15,
     ):
         """Main function for handling the preprocessing thread
 
@@ -98,6 +138,16 @@ class ImageProcessor(QObject):
             auto_contrast_percent (float): autocontract parameter
             do_clahe (bool): True if clahe is requested
             do_auto_contrast (bool): True if autocontrast is requested
+            do_unsharp_mask (bool): True if unsharp masking is requested
+            unsharp_parameters (tuple): Unsharp mask parameters (kernel_size, sigma, amount)
+            do_edge_enhance (bool): True if edge enhancement is requested
+            edge_enhance_alpha (float): Edge enhancement strength
+            do_dog (bool): True if Difference of Gaussians is requested
+            dog_parameters (tuple): DoG parameters (sigma1, sigma2)
+            do_bilateral (bool): True if bilateral filtering is requested
+            bilateral_parameters (tuple): Bilateral filter parameters (d, sigma_color, sigma_space)
+            do_local_std (bool): True if local std dev is requested
+            local_std_kernel (int): Local std dev kernel size
         """
         if not image_paths:
             return
@@ -125,6 +175,35 @@ class ImageProcessor(QObject):
                 cv_image, alpha, beta = automatic_brightness_and_contrast_adjustment(
                     cv_image, clip_histogram_percentage=auto_contrast_percent
                 )
+
+            if do_unsharp_mask:
+                kernel_size = int(unsharp_parameters[0])
+                sigma = float(unsharp_parameters[1])
+                amount = float(unsharp_parameters[2])
+                cv_image = apply_unsharp_mask(
+                    cv_image, kernel_size=kernel_size, sigma=sigma, amount=amount
+                )
+
+            if do_edge_enhance:
+                cv_image = apply_edge_enhancement(cv_image, alpha=edge_enhance_alpha)
+
+            if do_dog:
+                sigma1 = float(dog_parameters[0])
+                sigma2 = float(dog_parameters[1])
+                cv_image = apply_difference_of_gaussians(
+                    cv_image, sigma1=sigma1, sigma2=sigma2
+                )
+
+            if do_bilateral:
+                d = int(bilateral_parameters[0])
+                sigma_color = float(bilateral_parameters[1])
+                sigma_space = float(bilateral_parameters[2])
+                cv_image = apply_bilateral_filter_exposed(
+                    cv_image, d=d, sigma_color=sigma_color, sigma_space=sigma_space
+                )
+
+            if do_local_std:
+                cv_image = apply_local_std_dev(cv_image, kernel_size=local_std_kernel)
 
             # Save the processed image as a JPG file
             output_file = os.path.join(image_root_path, f"f{image_index:05d}.jpg")
@@ -1086,3 +1165,544 @@ def flip_and_save_images(image_folder, flip_x=False, flip_y=False, progress_call
             if progress_callback:
                 progress_callback.emit(int((idx / num_images) * 100))
             idx += 1
+
+
+# ============================================================================
+# Water ROI Extraction Functions
+# ============================================================================
+
+
+def compute_temporal_variance(image_paths, sample_rate=5, progress_callback=None):
+    """
+    Compute temporal variance across frames to identify moving regions (water).
+
+    This is a lightweight motion detection method that computes pixel-wise variance
+    across a subset of frames. Higher variance indicates motion (water), while
+    lower variance indicates static regions (banks, vegetation).
+
+    Args:
+        image_paths (list): List of paths to image files
+        sample_rate (int): Use every Nth frame for speed (default: 5)
+        progress_callback (function): Optional callback for progress reporting
+
+    Returns:
+        ndarray: Variance map (grayscale image) where bright pixels indicate motion
+    """
+    if not image_paths:
+        raise ValueError("No image paths provided")
+
+    # Sample frames for efficiency
+    sampled_paths = image_paths[::sample_rate]
+
+    # Read first image to get dimensions
+    first_img = cv2.imread(sampled_paths[0], cv2.IMREAD_GRAYSCALE)
+    if first_img is None:
+        raise ValueError(f"Could not read image: {sampled_paths[0]}")
+
+    height, width = first_img.shape
+    num_samples = len(sampled_paths)
+
+    # Accumulate images for variance computation
+    frames = np.zeros((height, width, num_samples), dtype=np.float32)
+    frames[:, :, 0] = first_img.astype(np.float32)
+
+    # Load all sampled frames
+    for idx, path in enumerate(sampled_paths[1:], start=1):
+        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if img is not None and img.shape == (height, width):
+            frames[:, :, idx] = img.astype(np.float32)
+
+        if progress_callback and idx % 10 == 0:
+            progress = int((idx / num_samples) * 100)
+            progress_callback(progress)
+
+    # Compute variance across time dimension
+    variance_map = np.var(frames, axis=2)
+
+    # Normalize to 0-255 range for display
+    variance_map = cv2.normalize(variance_map, None, 0, 255, cv2.NORM_MINMAX)
+    variance_map = variance_map.astype(np.uint8)
+
+    if progress_callback:
+        progress_callback(100)
+
+    return variance_map
+
+
+def extract_water_roi_from_variance(variance_map, threshold_percentile=50,
+                                    min_area_percent=5.0, morph_kernel_size=5):
+    """
+    Extract water ROI from temporal variance map using adaptive thresholding.
+
+    Args:
+        variance_map (ndarray): Temporal variance map from compute_temporal_variance
+        threshold_percentile (float): Percentile threshold (0-100). Higher = more selective
+        min_area_percent (float): Minimum connected component area as % of image
+        morph_kernel_size (int): Kernel size for morphological operations
+
+    Returns:
+        ndarray: Binary mask where 1 = water, 0 = non-water (uint8)
+    """
+    # Compute adaptive threshold based on percentile
+    threshold_value = np.percentile(variance_map, threshold_percentile)
+
+    # Threshold to create binary mask
+    binary_mask = (variance_map > threshold_value).astype(np.uint8)
+
+    # Apply morphological operations to clean up mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                       (morph_kernel_size, morph_kernel_size))
+
+    # Close small gaps
+    binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, kernel)
+
+    # Remove small regions
+    total_pixels = binary_mask.size
+    min_area = int((min_area_percent / 100.0) * total_pixels)
+
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+        binary_mask, connectivity=8
+    )
+
+    # Keep only large components
+    cleaned_mask = np.zeros_like(binary_mask)
+    for label in range(1, num_labels):
+        if stats[label, cv2.CC_STAT_AREA] >= min_area:
+            cleaned_mask[labels == label] = 1
+
+    return cleaned_mask
+
+
+def extract_water_roi_by_color(image, color_space='HSV',
+                                hue_range=(90, 140), sat_range=(20, 255),
+                                val_range=(20, 255)):
+    """
+    Extract water ROI using color-based segmentation in HSV space.
+
+    Water typically appears in blue-green-cyan range in HSV. This function
+    provides a starting point that users can adjust based on their specific
+    water conditions (clear, turbid, muddy, etc.).
+
+    Args:
+        image (ndarray): Input BGR image from OpenCV
+        color_space (str): Color space to use ('HSV' or 'LAB')
+        hue_range (tuple): Min/max hue values (0-180 in OpenCV)
+        sat_range (tuple): Min/max saturation values (0-255)
+        val_range (tuple): Min/max value/brightness (0-255)
+
+    Returns:
+        ndarray: Binary mask where 1 = water, 0 = non-water
+    """
+    if color_space == 'HSV':
+        # Convert to HSV
+        if is_image_grayscale(image):
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # Define color range
+        lower_bound = np.array([hue_range[0], sat_range[0], val_range[0]])
+        upper_bound = np.array([hue_range[1], sat_range[1], val_range[1]])
+
+        # Create mask
+        mask = cv2.inRange(hsv, lower_bound, upper_bound)
+
+    elif color_space == 'LAB':
+        # Convert to LAB (useful for turbid/muddy water)
+        if is_image_grayscale(image):
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+
+        # For LAB, use hue_range as L range, sat_range as A, val_range as B
+        lower_bound = np.array([hue_range[0], sat_range[0], val_range[0]])
+        upper_bound = np.array([hue_range[1], sat_range[1], val_range[1]])
+
+        mask = cv2.inRange(lab, lower_bound, upper_bound)
+
+    # Normalize to 0-1
+    mask = (mask > 0).astype(np.uint8)
+
+    return mask
+
+
+def combine_roi_masks(masks, method='union'):
+    """
+    Combine multiple ROI masks using different strategies.
+
+    Args:
+        masks (list): List of binary masks (each is ndarray)
+        method (str): Combination method - 'union', 'intersection', or 'majority'
+
+    Returns:
+        ndarray: Combined binary mask
+    """
+    if not masks:
+        raise ValueError("No masks provided")
+
+    if len(masks) == 1:
+        return masks[0]
+
+    # Stack masks
+    stacked = np.stack(masks, axis=2)
+
+    if method == 'union':
+        # Any mask has water
+        combined = np.any(stacked, axis=2).astype(np.uint8)
+    elif method == 'intersection':
+        # All masks agree it's water
+        combined = np.all(stacked, axis=2).astype(np.uint8)
+    elif method == 'majority':
+        # Majority vote
+        combined = (np.mean(stacked, axis=2) > 0.5).astype(np.uint8)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    return combined
+
+
+# ============================================================================
+# Image Enhancement Functions
+# ============================================================================
+
+
+def apply_unsharp_mask(image, kernel_size=5, sigma=1.0, amount=1.0, threshold=0):
+    """
+    Apply unsharp masking to enhance edges and fine details.
+
+    This is excellent for enhancing water surface texture. The algorithm
+    subtracts a blurred version from the original to enhance high frequencies.
+
+    Args:
+        image (ndarray): Input image (grayscale or color)
+        kernel_size (int): Gaussian kernel size (must be odd)
+        sigma (float): Gaussian kernel standard deviation
+        amount (float): Strength of sharpening (1.0 = 100%)
+        threshold (int): Minimum brightness change to sharpen (0-255)
+
+    Returns:
+        ndarray: Sharpened image
+    """
+    # Work with grayscale
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        # Color image - convert to grayscale for processing
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        is_color_input = True
+    else:
+        gray = image.copy()
+        is_color_input = False
+
+    # Create blurred version
+    blurred = cv2.GaussianBlur(gray, (kernel_size, kernel_size), sigma)
+
+    # Calculate sharpening mask
+    sharpened = cv2.addWeighted(gray, 1.0 + amount, blurred, -amount, 0)
+
+    # Apply threshold if specified
+    if threshold > 0:
+        low_contrast_mask = np.abs(gray.astype(np.int16) - blurred.astype(np.int16)) < threshold
+        sharpened = np.where(low_contrast_mask, gray, sharpened)
+
+    # Clip values
+    sharpened = np.clip(sharpened, 0, 255).astype(np.uint8)
+
+    return sharpened
+
+
+def apply_edge_enhancement(image, alpha=1.5):
+    """
+    Enhance edges using Laplacian edge detection.
+
+    This highlights edges and boundaries in the image, useful for
+    emphasizing water surface patterns.
+
+    Args:
+        image (ndarray): Input image (grayscale or color)
+        alpha (float): Enhancement strength (1.0 = original, >1.0 = enhanced)
+
+    Returns:
+        ndarray: Edge-enhanced image
+    """
+    # Work with grayscale
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Compute Laplacian
+    laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+
+    # Add laplacian back to original (edge enhancement)
+    enhanced = gray.astype(np.float64) + alpha * laplacian
+
+    # Normalize and convert back
+    enhanced = np.clip(enhanced, 0, 255).astype(np.uint8)
+
+    return enhanced
+
+
+def apply_difference_of_gaussians(image, sigma1=1.0, sigma2=2.0, normalize=True):
+    """
+    Apply Difference of Gaussians (DoG) filter for band-pass filtering.
+
+    This enhances features at specific scales, excellent for highlighting
+    water surface texture patterns.
+
+    Args:
+        image (ndarray): Input image (grayscale or color)
+        sigma1 (float): Smaller Gaussian sigma (captures finer details)
+        sigma2 (float): Larger Gaussian sigma (captures coarser details)
+        normalize (bool): If True, normalize output to 0-255 range
+
+    Returns:
+        ndarray: DoG filtered image
+    """
+    # Work with grayscale
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Apply two Gaussian blurs with different sigmas
+    gaussian1 = cv2.GaussianBlur(gray, (0, 0), sigma1)
+    gaussian2 = cv2.GaussianBlur(gray, (0, 0), sigma2)
+
+    # Compute difference
+    dog = gaussian1.astype(np.float32) - gaussian2.astype(np.float32)
+
+    if normalize:
+        # Normalize to 0-255
+        dog = cv2.normalize(dog, None, 0, 255, cv2.NORM_MINMAX)
+        dog = dog.astype(np.uint8)
+
+    return dog
+
+
+def apply_local_std_dev(image, kernel_size=15):
+    """
+    Compute local standard deviation to highlight texture variation.
+
+    This creates a texture map showing areas with high local variation
+    (like moving water) vs smooth areas (like calm water or banks).
+
+    Args:
+        image (ndarray): Input image (grayscale or color)
+        kernel_size (int): Size of local neighborhood
+
+    Returns:
+        ndarray: Local standard deviation map (0-255)
+    """
+    # Work with grayscale
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Convert to float
+    gray_float = gray.astype(np.float32)
+
+    # Compute local mean
+    kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size ** 2)
+    local_mean = cv2.filter2D(gray_float, -1, kernel)
+
+    # Compute local mean of squares
+    local_mean_sq = cv2.filter2D(gray_float ** 2, -1, kernel)
+
+    # Local variance = E[X^2] - E[X]^2
+    local_var = local_mean_sq - local_mean ** 2
+    local_var = np.maximum(local_var, 0)  # Handle numerical errors
+
+    # Local standard deviation
+    local_std = np.sqrt(local_var)
+
+    # Normalize to 0-255
+    local_std = cv2.normalize(local_std, None, 0, 255, cv2.NORM_MINMAX)
+    local_std = local_std.astype(np.uint8)
+
+    return local_std
+
+
+def apply_bilateral_filter_exposed(image, d=9, sigma_color=75, sigma_space=75):
+    """
+    Apply bilateral filter for edge-preserving smoothing.
+
+    This reduces noise while preserving important edges, useful as a
+    pre-processing step before velocity analysis.
+
+    Args:
+        image (ndarray): Input image (grayscale or color)
+        d (int): Diameter of pixel neighborhood
+        sigma_color (float): Filter sigma in color space
+        sigma_space (float): Filter sigma in coordinate space
+
+    Returns:
+        ndarray: Filtered image
+    """
+    # Work with grayscale
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Apply bilateral filter
+    filtered = cv2.bilateralFilter(gray, d, sigma_color, sigma_space)
+
+    return filtered
+
+
+# ============================================================================
+# Frame Quality Assessment Functions
+# ============================================================================
+
+
+def detect_blur(image, threshold=100.0):
+    """
+    Detect if an image is blurry using Laplacian variance method.
+
+    Args:
+        image (ndarray): Input image
+        threshold (float): Blur threshold (lower = more blurry)
+                          Typical values: <100 = blurry, >100 = sharp
+
+    Returns:
+        tuple: (is_blurry (bool), blur_score (float))
+    """
+    # Convert to grayscale if needed
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Compute Laplacian variance
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+
+    is_blurry = laplacian_var < threshold
+
+    return is_blurry, laplacian_var
+
+
+def analyze_exposure(image):
+    """
+    Analyze image exposure quality.
+
+    Args:
+        image (ndarray): Input image
+
+    Returns:
+        dict: Exposure metrics including:
+            - mean_brightness: Average brightness (0-255)
+            - is_underexposed: Boolean
+            - is_overexposed: Boolean
+            - histogram_spread: Measure of contrast
+    """
+    # Convert to grayscale if needed
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+
+    # Compute histogram
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+
+    # Compute metrics
+    mean_brightness = np.mean(gray)
+    std_brightness = np.std(gray)
+
+    # Check for under/over exposure
+    # Underexposed if mean is low and most pixels in dark range
+    dark_pixels = np.sum(hist[:50]) / gray.size
+    is_underexposed = (mean_brightness < 60) or (dark_pixels > 0.5)
+
+    # Overexposed if mean is high and most pixels in bright range
+    bright_pixels = np.sum(hist[200:]) / gray.size
+    is_overexposed = (mean_brightness > 200) or (bright_pixels > 0.5)
+
+    return {
+        'mean_brightness': mean_brightness,
+        'std_brightness': std_brightness,
+        'is_underexposed': is_underexposed,
+        'is_overexposed': is_overexposed,
+        'histogram_spread': std_brightness
+    }
+
+
+# ============================================================================
+# Visualization Functions
+# ============================================================================
+
+
+def create_motion_heatmap(variance_map, colormap=cv2.COLORMAP_JET):
+    """
+    Create a color-coded motion heatmap from variance map.
+
+    Args:
+        variance_map (ndarray): Temporal variance map (grayscale)
+        colormap (int): OpenCV colormap constant
+
+    Returns:
+        ndarray: Color-coded heatmap (BGR)
+    """
+    # Apply colormap
+    heatmap = cv2.applyColorMap(variance_map, colormap)
+
+    return heatmap
+
+
+def create_texture_visualization(image, method='local_std', **kwargs):
+    """
+    Create texture visualization overlay.
+
+    Args:
+        image (ndarray): Input image
+        method (str): Method to use ('local_std', 'dog', 'edges')
+        **kwargs: Additional arguments for the chosen method
+
+    Returns:
+        ndarray: Texture visualization
+    """
+    if method == 'local_std':
+        kernel_size = kwargs.get('kernel_size', 15)
+        texture_map = apply_local_std_dev(image, kernel_size=kernel_size)
+    elif method == 'dog':
+        sigma1 = kwargs.get('sigma1', 1.0)
+        sigma2 = kwargs.get('sigma2', 2.0)
+        texture_map = apply_difference_of_gaussians(image, sigma1=sigma1, sigma2=sigma2)
+    elif method == 'edges':
+        alpha = kwargs.get('alpha', 1.5)
+        texture_map = apply_edge_enhancement(image, alpha=alpha)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    # Apply colormap for visualization
+    colored = cv2.applyColorMap(texture_map, cv2.COLORMAP_HOT)
+
+    return colored
+
+
+def overlay_roi_on_image(image, roi_mask, color=(0, 255, 255), alpha=0.3):
+    """
+    Overlay ROI mask on image with transparency.
+
+    Args:
+        image (ndarray): Input image (BGR or grayscale)
+        roi_mask (ndarray): Binary ROI mask (0 or 1)
+        color (tuple): BGR color for overlay (default: cyan)
+        alpha (float): Transparency (0=transparent, 1=opaque)
+
+    Returns:
+        ndarray: Image with ROI overlay (BGR)
+    """
+    # Ensure image is BGR
+    if len(image.shape) == 2:
+        image_bgr = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    else:
+        image_bgr = image.copy()
+
+    # Create colored overlay
+    overlay = image_bgr.copy()
+    overlay[roi_mask == 1] = color
+
+    # Blend with original
+    result = cv2.addWeighted(image_bgr, 1 - alpha, overlay, alpha, 0)
+
+    return result
