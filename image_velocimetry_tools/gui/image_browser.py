@@ -862,6 +862,10 @@ class ImageBrowserTab:
                 min_area_percent=min_area_percent
             )
 
+            logging.info(f"extract_water_roi_from_variance returned type: {type(roi_variance)}")
+            if roi_variance is not None:
+                logging.info(f"roi_variance shape: {roi_variance.shape if hasattr(roi_variance, 'shape') else 'no shape attr'}")
+
             # Optionally combine with color segmentation
             if use_color and self.sequence:
                 current_image = image_file_to_opencv_image(self.sequence[0])
@@ -875,6 +879,10 @@ class ImageBrowserTab:
                 roi_mask = combine_roi_masks([roi_variance, roi_color], method='union')
             else:
                 roi_mask = roi_variance
+
+            logging.info(f"extract_water_roi_auto returning type: {type(roi_mask)}")
+            if roi_mask is not None:
+                logging.info(f"roi_mask shape: {roi_mask.shape if hasattr(roi_mask, 'shape') else 'no shape attr'}")
 
             message = "IMAGE BROWSER: Water ROI extraction complete."
             self.ivy_framework.update_statusbar(message)
