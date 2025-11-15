@@ -285,12 +285,92 @@ def run_stiv_headless(
     return magnitudes_mps, directions_deg
 
 
+def get_pixel_xs_headless(
+    grid_pixel: np.ndarray,
+    cross_section_line: np.ndarray,
+    xs_survey: AreaSurvey,
+    water_surface_elevation_m: float,
+    cross_section_start_bank: str = "left"
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Convert pixel grid points to station distances and elevations (headless)
+
+    This is a simplified headless version of CrossSectionGeometry.get_pixel_xs()
+
+    Args:
+        grid_pixel: Grid points in pixel coordinates shape (N, 2)
+        cross_section_line: Cross-section endpoints [[x1,y1], [x2,y2]]
+        xs_survey: AreaSurvey object with loaded bathymetry
+        water_surface_elevation_m: Water surface elevation (meters)
+        cross_section_start_bank: "left" or "right"
+
+    Returns:
+        Tuple of (stations, elevations) in meters
+    """
+    from areacomp.gui.projectdata import ProjectData
+
+    # Get cross-section endpoints
+    point_extents = cross_section_line.reshape(2, 2)
+
+    # Combine grid points with cross-section endpoints for projection
+    new_arr = np.insert(point_extents, 1, grid_pixel, axis=0)
+    df = pd.DataFrame(new_arr, columns=["x", "y"])
+
+    # Use AreaComp's ProjectData to compute stations along the line
+    proj = ProjectData()
+    proj.compute_data(df, rtn=True)
+
+    # Calculate pixel distance between cross-section endpoints
+    pixel_dist = np.sqrt(
+        (point_extents[1, 0] - point_extents[0, 0]) ** 2 +
+        (point_extents[1, 1] - point_extents[0, 1]) ** 2
+    )
+
+    # Find wetted width from cross-section survey
+    # (where the water surface intersects the cross-section)
+    survey_stations = xs_survey.survey["Stations"].to_numpy()
+    survey_elevations = xs_survey.survey["AdjustedStage"].to_numpy()
+
+    # Find where WSE crosses the cross-section
+    above_water = survey_elevations <= water_surface_elevation_m
+    if np.any(above_water):
+        crossings = survey_stations[above_water]
+        wetted_width = crossings[-1] - crossings[0]
+        left_edge = crossings[0]
+    else:
+        # No water, use full channel width
+        wetted_width = np.max(survey_stations) - np.min(survey_stations)
+        left_edge = np.min(survey_stations)
+
+    # Convert pixel distances to real-world stations
+    p_conversion = wetted_width / pixel_dist
+    pixel_stations = proj.stations * p_conversion + left_edge
+
+    # Handle right bank start
+    if cross_section_start_bank == "right":
+        pixel_stations = (
+            np.nanmax(pixel_stations) -
+            pixel_stations -
+            (0 - np.nanmin(pixel_stations))
+        )
+
+    # Interpolate elevations for pixel stations
+    elevations = np.interp(
+        pixel_stations,
+        survey_stations,
+        survey_elevations
+    )
+
+    return pixel_stations, elevations
+
+
 def calculate_discharge_headless(
     magnitudes_mps: np.ndarray,
     directions_deg: np.ndarray,
     grid_pixel: np.ndarray,
     xs_survey: AreaSurvey,
+    cross_section_line: np.ndarray,
     water_surface_elevation_m: float,
+    cross_section_start_bank: str = "left",
     alpha: float = 0.85
 ) -> Tuple[Dict, Dict]:
     """Calculate discharge from velocity data (headless)
@@ -299,8 +379,10 @@ def calculate_discharge_headless(
         magnitudes_mps: Surface velocity magnitudes (m/s)
         directions_deg: Flow directions (degrees, geographic)
         grid_pixel: Grid points in pixel coordinates
-        xs_survey: AreaComp cross-section survey object
+        xs_survey: AreaSurvey cross-section survey object
+        cross_section_line: Cross-section endpoints [[x1,y1], [x2,y2]]
         water_surface_elevation_m: Water surface elevation (m)
+        cross_section_start_bank: "left" or "right"
         alpha: Velocity coefficient (default 0.85)
 
     Returns:
@@ -309,7 +391,13 @@ def calculate_discharge_headless(
     logging.info("Calculating discharge...")
 
     # Get station distances and depths from cross-section
-    stations, elevations = xs_survey.get_pixel_xs(grid_pixel)
+    stations, elevations = get_pixel_xs_headless(
+        grid_pixel,
+        cross_section_line,
+        xs_survey,
+        water_surface_elevation_m,
+        cross_section_start_bank
+    )
     depths = water_surface_elevation_m - elevations
 
     # Calculate normal velocities (perpendicular to cross-section)

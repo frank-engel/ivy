@@ -552,7 +552,9 @@ class BatchProcessor:
                 directions_deg=directions_deg,
                 grid_pixel=grid_pixel,
                 xs_survey=xs_survey,
+                cross_section_line=self.scaffold_data.cross_section_line,
                 water_surface_elevation_m=config.water_surface_elevation,
+                cross_section_start_bank=self.scaffold_data.cross_section_start_bank,
                 alpha=0.85  # Default velocity coefficient
             )
 
