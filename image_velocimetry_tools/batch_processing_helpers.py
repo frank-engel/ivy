@@ -15,7 +15,7 @@ from typing import List, Tuple, Optional, Dict
 
 import numpy as np
 import pandas as pd
-from areacomp import AreaComp
+from areacomp.gui.areasurvey import AreaSurvey
 from scipy.interpolate import interp2d
 
 from image_velocimetry_tools.common_functions import (
@@ -293,7 +293,7 @@ def calculate_discharge_headless(
     magnitudes_mps: np.ndarray,
     directions_deg: np.ndarray,
     grid_pixel: np.ndarray,
-    xs_survey: AreaComp,
+    xs_survey: AreaSurvey,
     water_surface_elevation_m: float,
     alpha: float = 0.85
 ) -> Tuple[Dict, Dict]:
