@@ -31,10 +31,6 @@ from image_velocimetry_tools.discharge_tools import (
 from image_velocimetry_tools.ffmpeg_tools import create_ffmpeg_command
 from image_velocimetry_tools.file_management import deserialize_numpy_array
 from image_velocimetry_tools.image_processing_tools import create_grayscale_image_stack
-from image_velocimetry_tools.orthorectification import (
-    apply_camera_matrix_rectification,
-    apply_homography_rectification,
-)
 from image_velocimetry_tools.stiv import two_dimensional_stiv_exhaustive
 from image_velocimetry_tools.uncertainty import Uncertainty
 
