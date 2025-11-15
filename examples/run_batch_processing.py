@@ -48,13 +48,13 @@ def main():
     # ==================================================================
 
     # Path to scaffold .ivy project (template with camera calibration & cross-section)
-    scaffold_ivy_path = "scaffold_project.ivy"
+    scaffold_ivy_path = "./examples/scaffold_project.ivy"
 
     # Path to CSV file with batch configuration (video list + WSE)
-    batch_config_csv = "batch_boneyard.csv"
+    batch_config_csv = "./examples/batch_boneyard.csv"
 
     # Output directory for results
-    output_directory = "output"
+    output_directory = "./examples/output"
 
     # ==================================================================
     # OPTIONAL: Create a batch config template
