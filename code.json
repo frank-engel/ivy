@@ -3,7 +3,7 @@
     "name": "Image Velocimetry Tools (IVy Tools)",
     "organization": "U.S. Geological Survey",
     "description": "Processing application for image velocimetry to compute river velocity and discharge from videos.",
-    "version": "1.0.0.0",
+    "version": "1.0.0.2",
     "status": "Development",
     "permissions": {
       "usageType": "openSource",
@@ -44,7 +44,7 @@
       "email": "fengel@usgs.gov"
     },
     "date": {
-      "metadataLastUpdated": "2025-06-03"
+      "metadataLastUpdated": "2025-08-07"
     }
   }
 ]

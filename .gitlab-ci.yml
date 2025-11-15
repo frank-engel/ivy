@@ -1,34 +1,10 @@
 # Add this to the existing list of stages if it already exists in your file
 stages:
   - test
-  - mirror
 
 # Add this to the existing list of includes if it already exists in your file
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
-
-mirror_to_github:
-  stage: mirror
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache git
-  only:
-    refs:
-      - main
-  script:
-  - echo "Creating snapshot of main branch"
-  - mkdir snapshot
-  - find . -mindepth 1 -maxdepth 1 ! -name snapshot ! -name .git -exec cp -r {} snapshot/ \;
-  - cd snapshot
-  - git init
-  - git config user.name "$GITHUB_NAME"
-  - git config user.email "$GITHUB_EMAIL"
-  - git checkout -b main
-  - git add .
-  - >
-    git commit -m "CI sync from GitLab main: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || echo "Nothing to commit"
-  - git remote add origin "$GITHUB_REPO_URL"
-  - git push --force origin main
 
 #ivy-tests:
 #  stage: test

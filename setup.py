@@ -26,7 +26,7 @@ with open('requirements.txt', encoding='utf-16') as f:
 
 setup(
     name='image_velocimetry_tools',
-    version='1.0.0.0',
+    version='1.0.0.2',
     packages=['image_velocimetry_tools', 'image_velocimetry_tools.gui'],
     py_modules=['image_velocimetry_tools'],
     url='https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy',
