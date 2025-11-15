@@ -360,7 +360,14 @@ def get_pixel_xs_headless(
         survey_elevations
     )
 
-    return pixel_stations, elevations
+    # Extract only the grid point results (exclude cross-section endpoints)
+    # The projection included 2 endpoints + N grid points, so we extract indices 1:-1
+    pixel_stations_grid = pixel_stations[1:-1]
+    elevations_grid = elevations[1:-1]
+
+    logging.debug(f"get_pixel_xs_headless: grid_pixel shape={grid_pixel.shape}, returning {len(pixel_stations_grid)} stations")
+
+    return pixel_stations_grid, elevations_grid
 
 
 def calculate_discharge_headless(
@@ -419,6 +426,12 @@ def calculate_discharge_headless(
 
     # Convert surface to average velocity
     average_velocities = convert_surface_velocity_rantz(surface_velocities, alpha=alpha)
+
+    # Debug: Check array lengths before discharge calculation
+    logging.debug(f"Array lengths before discharge calculation:")
+    logging.debug(f"  stations_with_edges: {len(stations_with_edges)}")
+    logging.debug(f"  average_velocities: {len(average_velocities)}")
+    logging.debug(f"  depths_with_edges: {len(depths_with_edges)}")
 
     # Compute discharge using midsection method
     total_discharge, total_area, widths, areas, unit_discharges = compute_discharge_midsection(
