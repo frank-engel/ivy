@@ -218,6 +218,64 @@ def generate_cross_section_grid(
     return grid
 
 
+def orthorectify_frames_headless(
+    frame_directory: str,
+    projection_matrix: np.ndarray,
+    water_surface_elevation_m: float,
+    extent: Optional[np.ndarray] = None
+) -> List[str]:
+    """Orthorectify frames using camera matrix (headless)
+
+    Args:
+        frame_directory: Directory containing f*.jpg frames
+        projection_matrix: Camera projection matrix (3x4 or 4x3)
+        water_surface_elevation_m: Water surface elevation in meters (Z coordinate)
+        extent: Optional bounding box [x_min, x_max, y_min, y_max] for orthorectification
+
+    Returns:
+        List of paths to rectified frames (t*.jpg files)
+    """
+    from image_velocimetry_tools.orthorectification import CameraHelper
+    from skimage.io import imread
+    from PIL import Image
+
+    logging.info("Orthorectifying frames...")
+
+    # Get list of frames to rectify
+    frame_files = sorted(glob.glob(os.path.join(frame_directory, "f*.jpg")))
+    if len(frame_files) == 0:
+        raise ValueError(f"No f*.jpg frames found in {frame_directory}")
+
+    logging.info(f"Orthorectifying {len(frame_files)} frames at WSE = {water_surface_elevation_m} m")
+
+    # Create camera helper and set projection matrix
+    camera = CameraHelper()
+    camera.set_camera_matrix(projection_matrix)
+
+    # Orthorectify each frame
+    rectified_files = []
+    for i, frame_path in enumerate(frame_files):
+        # Read frame
+        frame = imread(frame_path)
+
+        # Get top view (orthorectified) projection
+        rectified = camera.get_top_view_of_image(
+            frame,
+            extent=extent,
+            Z=water_surface_elevation_m
+        )
+
+        # Save rectified frame as t*.jpg
+        frame_num = i + 1
+        output_path = os.path.join(frame_directory, f"t{frame_num:05d}.jpg")
+        img = Image.fromarray(rectified)
+        img.save(output_path)
+        rectified_files.append(output_path)
+
+    logging.info(f"Created {len(rectified_files)} orthorectified frames")
+    return rectified_files
+
+
 def run_stiv_headless(
     frame_files: List[str],
     grid: np.ndarray,

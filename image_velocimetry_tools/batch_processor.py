@@ -101,6 +101,11 @@ class ScaffoldData:
     ffprobe_cmd: str = None
     mask_polygons: List = field(default_factory=list)
 
+    # Rectification parameters
+    rectification_method: str = None
+    projection_matrix: np.ndarray = None
+    orthorectification_extent: np.ndarray = None
+
     # Full project dict (for reference)
     original_project_dict: Dict = field(default_factory=dict)
 
@@ -237,6 +242,15 @@ class BatchProcessor:
             scaffold.rectification_method = project_dict.get('rectification_method')
             scaffold.rectification_parameters = project_dict.get('rectification_parameters')
             scaffold.pixel_ground_scale_distance_m = project_dict.get('pixel_ground_scale_distance_m')
+
+            # Extract camera matrix and extent for orthorectification
+            if scaffold.rectification_parameters:
+                camera_matrix = scaffold.rectification_parameters.get('camera_matrix')
+                if camera_matrix:
+                    scaffold.projection_matrix = np.array(camera_matrix)
+                extent = scaffold.rectification_parameters.get('extent')
+                if extent:
+                    scaffold.orthorectification_extent = np.array(extent)
 
             # GCP table
             ortho_df_dict = project_dict.get('orthotable_dataframe')
@@ -503,6 +517,28 @@ class BatchProcessor:
             if progress_callback:
                 progress_callback(f"Extracted {len(frame_files)} frames")
 
+            # Step 1b: Orthorectify frames (if using camera matrix rectification)
+            rectified_files = []
+            if self.scaffold_data.rectification_method == "camera matrix":
+                if progress_callback:
+                    progress_callback("Orthorectifying frames...")
+
+                logging.info("Step 1b/6: Orthorectifying frames")
+
+                # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
+                wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
+
+                from image_velocimetry_tools.batch_processing_helpers import orthorectify_frames_headless
+                rectified_files = orthorectify_frames_headless(
+                    frame_directory=temp_frame_dir,
+                    projection_matrix=self.scaffold_data.projection_matrix,
+                    water_surface_elevation_m=wse_m,
+                    extent=self.scaffold_data.orthorectification_extent
+                )
+
+                if progress_callback:
+                    progress_callback(f"Orthorectified {len(rectified_files)} frames")
+
             # Step 2: Generate cross-section grid
             logging.info("Step 2/6: Generating cross-section grid")
             grid_pixel = generate_cross_section_grid(
@@ -546,6 +582,9 @@ class BatchProcessor:
             else:
                 raise ValueError("Cross-section bathymetry file not found in scaffold")
 
+            # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
+            wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
+
             # Calculate discharge
             discharge_results, discharge_summary = calculate_discharge_headless(
                 magnitudes_mps=magnitudes_mps,
@@ -553,7 +592,7 @@ class BatchProcessor:
                 grid_pixel=grid_pixel,
                 xs_survey=xs_survey,
                 cross_section_line=self.scaffold_data.cross_section_line,
-                water_surface_elevation_m=config.water_surface_elevation,
+                water_surface_elevation_m=wse_m,
                 cross_section_start_bank=self.scaffold_data.cross_section_start_bank,
                 alpha=0.85  # Default velocity coefficient
             )
@@ -582,6 +621,7 @@ class BatchProcessor:
                 output_path=output_ivy_path,
                 config=config,
                 frame_files=frame_files,
+                rectified_files=rectified_files,
                 extraction_metadata=extraction_metadata,
                 grid_pixel=grid_pixel,
                 magnitudes_mps=magnitudes_mps,
@@ -635,6 +675,7 @@ class BatchProcessor:
         output_path: str,
         config: BatchVideoConfig,
         frame_files: List[str],
+        rectified_files: List[str],
         extraction_metadata: Dict,
         grid_pixel: np.ndarray,
         magnitudes_mps: np.ndarray,
@@ -681,6 +722,12 @@ class BatchProcessor:
             for frame_file in frame_files:
                 shutil.copy(frame_file, swap_image_dir)
 
+            # Copy orthorectified frames to project (if they exist)
+            if rectified_files and len(rectified_files) > 0:
+                for rectified_file in rectified_files:
+                    shutil.copy(rectified_file, swap_ortho_dir)
+                logging.info(f"Copied {len(rectified_files)} orthorectified frames to project")
+
             # Copy bathymetry file if it exists
             if self.scaffold_data.bathymetry_ac3_filename and os.path.exists(
                 self.scaffold_data.bathymetry_ac3_filename
@@ -719,12 +766,14 @@ class BatchProcessor:
             }
 
             # Water surface elevation (THIS IS CRITICAL - new WSE for this flow!)
-            project_dict["ortho_rectified_wse_m"] = config.water_surface_elevation
-            project_dict["water_surface_elevation"] = config.water_surface_elevation
+            # Use gage_height as WSE if provided, otherwise fall back to water_surface_elevation
+            wse_m = config.gage_height if config.gage_height else config.water_surface_elevation
+            project_dict["ortho_rectified_wse_m"] = wse_m
+            project_dict["water_surface_elevation"] = wse_m
 
             # Update rectification parameters with new WSE
             if project_dict.get("rectification_parameters"):
-                project_dict["rectification_parameters"]["water_surface_elev"] = config.water_surface_elevation
+                project_dict["rectification_parameters"]["water_surface_elev"] = wse_m
 
             # Image browser sequence
             project_dict["imagebrowser_sequence"] = [
