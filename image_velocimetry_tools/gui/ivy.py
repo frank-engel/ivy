@@ -6819,7 +6819,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.imagebrowser.analyze_current_frame_quality
         )
         self.buttonMotionHeatmap.clicked.connect(
-            self.imagebrowser.show_motion_heatmap
+            self.imagebrowser.show_motion_heatmap_wrapper
         )
         self.buttonTextureViz.clicked.connect(
             self.imagebrowser.show_texture_dialog

@@ -281,7 +281,7 @@ class ImageBrowserTab:
 
             # Use cached variance if available, otherwise compute it
             if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
-                self._compute_and_cache_variance()
+                self.compute_and_cache_variance()
 
             if self._cached_variance_map is not None:
                 self._cached_roi_mask = self.extract_water_roi_auto(
@@ -289,22 +289,24 @@ class ImageBrowserTab:
                     threshold_percentile=threshold,
                     min_area_percent=5.0
                 )
+                logging.info(f"ROI extracted, mask shape: {self._cached_roi_mask.shape if self._cached_roi_mask is not None else 'None'}")
         except ValueError:
             QtWidgets.QMessageBox.warning(
-                self,
+                self.ivy_framework,
                 "Invalid Input",
                 "Threshold must be a number between 0 and 100.",
                 QtWidgets.QMessageBox.Ok
             )
 
 
-    def show_motion_heatmap(self):
-        """Show motion heatmap using cached or computed variance."""
+    def show_motion_heatmap_wrapper(self):
+        """Show motion heatmap using cached or computed variance (wrapper for button)."""
         if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
-            self._compute_and_cache_variance()
+            self.compute_and_cache_variance()
 
         if self._cached_variance_map is not None:
-            self.show_motion_heatmap(self._cached_variance_map)
+            # Call the actual implementation method defined later in the class
+            self.show_motion_heatmap_impl(self._cached_variance_map)
 
 
     def show_texture_dialog(self):
@@ -313,7 +315,7 @@ class ImageBrowserTab:
         methods = ['local_std', 'dog', 'edges']
 
         method, ok = QtWidgets.QInputDialog.getItem(
-            self,
+            self.ivy_framework,
             "Texture Visualization",
             "Select visualization method:",
             methods,
@@ -328,11 +330,11 @@ class ImageBrowserTab:
     def reset_image_view(self):
         """Reset image view to original frame."""
         # Reload current image
-        if self.sequence and self.sequence_index < len(sel.sequence):
+        if self.sequence and self.sequence_index < len(self.sequence):
             current_path = self.sequence[self.sequence_index]
             self.image = QtGui.QImage(current_path)
             self.imageBrowser.scene.setImage(self.image)
-            self.update_statusbar("IMAGE BROWSER: View reset to original image")
+            self.ivy_framework.update_statusbar("IMAGE BROWSER: View reset to original image")
 
     def open_image_folder(self):
         """Open a folder of images for the image browser"""
@@ -932,7 +934,7 @@ class ImageBrowserTab:
             )
             return None
 
-    def show_motion_heatmap(self, variance_map=None):
+    def show_motion_heatmap_impl(self, variance_map=None):
         """
         Display motion heatmap overlay on current image.
 
@@ -1009,11 +1011,26 @@ class ImageBrowserTab:
 
     def show_roi_overlay(self, roi_mask=None):
         """
-        Overlay water ROI on current image.
-
-        Args:
-            roi_mask (ndarray): Binary ROI mask (optional, will compute if None)
+        Overlay water ROI on current image (wrapper for button - uses cached mask).
         """
+        # Check if we have a cached mask first
+        if roi_mask is None and hasattr(self, '_cached_roi_mask') and self._cached_roi_mask is not None:
+            roi_mask = self._cached_roi_mask
+            logging.info(f"Using cached ROI mask")
+
+        # If still no mask, try to extract one
+        if roi_mask is None:
+            logging.info(f"No cached mask, extracting new ROI")
+            roi_mask = self.extract_water_roi_auto()
+            if roi_mask is None:
+                QtWidgets.QMessageBox.warning(
+                    self.ivy_framework,
+                    "No ROI",
+                    "No water ROI available. Please compute variance and extract ROI first.",
+                    QtWidgets.QMessageBox.Ok,
+                )
+                return
+
         if not self.image_path:
             QtWidgets.QMessageBox.warning(
                 self.ivy_framework,
@@ -1023,13 +1040,10 @@ class ImageBrowserTab:
             )
             return
 
-        if roi_mask is None:
-            roi_mask = self.extract_water_roi_auto()
-            if roi_mask is None:
-                return
-
         try:
             cv_image = image_file_to_opencv_image(self.image_path)
+
+            logging.info(f"CV image shape: {cv_image.shape}, ROI mask shape: {roi_mask.shape}")
 
             # Create overlay
             overlay_image = overlay_roi_on_image(cv_image, roi_mask, color=(0, 255, 255), alpha=0.3)
@@ -1045,6 +1059,8 @@ class ImageBrowserTab:
             self.ivy_framework.update_statusbar(message)
 
         except Exception as e:
+            import traceback
+            logging.error(f"ROI overlay error: {str(e)}\n{traceback.format_exc()}")
             QtWidgets.QMessageBox.critical(
                 self.ivy_framework,
                 "Error",
