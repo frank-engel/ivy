@@ -6813,7 +6813,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.imagebrowser.extract_roi
         )
         self.buttonShowROIOverlay.clicked.connect(
-            self.imagebrowser.show_roi_overlay
+            lambda: self.imagebrowser.show_roi_overlay()
         )
         self.buttonFrameQuality.clicked.connect(
             self.imagebrowser.analyze_current_frame_quality
