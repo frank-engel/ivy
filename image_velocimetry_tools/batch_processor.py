@@ -561,8 +561,12 @@ class BatchProcessor:
                 'max_vel_threshold_mps': self.scaffold_data.stiv_max_vel_threshold_mps,
             }
 
+            # Use rectified frames if available, otherwise use original frames
+            frames_for_stiv = rectified_files if rectified_files else frame_files
+            logging.info(f"Running STIV on {len(frames_for_stiv)} {'rectified' if rectified_files else 'original'} frames")
+
             magnitudes_mps, directions_deg = run_stiv_headless(
-                frame_files=frame_files,
+                frame_files=frames_for_stiv,
                 grid=grid_pixel,
                 stiv_params=stiv_params,
                 pixel_gsd=self.scaffold_data.pixel_ground_scale_distance_m,

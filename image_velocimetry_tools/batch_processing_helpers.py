@@ -248,8 +248,11 @@ def orthorectify_frames_headless(
 
     logging.info(f"Orthorectifying {len(frame_files)} frames at WSE = {water_surface_elevation_m} m")
 
-    # Create camera helper and set projection matrix
-    camera = CameraHelper()
+    # Read first frame to initialize camera dimensions
+    first_frame = imread(frame_files[0])
+
+    # Create camera helper with first frame and set projection matrix
+    camera = CameraHelper(image=first_frame)
     camera.set_camera_matrix(projection_matrix)
 
     # Orthorectify each frame
@@ -259,10 +262,12 @@ def orthorectify_frames_headless(
         frame = imread(frame_path)
 
         # Get top view (orthorectified) projection
+        # Use skip_size_check=True to avoid checking each frame's dimensions
         rectified = camera.get_top_view_of_image(
             frame,
             extent=extent,
-            Z=water_surface_elevation_m
+            Z=water_surface_elevation_m,
+            skip_size_check=True
         )
 
         # Save rectified frame as t*.jpg
