@@ -734,7 +734,7 @@ class BatchProcessor:
             # Copy orthorectified frames to project (if they exist)
             if rectified_files and len(rectified_files) > 0:
                 for rectified_file in rectified_files:
-                    shutil.copy(rectified_file, swap_ortho_dir)
+                    shutil.copy(rectified_file, swap_image_dir)
                 logging.info(f"Copied {len(rectified_files)} orthorectified frames to project")
 
             # Copy bathymetry file if it exists

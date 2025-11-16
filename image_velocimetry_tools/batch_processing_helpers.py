@@ -114,9 +114,9 @@ def extract_frames_headless(
     frame_files = sorted(glob.glob(frame_pattern))
 
     # Limit to max_frames if needed
-    if len(frame_files) > max_frames:
-        logging.warning(f"Extracted {len(frame_files)} frames, limiting to {max_frames}")
-        frame_files = frame_files[:max_frames]
+    # if len(frame_files) > max_frames:
+    #     logging.warning(f"Extracted {len(frame_files)} frames, limiting to {max_frames}")
+    #     frame_files = frame_files[:max_frames]
 
     logging.info(f"Extracted {len(frame_files)} frames to {output_directory}")
 
@@ -392,6 +392,12 @@ def get_pixel_xs_headless(
     # (where the water surface intersects the cross-section)
     survey_stations = xs_survey.survey["Stations"].to_numpy()
     survey_elevations = xs_survey.survey["AdjustedStage"].to_numpy()
+
+    # Ensure we are in SI units
+    if xs_survey.units == "English":
+        survey_stations *= 0.3048
+        survey_elevations *= 0.3048
+
 
     # Find where WSE crosses the cross-section
     above_water = survey_elevations <= water_surface_elevation_m
