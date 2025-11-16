@@ -26,10 +26,10 @@ The scaffold represents the **fixed** components (camera position, cross-section
 A CSV file that lists the videos to process with their metadata:
 
 ```csv
-video_path,water_surface_elevation,measurement_date,measurement_number,gage_height,start_time,end_time,comments
-/videos/flow1.mp4,2.20,2025-04-04,1,2.15,00:00:00,00:00:10,High flow
-/videos/flow2.mp4,1.85,2025-04-05,2,1.80,,,Recession
-/videos/flow3.mp4,1.50,2025-04-06,3,1.45,5.0,15.0,Base flow
+video_path,water_surface_elevation,measurement_date,measurement_number,gage_height,start_time,end_time,comments,alpha
+/videos/flow1.mp4,2.20,2025-04-04,1,2.15,00:00:00,00:00:10,High flow,0.85
+/videos/flow2.mp4,1.85,2025-04-05,2,1.80,,,Recession,0.82
+/videos/flow3.mp4,1.50,2025-04-06,3,1.45,5.0,15.0,Base flow,
 ```
 
 **Required columns:**
@@ -43,6 +43,7 @@ video_path,water_surface_elevation,measurement_date,measurement_number,gage_heig
 - `start_time`: Start time for frame extraction (HH:MM:SS or seconds)
 - `end_time`: End time for frame extraction (HH:MM:SS or seconds)
 - `comments`: Any notes about this measurement
+- `alpha`: Surface-to-average velocity coefficient (defaults to 0.85 if not specified)
 
 ## Workflow
 

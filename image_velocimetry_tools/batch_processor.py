@@ -122,6 +122,7 @@ class BatchVideoConfig:
     start_time: str = ""  # Format: "HH:MM:SS" or "SS.sss"
     end_time: str = ""    # Format: "HH:MM:SS" or "SS.sss"
     comments: str = ""
+    alpha: float = 0.85   # Surface to depth-averaged velocity coefficient (default 0.85)
 
 
 @dataclass
@@ -340,7 +341,7 @@ class BatchProcessor:
         """Load batch configuration from CSV file
 
         CSV format:
-            video_path,water_surface_elevation,measurement_date,measurement_number,gage_height,start_time,end_time,comments
+            video_path,water_surface_elevation,measurement_date,measurement_number,gage_height,start_time,end_time,comments,alpha
 
         Args:
             csv_path: Path to CSV configuration file
@@ -368,6 +369,10 @@ class BatchProcessor:
                     # Normalize the path for the current OS
                     video_path = os.path.normpath(video_path)
 
+                    # Parse alpha with fallback to 0.85 if not specified
+                    alpha_str = row.get('alpha', '').strip()
+                    alpha = float(alpha_str) if alpha_str else 0.85
+
                     config = BatchVideoConfig(
                         video_path=video_path,
                         water_surface_elevation=float(row['water_surface_elevation']),
@@ -377,6 +382,7 @@ class BatchProcessor:
                         start_time=row.get('start_time', '').strip(),
                         end_time=row.get('end_time', '').strip(),
                         comments=row.get('comments', '').strip(),
+                        alpha=alpha,
                     )
                     configs.append(config)
                     logging.debug(f"  Row {row_num}: {os.path.basename(config.video_path)} @ WSE={config.water_surface_elevation}m")
@@ -592,7 +598,8 @@ class BatchProcessor:
             else:
                 raise ValueError("Cross-section bathymetry file not found in scaffold")
 
-            # Calculate discharge (using wse_m converted earlier)
+            # Calculate discharge (using wse_m converted earlier and alpha from config)
+            logging.info(f"Using alpha = {config.alpha:.3f} for surface-to-average velocity conversion")
             discharge_results, discharge_summary = calculate_discharge_headless(
                 magnitudes_mps=magnitudes_mps,
                 directions_deg=directions_deg,
@@ -601,7 +608,7 @@ class BatchProcessor:
                 cross_section_line=self.scaffold_data.cross_section_line,
                 water_surface_elevation_m=wse_m,
                 cross_section_start_bank=self.scaffold_data.cross_section_start_bank,
-                alpha=0.85  # Default velocity coefficient
+                alpha=config.alpha
             )
 
             if progress_callback:
