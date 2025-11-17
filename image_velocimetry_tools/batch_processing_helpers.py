@@ -287,7 +287,7 @@ def run_stiv_headless(
     stiv_params: Dict,
     pixel_gsd: float,
     timestep_ms: float
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Run STIV processing (headless)
 
     Args:
@@ -298,7 +298,7 @@ def run_stiv_headless(
         timestep_ms: Time step between frames (milliseconds)
 
     Returns:
-        Tuple of (magnitudes_mps, directions_deg)
+        Tuple of (magnitudes_mps, directions_deg, st_images, thetas)
     """
     logging.info(f"Running STIV on {len(frame_files)} frames with {len(grid)} grid points")
 
@@ -345,7 +345,7 @@ def run_stiv_headless(
 
     logging.info(f"STIV complete. Mean velocity: {np.nanmean(magnitudes_mps):.3f} m/s")
 
-    return magnitudes_mps, directions_deg
+    return magnitudes_mps, directions_deg, stis, thetas
 
 
 def get_pixel_xs_headless(

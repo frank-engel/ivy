@@ -29,16 +29,6 @@ from image_velocimetry_tools.batch_processor import (
     create_batch_config_template,
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('batch_processing.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-
 
 def main():
     """Main batch processing function"""
@@ -60,6 +50,19 @@ def main():
 
     # Output directory for results
     output_directory = os.path.join(examples_dir, "output")
+    os.makedirs(output_directory, exist_ok=True)
+
+    # Configure logging to output folder
+    log_file = os.path.join(output_directory, "batch_processing.log")
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file, mode='w'),  # Overwrite log each run
+            logging.StreamHandler(sys.stdout)
+        ],
+        force=True  # Force reconfiguration
+    )
 
     # ==================================================================
     # OPTIONAL: Create a batch config template

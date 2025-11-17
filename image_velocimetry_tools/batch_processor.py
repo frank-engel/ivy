@@ -150,8 +150,16 @@ class BatchResult:
     num_stations_used: int = 0
     num_stations_total: int = 0
 
-    # Mean velocity
+    # Velocity statistics
     mean_velocity: Optional[float] = None
+    mean_surface_velocity: Optional[float] = None
+    max_surface_velocity: Optional[float] = None
+
+    # Depth statistics
+    max_depth: Optional[float] = None
+
+    # Alpha coefficient
+    alpha: float = 0.85
 
     # Output paths
     output_ivy_path: str = ""
@@ -577,7 +585,7 @@ class BatchProcessor:
             frames_for_stiv = rectified_files if rectified_files else frame_files
             logging.info(f"Running STIV on {len(frames_for_stiv)} {'rectified' if rectified_files else 'original'} frames")
 
-            magnitudes_mps, directions_deg = run_stiv_headless(
+            magnitudes_mps, directions_deg, st_images, thetas = run_stiv_headless(
                 frame_files=frames_for_stiv,
                 grid=grid_pixel,
                 stiv_params=stiv_params,
@@ -640,6 +648,8 @@ class BatchProcessor:
                 grid_pixel=grid_pixel,
                 magnitudes_mps=magnitudes_mps,
                 directions_deg=directions_deg,
+                st_images=st_images,
+                thetas=thetas,
                 discharge_results=discharge_results,
                 discharge_summary=discharge_summary,
                 uncertainty_results=uncertainty_results,
@@ -663,6 +673,20 @@ class BatchProcessor:
             # Calculate mean velocity
             if result.total_area and result.total_area > 0:
                 result.mean_velocity = result.total_discharge / result.total_area
+
+            # Calculate surface velocity statistics
+            surface_velocities = np.array([r["Surface Velocity"] for r in discharge_results.values() if r["Status"] == "Used"])
+            if len(surface_velocities) > 0:
+                result.mean_surface_velocity = np.nanmean(surface_velocities)
+                result.max_surface_velocity = np.nanmax(surface_velocities)
+
+            # Calculate max depth
+            depths = np.array([r["Depth"] for r in discharge_results.values() if r["Status"] == "Used"])
+            if len(depths) > 0:
+                result.max_depth = np.nanmax(depths)
+
+            # Store alpha
+            result.alpha = config.alpha
 
             logging.info(f"✓ Processing complete: Q={result.total_discharge:.2f} m³/s")
 
@@ -695,6 +719,8 @@ class BatchProcessor:
         grid_pixel: np.ndarray,
         magnitudes_mps: np.ndarray,
         directions_deg: np.ndarray,
+        st_images: np.ndarray,
+        thetas: np.ndarray,
         discharge_results: Dict,
         discharge_summary: Dict,
         uncertainty_results: Dict,
@@ -752,6 +778,35 @@ class BatchProcessor:
                     self.scaffold_data.bathymetry_ac3_filename,
                     os.path.join(swap_discharge_dir, "cross_section_ac3.mat")
                 )
+
+            # Save ST images (space-time images) to 1-images folder
+            logging.debug("Saving ST images...")
+            from PIL import Image
+            for i, st_img in enumerate(st_images):
+                # Normalize to 0-255 range
+                st_normalized = ((st_img - np.nanmin(st_img)) / (np.nanmax(st_img) - np.nanmin(st_img)) * 255).astype(np.uint8)
+                st_pil = Image.fromarray(st_normalized)
+                st_path = os.path.join(swap_image_dir, f"st{i+1:05d}.jpg")
+                st_pil.save(st_path)
+            logging.debug(f"Saved {len(st_images)} ST images")
+
+            # Create 2-orthorectification CSV files
+            logging.debug("Creating orthorectification CSV files...")
+            self._save_orthorectification_csvs(swap_ortho_dir, wse_m)
+
+            # Create 4-velocities/stiv_results.csv
+            logging.debug("Creating STIV results CSV...")
+            self._save_stiv_results_csv(
+                swap_vel_dir,
+                grid_pixel,
+                magnitudes_mps,
+                directions_deg,
+                thetas
+            )
+
+            # Create 5-discharge/discharge_table.csv
+            logging.debug("Creating discharge table CSV...")
+            self._save_discharge_table_csv(swap_discharge_dir, discharge_results)
 
             # Build project_dict from scaffold + new data
             project_dict = self.scaffold_data.original_project_dict.copy()
@@ -854,6 +909,114 @@ class BatchProcessor:
             if os.path.exists(project_temp_dir):
                 shutil.rmtree(project_temp_dir, ignore_errors=True)
 
+    def _save_orthorectification_csvs(self, ortho_dir: str, wse_m: float):
+        """Save orthorectification CSV files"""
+        # Convert WSE back to feet if using English units
+        if self.scaffold_data.display_units == "English":
+            wse_display = wse_m * 3.28084
+        else:
+            wse_display = wse_m
+
+        # Water surface elevation
+        with open(os.path.join(ortho_dir, "water_surface_elevation.csv"), 'w') as f:
+            f.write(f"{wse_display}")
+
+        # Pixel GSD
+        if self.scaffold_data.pixel_ground_scale_distance_m:
+            with open(os.path.join(ortho_dir, "pixel_gsd.csv"), 'w') as f:
+                f.write(f"{self.scaffold_data.pixel_ground_scale_distance_m}")
+
+        # Copy other orthorectification files from scaffold if available
+        if self.scaffold_data.rectification_parameters:
+            # Camera matrix
+            camera_matrix = self.scaffold_data.rectification_parameters.get('camera_matrix')
+            if camera_matrix:
+                np.savetxt(
+                    os.path.join(ortho_dir, "camera_matrix.csv"),
+                    np.array(camera_matrix),
+                    delimiter=','
+                )
+
+            # Homography matrix
+            homography_matrix = self.scaffold_data.rectification_parameters.get('homography_matrix')
+            if homography_matrix:
+                np.savetxt(
+                    os.path.join(ortho_dir, "homography_matrix.csv"),
+                    np.array(homography_matrix),
+                    delimiter=','
+                )
+
+        # GCP/rectification points table
+        if self.scaffold_data.orthotable_dataframe is not None:
+            self.scaffold_data.orthotable_dataframe.to_csv(
+                os.path.join(ortho_dir, "ground_control_points.csv"),
+                index=False
+            )
+            self.scaffold_data.orthotable_dataframe.to_csv(
+                os.path.join(ortho_dir, "rectification_points_table.csv"),
+                index=False
+            )
+
+    def _save_stiv_results_csv(
+        self,
+        vel_dir: str,
+        grid_pixel: np.ndarray,
+        magnitudes_mps: np.ndarray,
+        directions_deg: np.ndarray,
+        thetas: np.ndarray
+    ):
+        """Save STIV results to CSV"""
+        from image_velocimetry_tools.common_functions import calculate_uv_components
+
+        # Calculate U and V components from magnitudes and directions
+        U, V = calculate_uv_components(magnitudes_mps, directions_deg)
+
+        # Calculate mean flow direction
+        mean_direction = np.nanmean(directions_deg)
+
+        with open(os.path.join(vel_dir, "stiv_results.csv"), 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "X (pixel)", "Y (pixel", "U (m/s)", "V (m/s)", "Magnitude (m/s)",
+                "Normal Magnitude (m/s)", "Vector Direction (deg)", "Tagline Direction (deg)",
+                "Mean Flow Direction (deg)"
+            ])
+
+            for i in range(len(grid_pixel)):
+                writer.writerow([
+                    f"{grid_pixel[i, 0]:.3f}",
+                    f"{grid_pixel[i, 1]:.3f}",
+                    f"{U[i]:.3f}",
+                    f"{V[i]:.3f}",
+                    f"{magnitudes_mps[i]:.3f}",
+                    f"{magnitudes_mps[i]:.3f}",  # Normal magnitude (same as magnitude for now)
+                    f"{directions_deg[i]:.3f}",
+                    f"{thetas[i]:.3f}",
+                    f"{mean_direction:.3f}"
+                ])
+
+    def _save_discharge_table_csv(self, discharge_dir: str, discharge_results: Dict):
+        """Save discharge table to CSV"""
+        with open(os.path.join(discharge_dir, "discharge_table.csv"), 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "ID", "Status", "Station Distance", "Width", "Depth", "Area",
+                "Surface Velocity", "α (alpha)", "Unit Discharge"
+            ])
+
+            for i, row_data in discharge_results.items():
+                writer.writerow([
+                    row_data.get("ID", i),
+                    row_data.get("Status", "Used"),
+                    row_data.get("Station Distance", 0.0),
+                    row_data.get("Width", 0.0),
+                    row_data.get("Depth", 0.0),
+                    row_data.get("Area", 0.0),
+                    row_data.get("Surface Velocity", 0.0),
+                    row_data.get("α (alpha)", 0.85),
+                    row_data.get("Unit Discharge", 0.0),
+                ])
+
     def export_results_csv(
         self,
         results: List[BatchResult],
@@ -884,6 +1047,10 @@ class BatchProcessor:
                 'cross_section_width',
                 'hydraulic_radius',
                 'mean_velocity',
+                'mean_surface_velocity',
+                'max_surface_velocity',
+                'max_depth',
+                'alpha',
                 'num_stations_used',
                 'num_stations_total',
                 'processing_status',
@@ -907,6 +1074,10 @@ class BatchProcessor:
                     f"{result.cross_section_width:.4f}" if result.cross_section_width is not None else "",
                     f"{result.hydraulic_radius:.4f}" if result.hydraulic_radius is not None else "",
                     f"{result.mean_velocity:.4f}" if result.mean_velocity is not None else "",
+                    f"{result.mean_surface_velocity:.4f}" if result.mean_surface_velocity is not None else "",
+                    f"{result.max_surface_velocity:.4f}" if result.max_surface_velocity is not None else "",
+                    f"{result.max_depth:.4f}" if result.max_depth is not None else "",
+                    f"{result.alpha:.3f}",
                     result.num_stations_used,
                     result.num_stations_total,
                     result.processing_status,
