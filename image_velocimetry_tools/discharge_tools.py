@@ -62,8 +62,90 @@ def compute_discharge_midsection(cumulative_distances,
     return total_discharge, total_area
 
 
-def convert_surface_velocity_rantz(surface_velocity, alpha=0.85):
-    """Convert a surface velocity into a mean velocity using the Rantz (1986) method."""
+def convert_surface_velocity_rantz(surface_velocity, alpha=0.85, wind_params=None):
+    """Convert surface velocity to mean velocity using Rantz (1986) method.
+
+    Parameters
+    ----------
+    surface_velocity : float or np.ndarray
+        Measured surface velocity [m/s]
+    alpha : float, optional
+        Rantz velocity coefficient. Default = 0.85.
+    wind_params : dict, optional
+        Wind correction parameters. If provided, surface velocity is
+        corrected for wind-induced drift before applying alpha.
+
+        Required keys:
+            'wind_speed': float, measured wind speed [m/s]
+            'wind_dir': float, wind direction [degrees, geographic]
+            'flow_dir': float, flow direction [degrees, geographic]
+
+        Optional keys:
+            'sensor_height': float, wind sensor height [m], default 10.0
+            'terrain': str, terrain type, default 'open_terrain'
+            'alpha_wind': float, power-law exponent (overrides terrain)
+            'f': float, wind drift fraction, default 0.03
+
+    Returns
+    -------
+    float or np.ndarray
+        Mean velocity [m/s]
+
+    Examples
+    --------
+    Basic usage without wind correction:
+    >>> v_mean = convert_surface_velocity_rantz(1.5)
+
+    With wind correction:
+    >>> wind_params = {
+    ...     'wind_speed': 5.0,
+    ...     'wind_dir': 270,
+    ...     'flow_dir': 90,
+    ...     'sensor_height': 9.144
+    ... }
+    >>> v_mean = convert_surface_velocity_rantz(1.5, wind_params=wind_params)
+    """
+    # Apply wind correction if parameters provided
+    if wind_params is not None:
+        try:
+            from . import wind_correction
+        except ImportError:
+            raise ImportError(
+                "wind_correction module required for wind correction. "
+                "Ensure wind_correction.py is in image_velocimetry_tools/"
+            )
+
+        # Validate required parameters
+        required = ['wind_speed', 'wind_dir', 'flow_dir']
+        missing = [k for k in required if k not in wind_params]
+        if missing:
+            raise ValueError(
+                f"wind_params missing required keys: {missing}. "
+                f"Required: {required}"
+            )
+
+        # Extract parameters with defaults
+        wind_speed = wind_params['wind_speed']
+        wind_dir = wind_params['wind_dir']
+        flow_dir = wind_params['flow_dir']
+        sensor_height = wind_params.get('sensor_height', 10.0)
+        terrain = wind_params.get('terrain', 'open_terrain')
+        alpha_wind = wind_params.get('alpha_wind', None)
+        f = wind_params.get('f', 0.03)
+
+        # Apply correction
+        surface_velocity = wind_correction.apply_wind_correction(
+            surface_velocity,
+            wind_speed,
+            wind_dir,
+            flow_dir,
+            sensor_height=sensor_height,
+            terrain=terrain,
+            alpha=alpha_wind,
+            f=f
+        )
+
+    # Apply Rantz coefficient
     if isinstance(surface_velocity, (float, int, np.float64)):
         return alpha * surface_velocity
     elif isinstance(surface_velocity, np.ndarray):
