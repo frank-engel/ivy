@@ -29,6 +29,8 @@ import numpy as np
 import pandas as pd
 from areacomp.gui.areasurvey import AreaSurvey
 
+from image_velocimetry_tools.comments import Comments
+
 from image_velocimetry_tools.file_management import (
     deserialize_numpy_array,
     serialize_numpy_array,
@@ -887,6 +889,23 @@ class BatchProcessor:
                 project_dict["rectification_parameters"] = dict_arrays_to_list(
                     project_dict["rectification_parameters"]
                 )
+
+            # Add System comment indicating batch creation
+            comments_obj = Comments()
+            if "comments" in project_dict and isinstance(project_dict["comments"], dict):
+                # Load existing comments from scaffold
+                comments_obj.load_dict(project_dict["comments"])
+
+            # Add batch processing system comment
+            batch_comment = (
+                f"Project created automatically by batch processor on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}. "
+                f"Source video: {os.path.basename(config.video_path)}. "
+                f"Measurement date: {config.measurement_date}, Number: {config.measurement_number}."
+            )
+            comments_obj.append_comment("System", batch_comment)
+
+            # Save comments to project dict
+            project_dict["comments"] = comments_obj.comments
 
             # Save project_data.json
             project_json_path = os.path.join(project_temp_dir, "project_data.json")
