@@ -1,6 +1,7 @@
 # Project specific stuff
 *.ui.autosave
 # examples/
+examples/output/
 docs/word/
 bin/
 /bin/
