@@ -786,7 +786,7 @@ class BatchProcessor:
                 # Normalize to 0-255 range
                 st_normalized = ((st_img - np.nanmin(st_img)) / (np.nanmax(st_img) - np.nanmin(st_img)) * 255).astype(np.uint8)
                 st_pil = Image.fromarray(st_normalized)
-                st_path = os.path.join(swap_image_dir, f"st{i+1:05d}.jpg")
+                st_path = os.path.join(swap_image_dir, f"sti_{i+1:05d}.jpg")
                 st_pil.save(st_path)
             logging.debug(f"Saved {len(st_images)} ST images")
 
@@ -1001,7 +1001,7 @@ class BatchProcessor:
             writer = csv.writer(f)
             writer.writerow([
                 "ID", "Status", "Station Distance", "Width", "Depth", "Area",
-                "Surface Velocity", "α (alpha)", "Unit Discharge"
+                "Surface Velocity", "alpha", "Unit Discharge"
             ])
 
             for i, row_data in discharge_results.items():
