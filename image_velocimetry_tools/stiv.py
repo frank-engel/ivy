@@ -616,10 +616,10 @@ def two_dimensional_stiv_exhaustive(
 
         sti_format : str, optional
             Format for STI generation. Options:
-            - 'normalized' (default): z-score normalized STIs (current behavior)
-            - 'grayscale': raw uint8 grayscale STIs
-            Note: Both formats produce identical velocity results; this only
-            affects intermediate STI representation
+            - 'grayscale' (default): raw uint8 grayscale STIs (0-255)
+            - 'normalized': z-score normalized STIs (float64)
+            Note: Both formats produce identical velocity results. Grayscale is
+            recommended for better compatibility with image saving and ML workflows.
 
         return_all_stis : bool, optional
             If True, returns full 4D array of all STIs for all nodes and angles.
@@ -662,7 +662,10 @@ def two_dimensional_stiv_exhaustive(
 
     """
     # Extract kwargs with defaults (backward compatible)
-    sti_format = kwargs.get('sti_format', 'normalized')
+    # Default changed to 'grayscale' for better compatibility with image saving
+    # and ML workflows. Grayscale STIs are uint8 (0-255) which work better for
+    # visualization and don't require rescaling when saving as images.
+    sti_format = kwargs.get('sti_format', 'grayscale')
     return_all_stis = kwargs.get('return_all_stis', False)
 
     # Determine normalization method based on sti_format
@@ -768,13 +771,9 @@ def two_dimensional_stiv_exhaustive(
             )
 
             # Store the STI in the 4D stis array
-            # Note: For backward compatibility, always store as normalized
-            # (the GUI expects normalized STIs for saving as JPG)
-            if normalize_method == 'zscore':
-                stis[i_node, i_phi, :, :] = sti
-            else:
-                # If grayscale, normalize for storage to maintain compatibility
-                stis[i_node, i_phi, :, :] = zscore(sti.astype(float), axis=1, ddof=1)
+            # Grayscale STIs (uint8) work better for image saving and visualization
+            # The GUI can save them directly as JPG without rescaling
+            stis[i_node, i_phi, :, :] = sti
 
             # Compute velocity from STI using new modular function
             velocity, theta_max, p_value = compute_velocity_from_sti(
@@ -1375,6 +1374,256 @@ def two_dimensional_stiv_parallel(
         print(f"Node {node}: Magnitudes: {mag}, Peaks: {peak}")
 
     return magnitudes, directions
+
+
+def save_sti(sti, filepath, format='jpg', auto_scale=True):
+    """
+    Save a space-time image to disk.
+
+    This function saves an STI to disk in a standard image format, with
+    automatic scaling for normalized STIs and direct saving for grayscale STIs.
+
+    Parameters
+    ----------
+    sti : ndarray
+        Space-time image to save. Can be:
+        - uint8 grayscale (0-255): saved directly
+        - float64 normalized (z-score): automatically scaled to 0-255
+    filepath : str
+        Output file path. Extension will be added if not present.
+    format : str, optional
+        Output format: 'jpg' (default), 'png', or 'tiff'
+        PNG and TIFF preserve more detail but create larger files.
+    auto_scale : bool, optional
+        If True (default), automatically scales normalized STIs to 0-255.
+        If False, clips values outside 0-255 range.
+
+    Returns
+    -------
+    str
+        Path to the saved file
+
+    Examples
+    --------
+    >>> sti = extract_space_time_image(interpolator, 100, 200, 45, 50, 25)
+    >>> save_sti(sti, 'output/sti_node_001.jpg')
+    'output/sti_node_001.jpg'
+
+    >>> # Save normalized STI with custom scaling
+    >>> sti_norm = extract_space_time_image(..., normalize='zscore')
+    >>> save_sti(sti_norm, 'output/sti_normalized', format='png')
+    'output/sti_normalized.png'
+
+    Notes
+    -----
+    For ML workflows, grayscale STIs (uint8) are recommended as they don't
+    require scaling and preserve the original pixel intensity values.
+    """
+    import os
+
+    # Ensure filepath has the correct extension
+    base, ext = os.path.splitext(filepath)
+    if not ext or ext[1:].lower() not in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
+        filepath = f"{filepath}.{format}"
+
+    # Handle different STI formats
+    if sti.dtype == np.uint8:
+        # Already uint8, save directly
+        image_to_save = sti
+    else:
+        # Normalized or float data - need to convert to uint8
+        if auto_scale:
+            # Scale to 0-255 range
+            sti_min = np.min(sti)
+            sti_max = np.max(sti)
+            if sti_max - sti_min > 0:
+                scaled = (sti - sti_min) / (sti_max - sti_min) * 255
+            else:
+                scaled = np.zeros_like(sti)
+            image_to_save = scaled.astype(np.uint8)
+        else:
+            # Clip to 0-255
+            image_to_save = np.clip(sti, 0, 255).astype(np.uint8)
+
+    # Save using PIL
+    img = Image.fromarray(image_to_save)
+    img.save(filepath)
+
+    return filepath
+
+
+def load_sti(filepath):
+    """
+    Load a space-time image from disk.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the STI image file (JPG, PNG, TIFF, etc.)
+
+    Returns
+    -------
+    sti : ndarray
+        Loaded STI as uint8 grayscale array with shape (height, width)
+
+    Examples
+    --------
+    >>> sti = load_sti('output/sti_node_001.jpg')
+    >>> velocity, theta, p = compute_velocity_from_sti(sti, 0.05, 0.1)
+
+    Notes
+    -----
+    Loaded STIs are always returned as uint8 grayscale arrays, which can be
+    directly passed to compute_velocity_from_sti() or used for visualization.
+    """
+    img = Image.open(filepath).convert('L')  # Convert to grayscale
+    return np.array(img, dtype=np.uint8)
+
+
+def generate_sti_dataset(
+    image_stack,
+    node_coordinates,
+    search_angles,
+    num_pixels,
+    output_dir=None,
+    sigma=0.5,
+    normalize='none',
+    progress_callback=None,
+):
+    """
+    Generate a dataset of STIs for ML training or batch processing.
+
+    This function extracts STIs for multiple nodes and search angles,
+    optionally saving them to disk in an organized directory structure.
+    Useful for creating training datasets for ML-based velocity extraction.
+
+    Parameters
+    ----------
+    image_stack : ndarray
+        Image stack created with create_grayscale_image_stack()
+    node_coordinates : ndarray or list of tuples
+        Array of (x, y) coordinates for STI extraction.
+        Shape: (num_nodes, 2) or list of (x, y) tuples
+    search_angles : ndarray or list
+        Search line angles in arithmetic degrees.
+        Can be single value (applied to all nodes) or array of angles.
+    num_pixels : int
+        Number of pixels along each search line
+    output_dir : str, optional
+        If provided, saves STIs to this directory with naming:
+        'sti_node{i:04d}_angle{angle:03.0f}.jpg'
+        If None, returns STIs in memory only.
+    sigma : float, optional
+        Gaussian blur sigma for image interpolator. Default is 0.5.
+    normalize : str, optional
+        'none' (default) for grayscale uint8 or 'zscore' for normalized.
+    progress_callback : callable, optional
+        Function to call with progress updates: callback(current, total, message)
+
+    Returns
+    -------
+    stis : list of dict
+        List of dictionaries containing:
+        - 'sti': the STI array
+        - 'node_idx': node index
+        - 'x': x coordinate
+        - 'y': y coordinate
+        - 'angle': search angle
+        - 'filepath': path to saved file (if output_dir provided)
+
+    Examples
+    --------
+    >>> # Generate STIs for ML training
+    >>> image_stack = create_grayscale_image_stack(image_paths)
+    >>> nodes = [(100, 200), (150, 200), (200, 200)]
+    >>> angles = np.arange(0, 180, 15)  # Every 15 degrees
+    >>> dataset = generate_sti_dataset(
+    ...     image_stack, nodes, angles, num_pixels=50,
+    ...     output_dir='training_data/stis'
+    ... )
+    >>> print(f"Generated {len(dataset)} STIs")
+
+    >>> # Generate for a single angle per node
+    >>> nodes = grid_coordinates  # Nx2 array
+    >>> angle = 45.0  # Single angle
+    >>> dataset = generate_sti_dataset(
+    ...     image_stack, nodes, angle, num_pixels=50
+    ... )
+
+    Notes
+    -----
+    For large datasets, providing output_dir is recommended to avoid
+    memory issues. The function will save STIs incrementally.
+    """
+    import os
+    from pathlib import Path
+
+    # Create output directory if needed
+    if output_dir is not None:
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    # Convert inputs to arrays
+    if isinstance(node_coordinates, list):
+        node_coordinates = np.array(node_coordinates)
+
+    # Handle single angle vs array of angles
+    if np.isscalar(search_angles):
+        search_angles = [search_angles]
+    elif isinstance(search_angles, np.ndarray):
+        search_angles = search_angles.tolist()
+
+    # Create image interpolator
+    from image_velocimetry_tools.image_processing_tools import create_image_interpolator
+    image_interpolator = create_image_interpolator(image_stack, sigma=sigma)
+
+    num_frames = image_stack.shape[2]
+    num_nodes = len(node_coordinates)
+    num_angles = len(search_angles)
+    total_stis = num_nodes * num_angles
+
+    # Generate STIs
+    dataset = []
+    count = 0
+
+    for i_node, (x, y) in enumerate(node_coordinates):
+        for angle in search_angles:
+            # Extract STI
+            sti = extract_space_time_image(
+                image_interpolator=image_interpolator,
+                x_origin=float(x),
+                y_origin=float(y),
+                search_angle_arithmetic=float(angle),
+                num_pixels=num_pixels,
+                num_frames=num_frames,
+                normalize=normalize,
+            )
+
+            # Prepare result dictionary
+            result = {
+                'sti': sti,
+                'node_idx': i_node,
+                'x': float(x),
+                'y': float(y),
+                'angle': float(angle),
+            }
+
+            # Save to disk if requested
+            if output_dir is not None:
+                filename = f"sti_node{i_node:04d}_angle{int(angle):03d}.jpg"
+                filepath = os.path.join(output_dir, filename)
+                save_sti(sti, filepath)
+                result['filepath'] = filepath
+
+            dataset.append(result)
+            count += 1
+
+            # Progress callback
+            if progress_callback is not None:
+                progress_callback(count, total_stis,
+                                f"Node {i_node+1}/{num_nodes}, "
+                                f"Angle {angle:.1f}°")
+
+    return dataset
 
 
 def optimum_stiv_sample_time(gsd, velocity):
