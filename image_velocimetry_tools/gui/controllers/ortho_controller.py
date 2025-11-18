@@ -178,7 +178,7 @@ class OrthoController(BaseController):
         # Get last GCP image path from sticky settings
         try:
             ss = mw.sticky_settings.get("last_ortho_gcp_image_path")
-            if ss is not None:
+            if ss is not None and isinstance(ss, str):
                 last_path = ss
             else:
                 last_path = QDir.homePath()
@@ -266,7 +266,7 @@ class OrthoController(BaseController):
         # Get last GCP table path from sticky settings
         try:
             ss = mw.sticky_settings.get("last_orthotable_file_name")
-            last_path = ss if ss is not None else QDir.homePath()
+            last_path = ss if (ss is not None and isinstance(ss, str)) else QDir.homePath()
         except KeyError:
             last_path = QDir.homePath()
 
