@@ -1376,15 +1376,15 @@ class OrthoController(BaseController):
         """
         from PyQt5.QtCore import Qt
         from PyQt5.QtGui import QPen, QColor
-        from image_velocimetry_tools.graphics import GripItem
+        from image_velocimetry_tools.graphics import SimpleLineAnnotation
 
         # Create pen for dashed red line
         pen = QPen(QColor(255, 0, 0))  # Red
         pen.setStyle(Qt.DashLine)
         pen.setWidth(2)
 
-        # Create line item
-        line_item = GripItem()
+        # Create line annotation
+        line_item = SimpleLineAnnotation()
         line_item.setPen(pen)
 
         # Add points to line
