@@ -2454,6 +2454,15 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_model.video_curve_preset = video_curve_preset
         self.video_model.video_ffmpeg_stabilize = video_ffmpeg_stabilize
 
+        # CRITICAL: Also update ivy.py's own properties for stabilization workflow
+        # The stabilization setup functions check self.video_ffmpeg_stabilize
+        self.video_rotation = video_rotation
+        self.video_flip = video_flip
+        self.video_strip_audio = video_strip_audio
+        self.video_normalize_luma = video_normalize_luma
+        self.video_curve_preset = video_curve_preset
+        self.video_ffmpeg_stabilize = video_ffmpeg_stabilize
+
         # Use VideoService to generate output filename
         # Determine output directory
         video_clip_filename = self.video_model.video_clip_filename
