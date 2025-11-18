@@ -4017,9 +4017,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
     def rectify_many_scale(self, progress_callback):
-        """Rectify all the images selected in the Image Browser filter using homography.
+        """Rectify all images using scale method (nadir assumption).
 
-        This is the function executed by the ThreadPool
+        For scale method, images are only flipped, not transformed.
+        This is the function executed by the ThreadPool.
         """
         flip_and_save_images(
             image_folder=self.imagebrowser.folder_path,
@@ -4031,32 +4032,34 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         return "Done."
 
     def rectify_many_homography(self, progress_callback):
-        """Rectify all the images selected in the Image Browser filter using homography.
+        """Rectify all images using homography method.
 
-        This is the function executed by the ThreadPool
+        Applies pre-calculated homography transformation to all extracted frames.
+        This is the function executed by the ThreadPool.
         """
-        sequence = []
-        sequence.extend(
-            sorted(glob.glob(os.path.join(self.swap_image_directory, "f*.jpg")))
-        )
-        images_to_process = sequence
-        image_folder = self.swap_image_directory
-        num_images = len(images_to_process)
-        idx = 0
-        for img_file in tqdm(images_to_process, total=num_images):
-            # img = cv2.imread(img_file)
-            img = np.array(Image.open(img_file))  # faster than openCV
+        # Get list of extracted frame images
+        sequence = sorted(glob.glob(os.path.join(self.swap_image_directory, "f*.jpg")))
+        num_images = len(sequence)
+
+        # Get rectification parameters
+        homography_matrix = self.rectification_parameters["homography_matrix"]
+        world_coords = self.rectification_parameters["world_coords"][:, 0:2]
+        pixel_coords = self.rectification_parameters["pixel_coords"]
+        pad_x = self.rectification_parameters["pad_x"]
+        pad_y = self.rectification_parameters["pad_y"]
+
+        for idx, img_file in enumerate(tqdm(sequence, total=num_images)):
+            # Load image
+            img = np.array(Image.open(img_file))
+
+            # Apply homography transformation
             transformed_image, _, _, _, _ = rectify_homography(
                 image=img,
-                points_world_coordinates=self.rectification_parameters["world_coords"][
-                    :, 0:2
-                ],
-                points_perspective_image_coordinates=self.rectification_parameters[
-                    "pixel_coords"
-                ],
-                homography_matrix=self.rectification_parameters["homography_matrix"],
-                pad_x=self.rectification_parameters["pad_x"],
-                pad_y=self.rectification_parameters["pad_y"],
+                points_world_coordinates=world_coords,
+                points_perspective_image_coordinates=pixel_coords,
+                homography_matrix=homography_matrix,
+                pad_x=pad_x,
+                pad_y=pad_y,
             )
 
             # Flip the image if requested
@@ -4066,45 +4069,49 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 flip_y=self.is_ortho_flip_y
             )
 
-            img = Image.fromarray(transformed_image)
-            logging.debug(
-                f"saving t img: " f"{image_folder + '/t{:05d}.jpg'.format(idx)}"
-            )
-            img.save(image_folder + "/t{:05d}.jpg".format(idx))
-            # img.save(image_folder + '/t{:05d}.jpg'.format(start_frame + count))
-            progress_callback.emit(int((idx / num_images) * 100))
-            idx += 1
+            # Save rectified image
+            output_path = os.path.join(self.swap_image_directory, f"t{idx:05d}.jpg")
+            Image.fromarray(transformed_image).save(output_path)
+            logging.debug(f"Saved rectified image: {output_path}")
+
+            # Update progress
+            progress_callback.emit(int(((idx + 1) / num_images) * 100))
 
         return "Done."
 
     def rectify_many_camera_matrix(self, progress_callback):
-        """Rectify all the images selected in the Image Browser filter using homography.
+        """Rectify all images using camera matrix method.
 
-        This is the function executed by the ThreadPool
+        Applies pre-calculated camera matrix transformation to all selected images.
+        This is the function executed by the ThreadPool.
         """
+        # Get list of images to process
         images_to_process = self.imagebrowser.sequence
         image_folder = self.imagebrowser.folder_path
         num_images = len(images_to_process)
-        first_image = np.array(Image.open(images_to_process[0]))
 
-        # Instantiate the camera object
+        # Initialize camera helper with pre-calculated camera matrix
+        first_image = np.array(Image.open(images_to_process[0]))
         cam = CameraHelper(
             image=first_image,
             world_points=self.rectification_parameters["world_coords"],
             image_points=self.rectification_parameters["pixel_coords"],
         )
         cam.set_camera_matrix(self.rectification_parameters["camera_matrix"])
-        logging.debug(cam)
-        idx = 0
-        for img_file in tqdm(images_to_process, total=num_images):
-            # img = cv2.imread(img_file)
-            img = np.array(Image.open(img_file))  # faster than openCV
 
+        # Get rectification parameters
+        water_surface_elev = self.rectification_parameters["water_surface_elev"]
+        extent = self.rectification_parameters["extent"]
+
+        for idx, img_file in enumerate(tqdm(images_to_process, total=num_images)):
+            # Load image
+            img = np.array(Image.open(img_file))
+
+            # Apply camera matrix transformation
             transformed_image = cam.get_top_view_of_image(
                 img,
-                Z=self.rectification_parameters["water_surface_elev"],
-                extent=self.rectification_parameters["extent"],
-                # scaling=0.003,  # let the function decide
+                Z=water_surface_elev,
+                extent=extent,
                 do_plot=False,
             )
 
@@ -4115,14 +4122,13 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 flip_y=self.is_ortho_flip_y
             )
 
-            img = Image.fromarray(transformed_image)
-            logging.debug(
-                f"saving t img: " f"{image_folder + '/t{:05d}.jpg'.format(idx)}"
-            )
-            img.save(image_folder + "/t{:05d}.jpg".format(idx))
-            # img.save(image_folder + '/t{:05d}.jpg'.format(start_frame + count))
-            progress_callback.emit(int((idx / num_images) * 100))
-            idx += 1
+            # Save rectified image
+            output_path = os.path.join(image_folder, f"t{idx:05d}.jpg")
+            Image.fromarray(transformed_image).save(output_path)
+            logging.debug(f"Saved rectified image: {output_path}")
+
+            # Update progress
+            progress_callback.emit(int(((idx + 1) / num_images) * 100))
 
         return "Done."
 
