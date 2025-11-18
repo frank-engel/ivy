@@ -89,7 +89,7 @@ class VideoController(BaseController):
             mw.video_player.play()
             self.logger.debug("Video playing")
 
-    @pyqtSlot(int)
+    @pyqtSlot()
     def on_video_position_changed(self, position: int):
         """Handle video position changes from player.
 
@@ -109,7 +109,7 @@ class VideoController(BaseController):
         )
         mw.labelVideoPlayheadTime.setText(f"{time_str} [{frame_num}]")
 
-    @pyqtSlot(int)
+    @pyqtSlot()
     def on_video_duration_changed(self, duration: int):
         """Handle video duration changes when video is loaded.
 
@@ -140,7 +140,7 @@ class VideoController(BaseController):
     def on_media_state_changed(self):
         """Update play button icon based on player state."""
         mw = self.main_window
-        icon_path = mw._IvyTools__icon_path__  # Access private attribute for icon path
+        icon_path = mw.__icon_path__  # Access private attribute for icon path
 
         if mw.video_player.state() == QMediaPlayer.PlayingState:
             # Show pause icon
