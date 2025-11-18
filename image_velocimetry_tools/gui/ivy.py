@@ -104,7 +104,9 @@ from image_velocimetry_tools.services.project_service import ProjectService
 from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
 from image_velocimetry_tools.services.image_stack_service import ImageStackService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
+from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
+from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -800,21 +802,19 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def new_project(self):
         """Create a new IVy Project, discarding all currently loaded data"""
-        self.project_filename = f"{QDir.homePath()}{os.sep}New_IVy_Project.ivy"
+        # Delegate to project controller
+        self.project_controller.new_project()
+
         # 1. Unload video
         self.video_file_name = None
         self.video_player.setMedia(QMediaContent())
         logging.info("Video player reset. No media loaded.")
 
-        # 2. Reinit class attributes
-        # self.init_class_attributes()  # Maybe not needed?
         # 2. Clear images from browsers
-
         # 3. Unload AC3 file if present
         # 4. Reinit all Image Browsers
         # 5. Clear project trees
         # 6. Clear comments
-        pass
 
     def _draw_cross_section_line(self):
         """Draw the rectified cross-section line on the image."""
@@ -6594,6 +6594,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ortho_service = OrthorectificationService()
         self.image_stack_service = ImageStackService()
         self.video_model = VideoModel()
+        self.project_model = ProjectModel()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
@@ -6618,11 +6619,16 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Video tab
         self.init_video_tab_attributes()
 
-        # Initialize video controller (after video_player is created)
+        # Initialize controllers (after models and services are created)
         self.video_controller = VideoController(
             self,
             self.video_model,
             self.video_service
+        )
+        self.project_controller = ProjectController(
+            self,
+            self.project_model,
+            self.project_service
         )
 
         # Threading
