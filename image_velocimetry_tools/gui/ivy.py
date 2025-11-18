@@ -2033,83 +2033,37 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         sorted_keys = sorted(project_dict.keys())
         project_dict = {key: project_dict[key] for key in sorted_keys}
 
-        # Prompt user for a save session file location and writes a JSON file containing all session information.
-        try:
-            ss = self.sticky_settings.get("last_project_filename")
-            self.project_filename = ss
-        except KeyError:
-            self.project_filename = f"{QDir.homePath()}{os.sep}New_IVy_Project.ivy"
-        except FileNotFoundError:
-            # Create the settings file
-            self.sticky_settings = Settings(self.ivy_settings_file)
-        options = QtWidgets.QFileDialog.Options()
-        self.project_filename, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self,
-            "Save IVy Project file",
-            os.path.splitext(self.project_filename)[0] + ".ivy",
-            "IVy Files (*.ivy)",
-            options=options,
+        # Show progress bar for save operation
+        message = "SAVING PROJECT: Saving the current project file, please be patient."
+        self.update_statusbar(message)
+        self.progressBar.show()
+        self.progressBar.setValue(0)
+
+        # Progress callback for archive creation
+        def update_progress(current, total):
+            progress = int(100 * current / total) if total > 0 else 0
+            self.progressBar.setValue(progress)
+
+        # Delegate file operations to ProjectController
+        # This handles: file dialog, JSON saving, archive creation, error dialogs
+        with self.wait_cursor():
+            success = self.project_controller.save_project(project_dict)
+
+        self.progressBar.hide()
+
+        if not success:
+            return  # User cancelled or error occurred
+
+        # Update self.project_filename for backwards compatibility
+        self.project_filename = self.project_model.project_filename
+
+        # Update status and settings
+        message = (
+            f"SAVING PROJECT: Successfully saved project file: "
+            f"{format_windows_path(self.project_filename)}"
         )
-        if self.project_filename:  # User did not hit cancel
-            # Step 1: Write the data to a JSON file in the swap directory
-            json_filename = os.path.join(self.swap_directory, "project_data.json")
-            project_dict["project_filename"] = json_filename
-
-            try:
-                self.project_service.save_project_to_json(project_dict, json_filename)
-            except (IOError, ValueError) as e:
-                self.warning_dialog(
-                    "Error Saving Project",
-                    f"Failed to save project JSON: {str(e)}",
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                )
-                logging.error(f"Error saving project JSON: {str(e)}")
-                return
-
-            # Step 2: Create a zip archive of the swap directory
-            message = (
-                f"SAVING PROJECT: Saving the current project file, "
-                f"please be patient."
-            )
-            self.update_statusbar(message)
-            self.progressBar.show()
-            self.progressBar.setValue(0)
-
-            # Progress callback for archive creation
-            def update_progress(current, total):
-                progress = int(100 * current / total) if total > 0 else 0
-                self.progressBar.setValue(progress)
-
-            with self.wait_cursor():
-                try:
-                    self.project_service.create_project_archive(
-                        self.swap_directory,
-                        self.project_filename,
-                        progress_callback=update_progress,
-                        exclude_extensions=[".dat"]
-                    )
-                except (IOError, FileNotFoundError) as e:
-                    # Handle the exception, display a warning dialog, and log the error
-                    self.warning_dialog(
-                        "Error Saving Project",
-                        f"An error occurred while saving the project: {str(e)}",
-                        style="ok",
-                        icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                    )
-                    logging.error(f"Error saving project: {str(e)}")
-                    return
-            self.progressBar.hide()
-            message = (
-                f"SAVING PROJECT: Successfully saved project file: "
-                f"{format_windows_path(self.project_filename)}"
-            )
-            self.update_statusbar(message)
-            try:
-                self.sticky_settings.set("last_project_filename", self.project_filename)
-            except KeyError:
-                self.sticky_settings.new("last_project_filename", self.project_filename)
-            logging.info(f"Saved project file: {self.project_filename}")
+        self.update_statusbar(message)
+        logging.info(f"Saved project file: {self.project_filename}")
 
     def clear_project(self):
         """Clear the current project"""

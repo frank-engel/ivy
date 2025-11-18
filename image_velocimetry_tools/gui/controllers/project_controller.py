@@ -223,8 +223,10 @@ class ProjectController(BaseController):
         # Create project archive
         try:
             self.project_service.create_project_archive(
+                mw.swap_directory,
                 save_filename,
-                mw.swap_directory
+                progress_callback=None,
+                exclude_extensions=[".dat"]
             )
         except (IOError, ValueError) as e:
             mw.warning_dialog(
