@@ -31,8 +31,8 @@ class TestCreateMask:
     @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
     def test_create_mask_basic(self, mock_clean, mock_create, grid_service, sample_mask_polygon):
         """Test basic mask creation."""
-        mock_create.return_value = np.ones((480, 640), dtype=bool)
-        mock_clean.return_value = np.ones((480, 640), dtype=bool)
+        mock_create.return_value = np.ones((480, 640), dtype=np.uint8)
+        mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         result = grid_service.create_mask(sample_mask_polygon, 640, 480)
 
@@ -43,7 +43,7 @@ class TestCreateMask:
     @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
     def test_create_mask_without_cleaning(self, mock_create, grid_service, sample_mask_polygon):
         """Test mask creation without cleaning."""
-        mock_create.return_value = np.ones((480, 640), dtype=bool)
+        mock_create.return_value = np.ones((480, 640), dtype=np.uint8)
 
         result = grid_service.create_mask(sample_mask_polygon, 640, 480, clean=False)
 
@@ -66,8 +66,8 @@ class TestCreateMask:
         self, mock_clean, mock_create, grid_service, sample_mask_polygon
     ):
         """Test mask creation with custom cleaning parameters."""
-        mock_create.return_value = np.ones((480, 640), dtype=bool)
-        mock_clean.return_value = np.ones((480, 640), dtype=bool)
+        mock_create.return_value = np.ones((480, 640), dtype=np.uint8)
+        mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         grid_service.create_mask(
             sample_mask_polygon, 640, 480,
@@ -103,13 +103,15 @@ class TestGenerateRegularGrid:
 
     @patch('image_velocimetry_tools.services.grid_service.generate_grid')
     @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
+    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
     def test_generate_grid_with_mask(
-        self, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
+        self, mock_clean, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
     ):
         """Test grid generation with mask polygons."""
         mock_points = np.array([[10, 10], [20, 10]])
         mock_generate.return_value = mock_points
-        mock_create_mask.return_value = np.ones((480, 640), dtype=bool)
+        mock_create_mask.return_value = np.ones((480, 640), dtype=np.uint8)
+        mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         grid_points, binary_mask = grid_service.generate_regular_grid(
             640, 480, 10, 10,
@@ -118,6 +120,7 @@ class TestGenerateRegularGrid:
 
         assert len(grid_points) == 2
         mock_create_mask.assert_called_once()
+        mock_clean.assert_called_once()
         mock_generate.assert_called_once()
 
     def test_generate_grid_invalid_width(self, grid_service):
@@ -163,13 +166,15 @@ class TestGenerateLineGrid:
 
     @patch('image_velocimetry_tools.services.grid_service.generate_points_along_line')
     @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
+    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
     def test_generate_line_with_mask(
-        self, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
+        self, mock_clean, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
     ):
         """Test line grid generation with mask polygons."""
         mock_points = np.array([[10, 10], [50, 50]])
         mock_generate.return_value = mock_points
-        mock_create_mask.return_value = np.ones((480, 640), dtype=bool)
+        mock_create_mask.return_value = np.ones((480, 640), dtype=np.uint8)
+        mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         line_start = np.array([10, 10])
         line_end = np.array([100, 100])
@@ -181,6 +186,7 @@ class TestGenerateLineGrid:
 
         assert len(line_points) == 2
         mock_create_mask.assert_called_once()
+        mock_clean.assert_called_once()
         mock_generate.assert_called_once()
 
     def test_generate_line_invalid_width(self, grid_service):
