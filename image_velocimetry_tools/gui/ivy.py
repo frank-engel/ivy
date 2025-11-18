@@ -3324,6 +3324,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # For scale method, image is not transformed (nadir assumption)
             transformed_image = image
 
+            # For scale method, transformed points are the same as pixel coords
+            transformed_points = self.rectification_parameters["pixel_coords"]
+
             # Update UI
             self.load_ndarray_into_qtablewidget(
                 self.rectification_parameters["homography_matrix"],
