@@ -350,6 +350,8 @@ class TestComputeUncertainty:
         # Create simple discharge results
         discharge_results = {
             0: {
+                "ID": 0,
+                "Status": "Used",
                 "Station Distance": 0.0,
                 "Width": 5.0,
                 "Depth": 2.0,
