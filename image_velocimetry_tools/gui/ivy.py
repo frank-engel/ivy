@@ -1010,12 +1010,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
             if self.video_file_name:  # will return False if no video
                 logging.info(f"Video loaded: {self.video_file_name}")
-                self.setWindowTitle(
-                    f"{self.__program_name__} v{self.__version__} -- "
-                    f"{self.video_file_name}"
-                )
                 try:
-                    self.parse_video()
+                    # Use video controller to load the video
+                    self.video_controller.load_video(self.video_file_name)
                     self.play_video()  # This pauses the video immediately
 
                 except:
@@ -1031,23 +1028,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 start_time = project_dict["video_clip_start_time"]
                 end_time = project_dict["video_clip_end_time"]
-                self.video_clip_start_time = start_time
-                self.video_clip_end_time = end_time
-                self.buttonClipStart.setText(
-                    f"Clip Start [{seconds_to_hhmmss(start_time / 1000, precision='high')}]"
-                )
-                self.buttonClipEnd.setText(
-                    f"Clip End [{seconds_to_hhmmss(end_time / 1000, precision='high')}]"
-                )
-                start_frame = seconds_to_frame_number(
-                    self.video_clip_start_time / 1000,
-                    self.video_frame_rate
-                )
-                end_frame = seconds_to_frame_number(
-                    self.video_clip_end_time / 1000, self.video_frame_rate
-                )
-                self.labelStartFrameValue.setText(f"{start_frame}")
-                self.labelEndFrameValue.setText(f"{end_frame}")
+                # Update model - this will emit signals that update UI
+                self.video_model.set_clip_times(start_time, end_time)
+                # UI labels are updated automatically by VideoController signal handler
                 self.set_menu_item_color("actionOpen_Video", "good")
                 self.set_tab_icon("tabVideoPreProcessing", "good")
             except:
@@ -1837,6 +1820,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             options=options,
         )
         if self.video_clip_filename:  # User did not hit cancel
+            # Update the model with the selected filename
+            self.video_model.video_clip_filename = self.video_clip_filename
             try:
                 self.sticky_settings.set(
                     "last_video_clip_filename", self.video_clip_filename
@@ -2439,49 +2424,64 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_ffmpeg_parameters(self):
         """Update the ffmpeg parameters to match the current gui settings"""
-        # Set default end time if not specified
-        if self.video_clip_end_time == 0 or self.video_clip_end_time is None:
-            self.video_clip_end_time = self.video_duration
+        # Read from VideoModel for video state
+        video_clip_end_time = self.video_model.video_clip_end_time
+        video_clip_start_time = self.video_model.video_clip_start_time
+        video_file_name = self.video_model.video_file_name
+        video_duration = self.video_model.video_duration
 
-        # Get current settings from UI
-        self.video_rotation = int(self.comboboxFfmpegRotation.currentText())
-        self.video_flip = self.comboboxFfmpegFlipVideo.currentText()
-        self.video_strip_audio = self.checkboxStripAudio.isChecked()
-        self.video_normalize_luma = self.checkboxFfmpegNormalizeLuma.isChecked()
-        self.video_curve_preset = self.comboboxFfmpegCurvePresets.currentText()
-        self.video_ffmpeg_stabilize = self.checkboxFfmpeg2PassStabilization.isChecked()
+        # Set default end time if not specified
+        if video_clip_end_time == 0 or video_clip_end_time is None:
+            video_clip_end_time = video_duration
+
+        # Get current settings from UI and update model
+        video_rotation = int(self.comboboxFfmpegRotation.currentText())
+        video_flip = self.comboboxFfmpegFlipVideo.currentText()
+        video_strip_audio = self.checkboxStripAudio.isChecked()
+        video_normalize_luma = self.checkboxFfmpegNormalizeLuma.isChecked()
+        video_curve_preset = self.comboboxFfmpegCurvePresets.currentText()
+        video_ffmpeg_stabilize = self.checkboxFfmpeg2PassStabilization.isChecked()
+
+        # Update model with current UI settings
+        self.video_model.video_rotation = video_rotation
+        self.video_model.video_flip = video_flip
+        self.video_model.video_strip_audio = video_strip_audio
+        self.video_model.video_normalize_luma = video_normalize_luma
+        self.video_model.video_curve_preset = video_curve_preset
+        self.video_model.video_ffmpeg_stabilize = video_ffmpeg_stabilize
 
         # Use VideoService to generate output filename
         # Determine output directory
-        if self.video_clip_filename:
-            output_video = self.video_clip_filename
+        video_clip_filename = self.video_model.video_clip_filename
+        if video_clip_filename:
+            output_video = video_clip_filename
         else:
             video_dir = os.path.dirname(
-                self.video_file_name) if self.video_file_name else self.swap_directory
+                video_file_name) if video_file_name else self.swap_directory
             output_video = self.video_service.generate_clip_filename(
-                input_video_path=self.video_file_name or "no_video_loaded.mp4",
-                start_time_ms=self.video_clip_start_time,
-                end_time_ms=self.video_clip_end_time,
+                input_video_path=video_file_name or "no_video_loaded.mp4",
+                start_time_ms=video_clip_start_time,
+                end_time_ms=video_clip_end_time,
                 output_dir=video_dir,
-                rotation=self.video_rotation,
-                flip=self.video_flip,
-                normalize_luma=self.video_normalize_luma,
-                curve_preset=self.video_curve_preset,
-                stabilize=self.video_ffmpeg_stabilize
+                rotation=video_rotation,
+                flip=video_flip,
+                normalize_luma=video_normalize_luma,
+                curve_preset=video_curve_preset,
+                stabilize=video_ffmpeg_stabilize
             )
 
         # Use VideoService to build FFmpeg parameters
         self.ffmpeg_parameters = self.video_service.build_ffmpeg_parameters(
-            input_video=self.video_file_name,
+            input_video=video_file_name,
             output_video=output_video,
-            start_time_ms=self.video_clip_start_time,
-            end_time_ms=self.video_clip_end_time,
-            rotation=self.video_rotation,
-            flip=self.video_flip,
-            strip_audio=self.video_strip_audio,
-            normalize_luma=self.video_normalize_luma,
-            curve_preset=self.video_curve_preset,
-            stabilize=self.video_ffmpeg_stabilize,
+            start_time_ms=video_clip_start_time,
+            end_time_ms=video_clip_end_time,
+            rotation=video_rotation,
+            flip=video_flip,
+            strip_audio=video_strip_audio,
+            normalize_luma=video_normalize_luma,
+            curve_preset=video_curve_preset,
+            stabilize=video_ffmpeg_stabilize,
             extract_frames=False,
             extract_frame_step=self.extraction_frame_step,
             extracted_frames_folder=self.extracted_frames_folder,
@@ -2526,12 +2526,14 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Drag and drop file support. If dragged event accepted, load the video."""
         file_uri = event.mimeData().text()
         p = urlparse(file_uri)
-        self.video_file_name = os.path.join(p.netloc, p.path)[1:]
+        video_file_path = os.path.join(p.netloc, p.path)[1:]
         try:
-            self.sticky_settings.set("last_video_file_name", self.video_file_name)
+            self.sticky_settings.set("last_video_file_name", video_file_path)
         except KeyError:  # key didn't exist, create it
-            self.sticky_settings.new("last_video_file_name", self.video_file_name)
-        self.parse_video()
+            self.sticky_settings.new("last_video_file_name", video_file_path)
+        # Use video controller to load the video
+        with self.wait_cursor():
+            self.video_controller.load_video(video_file_path)
 
     def set_clip_start_time(self):
         """When Clip Start Time button is pressed, log the playhead position"""
@@ -2628,7 +2630,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Configure settings based on current process step."""
         if self.process_step == "create_video_clip":
             self.update_ffmpeg_parameters()
-            self.extraction_video_file_name = self.video_clip_filename
+            # Read clip filename from model
+            self.extraction_video_file_name = self.video_model.video_clip_filename
             self.update_ffmpeg_parameters()
             self.ffmpeg_thread_is_running = False
             self.ffmpeg_thread_is_finished = False
