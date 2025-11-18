@@ -1015,10 +1015,62 @@ class OrthoController(BaseController):
             )
             return
 
+        # Save and propagate rectified image to other tabs
+        self._save_and_propagate_rectified_image()
+
         # Emit signal
         self.ortho_model.rectification_calculated.emit(method)
 
         logging.info("Single frame rectification complete")
+
+    def _save_and_propagate_rectified_image(self):
+        """Save rectified image and propagate to Grid Preparation, STIV, and Cross-section tabs."""
+        mw = self.main_window
+
+        try:
+            # Get the rectified image from the ortho tab
+            rectified_image = mw.ortho_rectified_image.scene.ndarray()
+
+            if rectified_image is None or rectified_image.size == 0:
+                logging.warning("No rectified image to propagate")
+                return
+
+            # Save rectified image as t00000.jpg in swap_image_directory
+            from PIL import Image
+            output_path = os.path.join(mw.swap_image_directory, "t00000.jpg")
+            Image.fromarray(rectified_image).save(output_path)
+            logging.info(f"Saved rectified image to: {output_path}")
+
+            # Load rectified image into Grid Preparation tab
+            try:
+                mw.gridpreparation.imageBrowser.scene.load_image(output_path)
+                logging.debug("Loaded rectified image into Grid Preparation tab")
+            except Exception as e:
+                logging.warning(f"Failed to load image into Grid Preparation tab: {e}")
+
+            # Load rectified image into STIV tab
+            try:
+                mw.stiv.imageBrowser.scene.load_image(output_path)
+                logging.debug("Loaded rectified image into STIV tab")
+            except Exception as e:
+                logging.warning(f"Failed to load image into STIV tab: {e}")
+
+            # Load rectified image into STIV-Opt tab
+            try:
+                mw.stiv_opt.imageBrowser.scene.load_image(output_path)
+                logging.debug("Loaded rectified image into STIV-Opt tab")
+            except Exception as e:
+                logging.warning(f"Failed to load image into STIV-Opt tab: {e}")
+
+            # Load rectified image into Cross-section tab
+            try:
+                mw.bathymetry.imageBrowser.scene.load_image(output_path)
+                logging.debug("Loaded rectified image into Cross-section tab")
+            except Exception as e:
+                logging.warning(f"Failed to load image into Cross-section tab: {e}")
+
+        except Exception as e:
+            logging.error(f"Error saving and propagating rectified image: {e}")
 
     def _calculate_scale_rectification(
         self,

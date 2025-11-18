@@ -140,13 +140,16 @@ class GridController(BaseController):
             # Generate grid using service
             height, width = image.shape[:2]
 
+            # Handle mask_polygons - check for None before checking size
+            has_mask = mask_polygons is not None and mask_polygons.size > 0
+
             try:
                 grid, binary_mask = self.grid_service.generate_regular_grid(
                     width,
                     height,
                     vert,  # vertical_spacing
                     horz,  # horizontal_spacing
-                    mask_polygons=mask_polygons if mask_polygons.size > 0 else None,
+                    mask_polygons=mask_polygons if has_mask else None,
                     clean_mask=True
                 )
             except Exception as e:
@@ -254,6 +257,9 @@ class GridController(BaseController):
             # Generate line grid using service
             height, width = image.shape[:2]
 
+            # Handle mask_polygons - check for None before checking size
+            has_mask = mask_polygons is not None and mask_polygons.size > 0
+
             try:
                 line_grid, binary_mask = self.grid_service.generate_line_grid(
                     width,
@@ -261,7 +267,7 @@ class GridController(BaseController):
                     line_start,
                     line_end,
                     num_points,
-                    mask_polygons=mask_polygons if mask_polygons.size > 0 else None,
+                    mask_polygons=mask_polygons if has_mask else None,
                     clean_mask=True
                 )
             except Exception as e:
