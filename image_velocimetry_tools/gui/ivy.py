@@ -2235,6 +2235,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         seconds_to_frame_number : Helper function to compute frame
         numbers from time.
         """
+        # Store metadata first
+        self.video_metadata = video_metadata
+
         self.video_duration = video_metadata["duration"]  # In milliseconds
         self.video_resolution = "{}x{}".format(
             video_metadata["width"], video_metadata["height"]
@@ -2257,8 +2260,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.labelNewFrameRateValue.setText(f"{self.extraction_frame_rate:.3f} fps")
         self.labelNewTimestepValue.setText(f"{self.extraction_timestep_ms:.4f} ms")
         self.labelNewNumFramesValue.setText(f"{self.video_num_frames}")
-        self.labelLensCxValue.setText(f"{self.video_metadata['width'] / 2:.3f}")
-        self.labelLensCyValue.setText(f"{self.video_metadata['height'] / 2:.3f}")
+        # Use parameter instead of self.video_metadata
+        self.labelLensCxValue.setText(f"{video_metadata['width'] / 2:.3f}")
+        self.labelLensCyValue.setText(f"{video_metadata['height'] / 2:.3f}")
         self.labelLensK1Value.setText("0.000")
         self.labelLensK2Value.setText("0.000")
         self.labelVideoPreload.setHidden(True)

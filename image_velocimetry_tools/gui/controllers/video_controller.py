@@ -408,30 +408,50 @@ class VideoController(BaseController):
         self._show_clip_information()
 
     def _show_clip_information(self):
-        """Update the statusbar with clip information."""
+        """Update the statusbar and extraction UI with clip information."""
         if not self.video_model.is_video_loaded:
             return
 
+        mw = self.main_window
         start_ms = self.video_model.video_clip_start_time
         end_ms = self.video_model.video_clip_end_time
 
         if end_ms == 0 or end_ms is None:
             end_ms = self.video_model.video_duration
 
+        # Calculate start and end frames
+        start_frame = seconds_to_frame_number(
+            start_ms / 1000,
+            self.video_model.video_frame_rate
+        )
+        end_frame = seconds_to_frame_number(
+            end_ms / 1000,
+            self.video_model.video_frame_rate
+        )
+        if end_frame == 0:
+            end_frame = self.video_model.video_num_frames
+
+        # Calculate extraction parameters based on clip times
+        mw.extraction_frame_rate = (
+            self.video_model.video_frame_rate / mw.extraction_frame_step
+        )
+        mw.extraction_timestep_ms = 1 / mw.extraction_frame_rate * 1000
+        mw.extraction_num_frames = int(
+            (end_frame - start_frame) / mw.extraction_frame_step
+        )
+
+        # Update extraction UI labels
+        mw.labelNewFrameRateValue.setText(f"{mw.extraction_frame_rate:.3f} fps")
+        mw.labelNewTimestepValue.setText(f"{mw.extraction_timestep_ms:.4f} ms")
+        mw.labelNewNumFramesValue.setText(f"{mw.extraction_num_frames}")
+
+        # Update statusbar
         if start_ms == 0 and end_ms == self.video_model.video_duration:
             # Full video
             message = "Clip: Full video selected"
         else:
             # Partial clip
             duration_s = (end_ms - start_ms) / 1000
-            start_frame = seconds_to_frame_number(
-                start_ms / 1000,
-                self.video_model.video_frame_rate
-            )
-            end_frame = seconds_to_frame_number(
-                end_ms / 1000,
-                self.video_model.video_frame_rate
-            )
             num_frames = end_frame - start_frame
 
             message = (
@@ -439,7 +459,7 @@ class VideoController(BaseController):
                 f"({num_frames} frames from {start_frame} to {end_frame})"
             )
 
-        self.main_window.update_statusbar(message)
+        mw.update_statusbar(message)
 
     def load_video(self, file_path: str):
         """Load a video file and parse its metadata.
