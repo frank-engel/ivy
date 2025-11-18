@@ -171,6 +171,10 @@ class OrthoController(BaseController):
         """
         mw = self.main_window
 
+        # Handle bool from Qt signals (treat as None)
+        if isinstance(image_filename, bool):
+            image_filename = None
+
         # Get last GCP image path from sticky settings
         try:
             ss = mw.sticky_settings.get("last_ortho_gcp_image_path")
