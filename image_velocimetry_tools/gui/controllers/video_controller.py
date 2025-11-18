@@ -3,8 +3,8 @@
 import logging
 import os
 from typing import Optional
-from PyQt5.QtCore import pyqtSlot, QMediaContent, QUrl
-from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtCore import pyqtSlot, QUrl
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5 import QtWidgets, QtGui
 
 from image_velocimetry_tools.gui.controllers.base_controller import BaseController
