@@ -9,7 +9,7 @@ import logging
 import os
 from image_velocimetry_tools.gui.controllers.base_controller import BaseController
 from image_velocimetry_tools.gui.models.settings_model import SettingsModel
-from image_velocimetry_tools.gui.settings_dialog import Settings_Dialog
+from image_velocimetry_tools.gui.dialogs.settings import Settings as Settings_Dialog
 from image_velocimetry_tools.common_functions import units_conversion, resource_path
 
 
