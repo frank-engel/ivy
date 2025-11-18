@@ -89,14 +89,13 @@ class VideoController(BaseController):
             mw.video_player.play()
             self.logger.debug("Video playing")
 
-    @pyqtSlot()
-    def on_video_position_changed(self, position: int):
+    def on_video_position_changed(self, position):
         """Handle video position changes from player.
 
         Updates slider and time label to reflect current position.
 
         Args:
-            position: Current position in milliseconds
+            position: Current position in milliseconds (qint64 from Qt signal)
         """
         mw = self.main_window
         mw.sliderVideoPlayHead.setValue(position)
@@ -109,14 +108,13 @@ class VideoController(BaseController):
         )
         mw.labelVideoPlayheadTime.setText(f"{time_str} [{frame_num}]")
 
-    @pyqtSlot()
-    def on_video_duration_changed(self, duration: int):
+    def on_video_duration_changed(self, duration):
         """Handle video duration changes when video is loaded.
 
         Updates slider range and duration label.
 
         Args:
-            duration: Video duration in milliseconds
+            duration: Video duration in milliseconds (qint64 from Qt signal)
         """
         mw = self.main_window
         mw.sliderVideoPlayHead.setRange(0, duration)
