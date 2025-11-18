@@ -101,6 +101,7 @@ from image_velocimetry_tools.gui.filesystem import (
 )
 from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.services.project_service import ProjectService
+from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
@@ -3261,36 +3262,28 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 f"Failed to save GCP table to project " f"structure: {e}"
             )
 
-        # Case 1 -- 2 GCPs are loaded, assume nadir
-        if num_points == 2:
-            self.rectification_method = "scale"
-            # raise NotImplementedError('Orthorectification using 2-point method not implemented yet.')
-
-        # Case 2 -- 4 GCPs are loaded -  use Homography approach
-        if num_points == 4:
-            self.rectification_method = "homography"
-
-        # Case 3 -- more than 4 points, but they are all at the same elevation (Z) - use homography
-        if num_points > 4 and np.all(
-            self.rectification_parameters["world_coords"][:, -1]
-            == self.rectification_parameters["world_coords"][0, -1]
-        ):
-            self.rectification_method = "homography"
-        if num_points == 5 and not np.all(
-            self.rectification_parameters["world_coords"][:, -1]
-            == self.rectification_parameters["world_coords"][0, -1]
-        ):
-            raise ValueError(
-                f"Size of points array is {num_points}, however the world points are not on the "
-                f"same plane (i.e. all Z-coordinates are not the same)."
+        # Validate GCP configuration
+        validation_errors = self.ortho_service.validate_gcp_configuration(
+            self.rectification_parameters["pixel_coords"],
+            self.rectification_parameters["world_coords"]
+        )
+        if validation_errors:
+            error_msg = "GCP validation errors:\n" + "\n".join(validation_errors)
+            logging.error(error_msg)
+            self.warning_dialog(
+                "Invalid GCP Configuration",
+                error_msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico"
             )
+            return
 
-        # Case 3 -- 6 or more points, not on the same plane - use full camera matrix
-        if num_points >= 6 and not np.all(
-            self.rectification_parameters["world_coords"][:, -1]
-            == self.rectification_parameters["world_coords"][0, -1]
-        ):
-            self.rectification_method = "camera matrix"
+        # Determine rectification method using service
+        self.rectification_method = self.ortho_service.determine_rectification_method(
+            num_points,
+            self.rectification_parameters["world_coords"]
+        )
+
         logging.debug(
             f"ORTHORECTIFICATION: Found {num_points} to rectify. Are all points on the same Z-plane? "
             f"[{np.all(self.rectification_parameters['world_coords'][:, -1] == self.rectification_parameters['world_coords'][0, -1])}]"
@@ -3298,68 +3291,40 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.info(f"Attempting rectification method: {self.rectification_method}")
 
         if self.rectification_method == "scale":
-            # should produce
-            # 1. transformed_image: ndarray
-            # 2. transformed_roi: tuple of list of x,y points (revise to ndarray)
-            # 3. scaled_world_coordinates: list
-            # 4. pixel_gsd: ndarray
-            # 5. homography_matrix: ndarray (should be a ones matrix)
-            transformed_image = self.ortho_original_image.scene.ndarray()
-            transformed_roi = bounding_box_naive(
-                [(0, transformed_image.shape[0]), (0, transformed_image.shape[1])]
-            )
-            self.rectification_parameters["extent"] = transformed_roi
-            (
-                self.rectification_parameters["pad_x"],
-                self.rectification_parameters["pad_y"],
-            ) = (0, 0)
-            scaled_world_coordinates = self.rectification_parameters["world_coords"][
-                :, 0:2
-            ]
-            # TODO: if a user puts the GCP distance in the Y coord here, the
-            #  pixel GSD will be 0.0 as written. Enable a new method that just
-            #  lets the user edit a GSD. AND fix this issue so it will not happen
-            #  if the user creates a different point list
-            pixel_coords = self.rectification_parameters["pixel_coords"]
-
-            # to ensure I get the same results in the instance attribute
-            transformed_points = pixel_coords
-
-            p1 = pixel_coords[0]
-            p2 = pixel_coords[1]
-            pixel_distance = np.sqrt(np.sum((p2 - p1) ** 2))
-
-            p1 = scaled_world_coordinates[0]
-            p2 = scaled_world_coordinates[1]
-            ground_distance = np.sqrt(np.sum((p2 - p1) ** 2))
-
-            pixel_gsd = ground_distance / pixel_distance
-
-            point_pairs = [
-                (
-                    pixel_coords[i][0],
-                    pixel_coords[i][1],
-                    scaled_world_coordinates[i][0],
-                    scaled_world_coordinates[i][1],
-                )
-                for i in range(len(scaled_world_coordinates))
-            ]
-
-            self.rectification_parameters["homography_matrix"] = (
-                calculate_homography_matrix_simple(point_pairs)
+            # Use service to calculate scale parameters
+            image = self.ortho_original_image.scene.ndarray()
+            scale_params = self.ortho_service.calculate_scale_parameters(
+                self.rectification_parameters["pixel_coords"],
+                self.rectification_parameters["world_coords"][:, 0:2],
+                image.shape
             )
 
+            # Update rectification parameters
+            self.rectification_parameters["homography_matrix"] = scale_params["homography_matrix"]
+            self.rectification_parameters["extent"] = scale_params["extent"]
+            self.rectification_parameters["pad_x"] = scale_params["pad_x"]
+            self.rectification_parameters["pad_y"] = scale_params["pad_y"]
+
+            # Update state
+            pixel_gsd = scale_params["pixel_gsd"]
             self.pixel_ground_scale_distance_m = pixel_gsd
             self.is_homography_matrix = True
             self.scene_averaged_pixel_gsd_m = pixel_gsd
-            self.rectification_rmse_m = estimate_scale_based_rmse(
+
+            # Calculate quality metrics using service
+            quality_metrics = self.ortho_service.calculate_quality_metrics(
+                "scale",
                 pixel_gsd,
-                ground_distance,
-                pixel_error_per_point=2.0
+                pixel_distance=scale_params["pixel_distance"],
+                ground_distance=scale_params["ground_distance"]
             )
-            self.reprojection_error_pixels = self.rectification_rmse_m / pixel_gsd
+            self.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
+            self.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
 
+            # For scale method, image is not transformed (nadir assumption)
+            transformed_image = image
 
+            # Update UI
             self.load_ndarray_into_qtablewidget(
                 self.rectification_parameters["homography_matrix"],
                 self.tablewidgetProjectiveMatrix,
@@ -3372,64 +3337,58 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']} "
                 f"{units_conversion(self.display_units)['label_L']}"
             )
-            # Disabling plotting of the control points on the rectified
-            # scene for now
-            # self.ortho_rectified_image.clearPoints()
-            # self.ortho_rectified_image.scene.set_current_instruction(
-            #     Instructions.ADD_POINTS_INSTRUCTION,
-            #     points=transformed_points,
-            #     labels=list(gcp_table["# ID"].values()),
-            # )
 
         if self.rectification_method == "homography":
-            (
-                self.rectification_parameters["pad_x"],
-                self.rectification_parameters["pad_y"],
-            ) = (200, 200)
+            # Set padding parameters
+            pad_x, pad_y = 200, 200
             logging.info(
-                f"ORTHORECTIFICATION: Rectifying image: Padding "
-                f"{(self.rectification_parameters['pad_x'], self.rectification_parameters['pad_y'])}. "
+                f"ORTHORECTIFICATION: Rectifying image: Padding ({pad_x}, {pad_y}). "
                 f"Output image will be scaled so that all pixels are positive with specified padding."
             )
 
             # Check to see if we have a homography matrix already
-            if not self.is_homography_matrix:
-                self.rectification_parameters["homography_matrix"] = None
-            (
-                transformed_image,
-                transformed_roi,
-                scaled_world_coordinates,
-                pixel_gsd,
-                homography_matrix,
-            ) = rectify_homography(
-                image=self.ortho_original_image.scene.ndarray(),
-                points_world_coordinates=self.rectification_parameters["world_coords"][
-                    :, 0:2
-                ],
-                points_perspective_image_coordinates=self.rectification_parameters[
-                    "pixel_coords"
-                ],
-                homography_matrix=self.rectification_parameters["homography_matrix"],
-                pad_x=self.rectification_parameters["pad_x"],
-                pad_y=self.rectification_parameters["pad_y"],
+            existing_homography = None
+            if self.is_homography_matrix:
+                existing_homography = self.rectification_parameters.get("homography_matrix")
+
+            # Use service to calculate homography parameters
+            image = self.ortho_original_image.scene.ndarray()
+            homography_params = self.ortho_service.calculate_homography_parameters(
+                image,
+                self.rectification_parameters["pixel_coords"],
+                self.rectification_parameters["world_coords"],
+                homography_matrix=existing_homography,
+                pad_x=pad_x,
+                pad_y=pad_y
             )
 
-            self.rectification_parameters["homography_matrix"] = homography_matrix
+            # Update rectification parameters
+            transformed_image = homography_params["transformed_image"]
+            self.rectification_parameters["homography_matrix"] = homography_params["homography_matrix"]
+            self.rectification_parameters["extent"] = homography_params["extent"]
+            self.rectification_parameters["pad_x"] = homography_params["pad_x"]
+            self.rectification_parameters["pad_y"] = homography_params["pad_y"]
 
-            self.pixel_ground_scale_distance_m = pixel_gsd  # always meters
-
-            # Estimate orthorectification uncertainty
-            self.rectification_parameters[
-                "estimated_view_angle"] = estimate_view_angle(
-                self.rectification_parameters["homography_matrix"])
-            logging.info(f"Rectify Single Frame: estimated view angle: "
-                         f"{self.rectification_parameters['estimated_view_angle']:.2f}°")
-            self.rectification_rmse_m = estimate_orthorectification_rmse(
-                self.rectification_parameters["estimated_view_angle"],
-                pixel_gsd)
-            self.reprojection_error_pixels = self.rectification_rmse_m / pixel_gsd
+            # Update state
+            pixel_gsd = homography_params["pixel_gsd"]
+            self.pixel_ground_scale_distance_m = pixel_gsd
             self.is_homography_matrix = True
-            self.scene_averaged_pixel_gsd_m = pixel_gsd  # always meters
+            self.scene_averaged_pixel_gsd_m = pixel_gsd
+
+            # Calculate quality metrics using service
+            quality_metrics = self.ortho_service.calculate_quality_metrics(
+                "homography",
+                pixel_gsd,
+                homography_matrix=self.rectification_parameters["homography_matrix"]
+            )
+            if "estimated_view_angle" in quality_metrics:
+                self.rectification_parameters["estimated_view_angle"] = quality_metrics["estimated_view_angle"]
+                logging.info(f"Rectify Single Frame: estimated view angle: "
+                           f"{self.rectification_parameters['estimated_view_angle']:.2f}°")
+            self.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
+            self.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
+
+            # Update UI
             self.load_ndarray_into_qtablewidget(
                 self.rectification_parameters["homography_matrix"],
                 self.tablewidgetProjectiveMatrix,
@@ -3454,52 +3413,42 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
             # Plot the Points table onto the rectified image
             H = self.rectification_parameters["homography_matrix"]
-            # H_inv = np.linalg.inv(H)
             points = self.ortho_original_image.points_ndarray()
             transformed_points = transform_points_with_homography(points, H)
 
-            # Disabling plotting of the control points on the rectified
-            # scene for now
-            # self.ortho_rectified_image.clearPoints()
-            # self.ortho_rectified_image.scene.set_current_instruction(
-            #     Instructions.ADD_POINTS_INSTRUCTION,
-            #     points=transformed_points,
-            #     labels=list(gcp_table["# ID"].values()),
-            # )
-
         if self.rectification_method == "camera matrix":
             # Check to see if we have a camera matrix
-            if not self.is_camera_matrix:
-                self.rectification_parameters["camera_matrix"] = None
+            existing_camera_matrix = None
+            if self.is_camera_matrix:
+                existing_camera_matrix = self.rectification_parameters.get("camera_matrix")
 
-            self.cam = CameraHelper(
-                image=self.ortho_original_image.scene.ndarray(),
-                world_points=self.rectification_parameters["world_coords"],
-                image_points=self.rectification_parameters["pixel_coords"],
-                elevation=self.rectification_parameters[
-                    "water_surface_elev"]
+            # Use service to calculate camera matrix parameters
+            image = self.ortho_original_image.scene.ndarray()
+            camera_params = self.ortho_service.calculate_camera_matrix_parameters(
+                image,
+                self.rectification_parameters["pixel_coords"],
+                self.rectification_parameters["world_coords"],
+                self.rectification_parameters["water_surface_elev"],
+                camera_matrix=existing_camera_matrix,
+                padding_percent=0.03
             )
 
-            camera_matrix, projection_rms_error = self.cam.get_camera_matrix()
-            self.rectification_parameters["camera_matrix"] = camera_matrix
-            logging.info(f"Camera matrix:\n" f"{camera_matrix}")
-            bbox = bounding_box_naive(self.rectification_parameters["world_coords"])
+            # Update rectification parameters
+            transformed_image = camera_params["transformed_image"]
+            self.rectification_parameters["camera_matrix"] = camera_params["camera_matrix"]
+            self.rectification_parameters["extent"] = camera_params["extent"]
 
-            # For now extent is the bounding box which contains all of the GCP
-            # used in rectification, padded by a fixed percentage
-            c = 0.03
-            self.rectification_parameters["extent"] = np.array(
-                [bbox[0][0], bbox[1][0], bbox[0][1], bbox[1][1]]
-            ) * np.array([1 - c, 1 + c, 1 - c, 1 + c])
-            transformed_image = self.cam.get_top_view_of_image(
-                self.ortho_original_image.scene.ndarray(),
-                Z=self.rectification_parameters["water_surface_elev"],
-                extent=self.rectification_parameters["extent"],
-                # scaling=0.003,  # let the function decide
-                do_plot=False,
-            )
-            self.camera_position = self.cam.camera_position_world
-            self.pixel_ground_scale_distance_m = self.cam.pixel_ground_scale_distance
+            # Update state
+            self.camera_position = camera_params["camera_position"]
+            pixel_gsd = camera_params["pixel_gsd"]
+            self.pixel_ground_scale_distance_m = pixel_gsd
+
+            # Log camera matrix info
+            logging.info(f"Camera matrix:\n{camera_params['camera_matrix']}")
+            if camera_params["projection_rms_error"] is not None:
+                logging.info(f"Projection RMS error: {camera_params['projection_rms_error']:.4f}")
+
+            # Update UI
             self.load_ndarray_into_qtablewidget(
                 self.rectification_parameters["camera_matrix"],
                 self.tablewidgetProjectiveMatrix,
@@ -6595,6 +6544,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Initialize services and models
         self.video_service = VideoService()
         self.project_service = ProjectService()
+        self.ortho_service = OrthorectificationService()
         self.video_model = VideoModel()
 
         # Global init related
