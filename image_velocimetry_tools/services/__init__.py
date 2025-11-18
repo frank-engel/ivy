@@ -4,5 +4,12 @@ from .base_service import BaseService
 from .video_service import VideoService
 from .project_service import ProjectService
 from .orthorectification_service import OrthorectificationService
+from .grid_service import GridService
 
-__all__ = ['BaseService', 'VideoService', 'ProjectService', 'OrthorectificationService']
+__all__ = [
+    'BaseService',
+    'VideoService',
+    'ProjectService',
+    'OrthorectificationService',
+    'GridService'
+]
