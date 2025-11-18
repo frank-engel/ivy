@@ -801,20 +801,34 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                             print(f"An error occurred while copying the file: {e}")
 
     def new_project(self):
-        """Create a new IVy Project, discarding all currently loaded data"""
-        # Delegate to project controller
+        """Create a new IVy Project, discarding all currently loaded data.
+
+        NOTE: This is a minimal implementation. Full cleanup of image browsers,
+        AC3 data, and project trees is not yet implemented.
+        """
+        # Delegate to project controller for model state management
         self.project_controller.new_project()
 
-        # 1. Unload video
+        # Update self.project_filename for backwards compatibility
+        self.project_filename = self.project_model.project_filename
+
+        # Clear video
         self.video_file_name = None
         self.video_player.setMedia(QMediaContent())
         logging.info("Video player reset. No media loaded.")
 
-        # 2. Clear images from browsers
-        # 3. Unload AC3 file if present
-        # 4. Reinit all Image Browsers
-        # 5. Clear project trees
-        # 6. Clear comments
+        # Clear comments and update table
+        self.comments = Comments()
+        self.update_comment_tbl()
+        logging.info("Comments cleared.")
+
+        # TODO: Implement full project cleanup
+        # - Clear images from browsers
+        # - Unload AC3 file if present
+        # - Reinit all Image Browsers
+        # - Clear project trees
+
+        logging.warning("new_project() is a minimal implementation - full cleanup pending")
 
     def _draw_cross_section_line(self):
         """Draw the rectified cross-section line on the image."""
@@ -2066,7 +2080,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.info(f"Saved project file: {self.project_filename}")
 
     def clear_project(self):
-        """Clear the current project"""
+        """Clear the current project.
+
+        This delegates to new_project() which handles clearing project state,
+        video, and comments. Full implementation is pending.
+        """
         self.new_project()
 
     def open_video(self):
