@@ -957,16 +957,33 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
         # Task 1 - Video
-            video_file_name = project_dict.get("video_file_name", None)
-            if video_file_name is not None:
-                self.video_file_name = locate_video_file(project_dict)
-                if self.video_file_name is None:
-                    self.video_metadata = project_dict["video_metadata"]
-                    self.set_video_metadata(self.video_metadata)
-            else:
-                msg = (
-                    f"OPEN PROJECT: Project file does not contain a video file location"
-                )
+        video_file_name = project_dict.get("video_file_name", None)
+        if video_file_name is not None:
+            self.video_file_name = locate_video_file(project_dict)
+            if self.video_file_name is None:
+                self.video_metadata = project_dict["video_metadata"]
+                self.set_video_metadata(self.video_metadata)
+        else:
+            msg = (
+                f"OPEN PROJECT: Project file does not contain a video file location"
+            )
+            logging.error(msg)
+            self.warning_dialog(
+                f"Error Opening Project",
+                msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+            )
+
+        if self.video_file_name:  # will return False if no video
+            logging.info(f"Video loaded: {self.video_file_name}")
+            try:
+                # Use video controller to load the video
+                self.video_controller.load_video(self.video_file_name)
+                self.play_video()  # This pauses the video immediately
+
+            except:
+                msg = f"OPEN PROJECT: Unable to load video"
                 logging.error(msg)
                 self.warning_dialog(
                     f"Error Opening Project",
@@ -974,282 +991,231 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     style="ok",
                     icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
                 )
+                return
+        try:
+            start_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["start_time"]) * 1000  # ms
+            end_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["end_time"]) * 1000   # ms
 
-            if self.video_file_name:  # will return False if no video
-                logging.info(f"Video loaded: {self.video_file_name}")
-                try:
-                    # Use video controller to load the video
-                    self.video_controller.load_video(self.video_file_name)
-                    self.play_video()  # This pauses the video immediately
+            # Update model - this will emit signals that update UI
+            self.video_model.set_clip_times(start_time, end_time)
+            # UI labels are updated automatically by VideoController signal handler
+            self.set_menu_item_color("actionOpen_Video", "good")
+            self.set_tab_icon("tabVideoPreProcessing", "good")
+        except:
+            msg = f"OPEN PROJECT: Unable to set video clip information"
+            logging.error(msg)
+            self.warning_dialog(
+                f"Error Opening Project",
+                msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+            )
 
-                except:
-                    msg = f"OPEN PROJECT: Unable to load video"
-                    logging.error(msg)
-                    self.warning_dialog(
-                        f"Error Opening Project",
-                        msg,
-                        style="ok",
-                        icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+        try:
+            # FFMPEG settings
+            ffmpeg_parameters = project_dict["ffmpeg_parameters"]
+            self.video_rotation = ffmpeg_parameters["video_rotation"]
+            self.comboboxFfmpegRotation.setCurrentText(
+                f"{ffmpeg_parameters['video_rotation']}"
+            )
+            self.video_flip = ffmpeg_parameters["video_flip"]
+            self.comboboxFfmpegFlipVideo.setCurrentText(
+                f"{ffmpeg_parameters['video_flip']}"
+            )
+            self.video_strip_audio = ffmpeg_parameters["strip_audio"]
+            self.checkboxStripAudio.setChecked(self.video_strip_audio)
+            self.video_normalize_luma = ffmpeg_parameters["normalize_luma"]
+            self.checkboxFfmpegNormalizeLuma.setChecked(
+                self.video_normalize_luma
+            )
+            self.video_curve_preset = ffmpeg_parameters["curve_preset"]
+            self.comboboxFfmpegCurvePresets.setCurrentText(
+                f"{self.video_curve_preset}"
+            )
+            self.video_ffmpeg_stabilize = ffmpeg_parameters["stabilize"]
+            self.checkboxFfmpeg2PassStabilization.setChecked(
+                self.video_ffmpeg_stabilize
+            )
+            temp_dict = dict(
+                [
+                    (i, self.comboboxFfmpegRotation.itemText(i))
+                    for i in range(self.comboboxFfmpegRotation.count())
+                ]
+            )
+            ind = find_key_from_first_value(
+                temp_dict, str(project_dict["video_rotation"])
+            )
+            self.comboboxFfmpegRotation.setCurrentIndex(ind)
+            temp_dict = dict(
+                [
+                    (i, self.comboboxFfmpegFlipVideo.itemText(i))
+                    for i in range(self.comboboxFfmpegFlipVideo.count())
+                ]
+            )
+            ind = find_key_from_first_value(
+                temp_dict, str(project_dict["video_flip"])
+            )
+            self.comboboxFfmpegFlipVideo.setCurrentIndex(ind)
+            temp_dict = dict(
+                [
+                    (i, self.comboboxFfmpegCurvePresets.itemText(i))
+                    for i in range(self.comboboxFfmpegCurvePresets.count())
+                ]
+            )
+            ind = find_key_from_first_value(
+                temp_dict, str(project_dict["video_curve_preset"])
+            )
+            self.comboboxFfmpegCurvePresets.setCurrentIndex(ind)
+
+            # CRITICAL: Also update VideoModel with loaded processing settings
+            # This ensures the model stays in sync with UI and ivy.py properties
+            self.video_model.video_rotation = self.video_rotation
+            self.video_model.video_flip = self.video_flip
+            self.video_model.video_strip_audio = self.video_strip_audio
+            self.video_model.video_normalize_luma = self.video_normalize_luma
+            self.video_model.video_curve_preset = self.video_curve_preset
+            self.video_model.video_ffmpeg_stabilize = self.video_ffmpeg_stabilize
+        except:
+            msg = f"OPEN PROJECT: Unable to load video metadata"
+            logging.error(msg)
+            self.warning_dialog(
+                f"Error Opening Project",
+                msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+            )
+
+        # Lens Correction
+        try:
+            cx, cy, k1, k2 = (
+                float(ffmpeg_parameters["cx"]),
+                float(ffmpeg_parameters["cy"]),
+                float(ffmpeg_parameters["k1"]),
+                float(ffmpeg_parameters["k2"]),
+            )
+            self.lens_characteristics = LensCharacteristics(
+                self,
+                width=self.video_metadata["width"],
+                height=self.video_metadata["height"],
+                cx=cx,
+                cy=cy,
+                k1=k1,
+                k2=k2,
+            )
+            self.checkboxCorrectRadialDistortion.setChecked(
+                ffmpeg_parameters["calibrate_radial"]
+            )
+            self.labelLensCxValue.setText(
+                f"{int(self.lens_characteristics.width / 2):d}"
+            )
+            self.labelLensCyValue.setText(
+                f"{int(self.lens_characteristics.height / 2):d}"
+            )
+            self.labelLensK1Value.setText(f"{k1:.3f}")
+            self.labelLensK2Value.setText(f"{k2:.3f}")
+        except:
+            msg = f"OPEN PROJECT: Unable to set Lens Characteristics"
+            logging.error(msg)
+            self.warning_dialog(
+                f"Error Opening Project",
+                msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+            )
+
+        try:
+            # Extract Frames settings
+            self.lineeditFrameStepValue.setText(
+                f"{project_dict['extraction_frame_step']:d}"
+            )
+            self.frame_step_changed()
+            self.update_ffmpeg_parameters()
+            # CRITICAL: Update extraction UI with restored values
+            # This ensures the "New Frame Rate", "New Timestep", and "New Num Frames"
+            # labels are updated even if clip times haven't changed from defaults
+            self.video_controller._show_clip_information()
+        except:
+            msg = (f"OPEN PROJECT: Unable to set frame extraction "
+                   f"information")
+            logging.error(msg)
+            self.warning_dialog(
+                f"Error Opening Project",
+                msg,
+                style="ok",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+            )
+
+        # Task 2 - Image Frames
+        # If there are loaded frames, the project file should have an
+        # imagebrowser_sequence and index, set those
+        try:
+            # There are image frames
+            if project_dict["imagebrowser_sequence"] is not None:
+                self.imagebrowser.sequence_index = project_dict["sequence_index"]
+                self.imagebrowser.sequence = [
+                    os.path.join(self.swap_image_directory, item)
+                    for item in project_dict["imagebrowser_sequence"]
+                ]
+                self.imagebrowser.glob_pattern = f"f*.jpg"
+                self.imagebrowser.image_path = os.path.join(
+                    self.swap_image_directory,
+                    project_dict["imagebrowser_image_path"],
+                )
+                self.imagebrowser.folder_path = self.swap_image_directory
+                self.imagebrowser.reload = True  # Ensures the frame loader will not prompt user for a folder
+                self.imagebrowser.open_image_folder()
+                self.imagebrowser.reload = False
+                self.groupboxTools.setEnabled(True)
+                self.groupboxProcessing.setEnabled(True)
+
+                # Update Export Frames
+                self.set_button_color("buttonExtractVideoFrames", "good")
+                self.set_menu_item_color("actionOpen_Image_Folder", "good")
+                self.set_tab_icon("tabImageFrameProcessing", "good")
+        except KeyError:
+            pass
+
+        # Take note of if there are already transformed frames
+        if glob.glob(os.path.join(self.swap_image_directory, "t*.jpg")):
+            self.is_transformed_frames = True
+
+        # Task 3 - Orthorectification
+        # Load a GCP image if available
+        try:
+            calibration_image_path = os.path.join(
+                self.swap_orthorectification_directory, "!calibration_image.jpg"
+            )
+
+            if os.path.exists(
+                calibration_image_path
+            ):  # Check for !calibration_image.jpg
+                self.ortho_original_image.open(filepath=calibration_image_path)
+                self.ortho_original_image.setEnabled(True)
+                self.set_menu_item_color("actionOpen_Ground_Control_Image", "good")
+            elif (
+                "last_ortho_gcp_image_path" in project_dict
+                and project_dict["last_ortho_gcp_image_path"] is not None
+            ):  # Check for last known GCP image path
+                self.last_ortho_gcp_image_path = project_dict[
+                    "last_ortho_gcp_image_path"
+                ]
+                if os.path.exists(self.last_ortho_gcp_image_path):
+                    self.ortho_original_image.open(
+                        filepath=self.last_ortho_gcp_image_path
                     )
-                    return
-            try:
-                start_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["start_time"]) * 1000  # ms
-                end_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["end_time"]) * 1000   # ms
-
-                # Update model - this will emit signals that update UI
-                self.video_model.set_clip_times(start_time, end_time)
-                # UI labels are updated automatically by VideoController signal handler
-                self.set_menu_item_color("actionOpen_Video", "good")
-                self.set_tab_icon("tabVideoPreProcessing", "good")
-            except:
-                msg = f"OPEN PROJECT: Unable to set video clip information"
-                logging.error(msg)
-                self.warning_dialog(
-                    f"Error Opening Project",
-                    msg,
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                )
-
-            try:
-                # FFMPEG settings
-                ffmpeg_parameters = project_dict["ffmpeg_parameters"]
-                self.video_rotation = ffmpeg_parameters["video_rotation"]
-                self.comboboxFfmpegRotation.setCurrentText(
-                    f"{ffmpeg_parameters['video_rotation']}"
-                )
-                self.video_flip = ffmpeg_parameters["video_flip"]
-                self.comboboxFfmpegFlipVideo.setCurrentText(
-                    f"{ffmpeg_parameters['video_flip']}"
-                )
-                self.video_strip_audio = ffmpeg_parameters["strip_audio"]
-                self.checkboxStripAudio.setChecked(self.video_strip_audio)
-                self.video_normalize_luma = ffmpeg_parameters["normalize_luma"]
-                self.checkboxFfmpegNormalizeLuma.setChecked(
-                    self.video_normalize_luma
-                )
-                self.video_curve_preset = ffmpeg_parameters["curve_preset"]
-                self.comboboxFfmpegCurvePresets.setCurrentText(
-                    f"{self.video_curve_preset}"
-                )
-                self.video_ffmpeg_stabilize = ffmpeg_parameters["stabilize"]
-                self.checkboxFfmpeg2PassStabilization.setChecked(
-                    self.video_ffmpeg_stabilize
-                )
-                temp_dict = dict(
-                    [
-                        (i, self.comboboxFfmpegRotation.itemText(i))
-                        for i in range(self.comboboxFfmpegRotation.count())
-                    ]
-                )
-                ind = find_key_from_first_value(
-                    temp_dict, str(project_dict["video_rotation"])
-                )
-                self.comboboxFfmpegRotation.setCurrentIndex(ind)
-                temp_dict = dict(
-                    [
-                        (i, self.comboboxFfmpegFlipVideo.itemText(i))
-                        for i in range(self.comboboxFfmpegFlipVideo.count())
-                    ]
-                )
-                ind = find_key_from_first_value(
-                    temp_dict, str(project_dict["video_flip"])
-                )
-                self.comboboxFfmpegFlipVideo.setCurrentIndex(ind)
-                temp_dict = dict(
-                    [
-                        (i, self.comboboxFfmpegCurvePresets.itemText(i))
-                        for i in range(self.comboboxFfmpegCurvePresets.count())
-                    ]
-                )
-                ind = find_key_from_first_value(
-                    temp_dict, str(project_dict["video_curve_preset"])
-                )
-                self.comboboxFfmpegCurvePresets.setCurrentIndex(ind)
-
-                # CRITICAL: Also update VideoModel with loaded processing settings
-                # This ensures the model stays in sync with UI and ivy.py properties
-                self.video_model.video_rotation = self.video_rotation
-                self.video_model.video_flip = self.video_flip
-                self.video_model.video_strip_audio = self.video_strip_audio
-                self.video_model.video_normalize_luma = self.video_normalize_luma
-                self.video_model.video_curve_preset = self.video_curve_preset
-                self.video_model.video_ffmpeg_stabilize = self.video_ffmpeg_stabilize
-            except:
-                msg = f"OPEN PROJECT: Unable to load video metadata"
-                logging.error(msg)
-                self.warning_dialog(
-                    f"Error Opening Project",
-                    msg,
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                )
-
-            # Lens Correction
-            try:
-                cx, cy, k1, k2 = (
-                    float(ffmpeg_parameters["cx"]),
-                    float(ffmpeg_parameters["cy"]),
-                    float(ffmpeg_parameters["k1"]),
-                    float(ffmpeg_parameters["k2"]),
-                )
-                self.lens_characteristics = LensCharacteristics(
-                    self,
-                    width=self.video_metadata["width"],
-                    height=self.video_metadata["height"],
-                    cx=cx,
-                    cy=cy,
-                    k1=k1,
-                    k2=k2,
-                )
-                self.checkboxCorrectRadialDistortion.setChecked(
-                    ffmpeg_parameters["calibrate_radial"]
-                )
-                self.labelLensCxValue.setText(
-                    f"{int(self.lens_characteristics.width / 2):d}"
-                )
-                self.labelLensCyValue.setText(
-                    f"{int(self.lens_characteristics.height / 2):d}"
-                )
-                self.labelLensK1Value.setText(f"{k1:.3f}")
-                self.labelLensK2Value.setText(f"{k2:.3f}")
-            except:
-                msg = f"OPEN PROJECT: Unable to set Lens Characteristics"
-                logging.error(msg)
-                self.warning_dialog(
-                    f"Error Opening Project",
-                    msg,
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                )
-
-            try:
-                # Extract Frames settings
-                self.lineeditFrameStepValue.setText(
-                    f"{project_dict['extraction_frame_step']:d}"
-                )
-                self.frame_step_changed()
-                self.update_ffmpeg_parameters()
-                # CRITICAL: Update extraction UI with restored values
-                # This ensures the "New Frame Rate", "New Timestep", and "New Num Frames"
-                # labels are updated even if clip times haven't changed from defaults
-                self.video_controller._show_clip_information()
-            except:
-                msg = (f"OPEN PROJECT: Unable to set frame extraction "
-                       f"information")
-                logging.error(msg)
-                self.warning_dialog(
-                    f"Error Opening Project",
-                    msg,
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                )
-
-            # Task 2 - Image Frames
-            # If there are loaded frames, the project file should have an
-            # imagebrowser_sequence and index, set those
-            try:
-                # There are image frames
-                if project_dict["imagebrowser_sequence"] is not None:
-                    self.imagebrowser.sequence_index = project_dict["sequence_index"]
-                    self.imagebrowser.sequence = [
-                        os.path.join(self.swap_image_directory, item)
-                        for item in project_dict["imagebrowser_sequence"]
-                    ]
-                    self.imagebrowser.glob_pattern = f"f*.jpg"
-                    self.imagebrowser.image_path = os.path.join(
-                        self.swap_image_directory,
-                        project_dict["imagebrowser_image_path"],
-                    )
-                    self.imagebrowser.folder_path = self.swap_image_directory
-                    self.imagebrowser.reload = True  # Ensures the frame loader will not prompt user for a folder
-                    self.imagebrowser.open_image_folder()
-                    self.imagebrowser.reload = False
-                    self.groupboxTools.setEnabled(True)
-                    self.groupboxProcessing.setEnabled(True)
-
-                    # Update Export Frames
-                    self.set_button_color("buttonExtractVideoFrames", "good")
-                    self.set_menu_item_color("actionOpen_Image_Folder", "good")
-                    self.set_tab_icon("tabImageFrameProcessing", "good")
-            except KeyError:
-                pass
-
-            # Take note of if there are already transformed frames
-            if glob.glob(os.path.join(self.swap_image_directory, "t*.jpg")):
-                self.is_transformed_frames = True
-
-            # Task 3 - Orthorectification
-            # Load a GCP image if available
-            try:
-                calibration_image_path = os.path.join(
-                    self.swap_orthorectification_directory, "!calibration_image.jpg"
-                )
-
-                if os.path.exists(
-                    calibration_image_path
-                ):  # Check for !calibration_image.jpg
-                    self.ortho_original_image.open(filepath=calibration_image_path)
                     self.ortho_original_image.setEnabled(True)
-                    self.set_menu_item_color("actionOpen_Ground_Control_Image", "good")
-                elif (
-                    "last_ortho_gcp_image_path" in project_dict
-                    and project_dict["last_ortho_gcp_image_path"] is not None
-                ):  # Check for last known GCP image path
-                    self.last_ortho_gcp_image_path = project_dict[
-                        "last_ortho_gcp_image_path"
-                    ]
-                    if os.path.exists(self.last_ortho_gcp_image_path):
-                        self.ortho_original_image.open(
-                            filepath=self.last_ortho_gcp_image_path
-                        )
-                        self.ortho_original_image.setEnabled(True)
-                        self.set_menu_item_color(
-                            "actionOpen_Ground_Control_Image", "good"
-                        )
-                    else:  # Path to GCP image is invalid, ask the user
-                        choices = ("Ok", "Cancel")
-                        choice = self.custom_dialog_index(
-                            title="Project File Issue",
-                            message=(
-                                "The last known path to the GCP image is not valid.\n\n"
-                                "This may be because the GCP image file was moved or deleted. "
-                                "Please select the GCP image file to continue loading the project, "
-                                "or cancel to skip this step."
-                            ),
-                            choices=choices,
-                        )
-                        if choices[choice].lower() == "ok":
-                            filter_spec = "Jpeg Image (*.jpg);;All files (*.*)"
-                            gcp_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-                                None,
-                                "Select Ground Control Points (GCP) Image",
-                                self.project_filename,  # path
-                                filter_spec,
-                            )
-                            if gcp_path:
-                                try:
-                                    # Put image into the viewer
-                                    self.ortho_original_load_gcp_image(gcp_path)
-                                    self.sticky_settings.set(
-                                        "last_ortho_gcp_image_path",
-                                        self.ortho_original_image.image_file_path,
-                                    )
-                                except KeyError:
-                                    self.sticky_settings.new(
-                                        "last_ortho_gcp_image_path",
-                                        self.ortho_original_image.image_file_path,
-                                    )
-                        else:
-                            return
-                else:  # No valid GCP image found, prompt user
+                    self.set_menu_item_color(
+                        "actionOpen_Ground_Control_Image", "good"
+                    )
+                else:  # Path to GCP image is invalid, ask the user
                     choices = ("Ok", "Cancel")
                     choice = self.custom_dialog_index(
-                        title="No GCP Image Found",
+                        title="Project File Issue",
                         message=(
-                            "No valid GCP image file could be found in the project directory "
-                            "or in the swap orthorectification directory.\n\n"
-                            "Please select the GCP image file to continue, or cancel to skip this step."
+                            "The last known path to the GCP image is not valid.\n\n"
+                            "This may be because the GCP image file was moved or deleted. "
+                            "Please select the GCP image file to continue loading the project, "
+                            "or cancel to skip this step."
                         ),
                         choices=choices,
                     )
@@ -1276,509 +1242,543 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                                 )
                     else:
                         return
-            except KeyError:
-                pass
-
-            # Load GCP Points table
-            try:
-                ground_control_points_path = os.path.join(
-                    self.swap_orthorectification_directory, "ground_control_points.csv"
+            else:  # No valid GCP image found, prompt user
+                choices = ("Ok", "Cancel")
+                choice = self.custom_dialog_index(
+                    title="No GCP Image Found",
+                    message=(
+                        "No valid GCP image file could be found in the project directory "
+                        "or in the swap orthorectification directory.\n\n"
+                        "Please select the GCP image file to continue, or cancel to skip this step."
+                    ),
+                    choices=choices,
                 )
-
-                if os.path.exists(ground_control_points_path):
-                    # Prioritize loading ground_control_points.csv if it exists
-                    self.orthotable_load_csv_on_open(ground_control_points_path)
-                elif "orthotable_dataframe" in project_dict:
-                    # Fallback to project_dict["orthotable_dataframe"] if
-                    # no CSV file
-                    self.orthotable_dataframe = pd.DataFrame(
-                        project_dict["orthotable_dataframe"]
+                if choices[choice].lower() == "ok":
+                    filter_spec = "Jpeg Image (*.jpg);;All files (*.*)"
+                    gcp_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                        None,
+                        "Select Ground Control Points (GCP) Image",
+                        self.project_filename,  # path
+                        filter_spec,
                     )
-                    self.orthotable_file_survey_units = "Metric"  # Always metric
-                    self.orthotable_populate_table(self.orthotable_dataframe)
-                    self.orthotable_update_table_headers()
-                    self.orthotable_change_units()
-                    self.is_ortho_table_loaded = True
-                    self.set_button_color("toolbuttonOpenOrthoPointsTable", "good")
-                    self.set_menu_item_color(
-                        "actionImport_Ground_Control_Points_Table", "good"
-                    )
-                    # Write DataFrame to ground_control_points.csv. This
-                    # file will always be in meters.
-                    self.orthotable_dataframe.to_csv(
-                        ground_control_points_path, index=False
-                    )
-                    logging.info(
-                        f"PROJECT IMPORT: GCP file was not present in the "
-                        f"project file "
-                        f"(possibly an earlier version of IVy). A copy "
-                        f"of the currently loaded GCP table saved to "
-                        f"project structure. NOTE: units are METERS."
-                    )
-            except Exception as e:
-                # Log or handle exception
-                pass
+                    if gcp_path:
+                        try:
+                            # Put image into the viewer
+                            self.ortho_original_load_gcp_image(gcp_path)
+                            self.sticky_settings.set(
+                                "last_ortho_gcp_image_path",
+                                self.ortho_original_image.image_file_path,
+                            )
+                        except KeyError:
+                            self.sticky_settings.new(
+                                "last_ortho_gcp_image_path",
+                                self.ortho_original_image.image_file_path,
+                            )
+                else:
+                    return
+        except KeyError:
+            pass
 
-            # Water surface elevation
-            try:
-                if project_dict.get("water_surface_elevation") is not None:
-                    self.ortho_rectified_wse_m = project_dict["water_surface_elevation"]
-                    self.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(
-                        self.ortho_rectified_wse_m *
-                        units_conversion(self.display_units)['L'])
-            except Exception as e:
-                # Log or handle exception
-                pass
+        # Load GCP Points table
+        try:
+            ground_control_points_path = os.path.join(
+                self.swap_orthorectification_directory, "ground_control_points.csv"
+            )
 
-            # Pixel ground scale distance
-            try:
-                if project_dict.get("pixel_ground_scale_distance_m") is not None:
-                    self.pixel_ground_scale_distance_m = project_dict[
-                        "pixel_ground_scale_distance_m"
-                    ]
-                    self.lineeditPixelGSD.setText(
-                        f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']}"
-                    )
-            except Exception as e:
-                # Log or handle exception
-                pass
-
-            if project_dict.get("is_ortho_flip_x") is not None:
-                self.is_ortho_flip_x = project_dict.get("is_ortho_flip_x")
-                self.checkBoxOrthoFlipX.setChecked(self.is_ortho_flip_x)
-            if project_dict.get("is_ortho_flip_y") is not None:
-                self.is_ortho_flip_y = project_dict.get("is_ortho_flip_y")
-                self.checkBoxOrthoFlipY.setChecked(self.is_ortho_flip_y)
-
-            # Rectify image?
-            self.groupboxOrthoOrigImageTools.setEnabled(True)
-            self.groupboxExportOrthoFrames.setEnabled(True)
-            self.toolbuttonOrthoOrigImageDigitizePoint.setEnabled(
-                True
-            )  # must load table first
-            self.toolbuttonOpenOrthoPointsTable.setEnabled(True)
-
-            try:
-                # if we have this, the user previous rectified, so go ahead
-                # and trigger rectify single frame
-
-                # Apply the same flip X & Y the user saved.
-
-
-                if project_dict["pixel_ground_scale_distance_m"] is not None:
-                    self.rectify_single_frame()
-                    self.set_button_color("buttonRectifyCurrentImage", "good")
-            except:
-                pass
-
-            # Task 4 - Cross-section geometry
-            # Look for the AC3 file in 5-discharge and load from there. If
-            # that file is not present, try t oload what is in the
-            # project_dict. Otherwise skip this step.
-            try:
-                cross_section_file_path = os.path.join(
-                    self.swap_discharge_directory, "cross_section_ac3.mat"
+            if os.path.exists(ground_control_points_path):
+                # Prioritize loading ground_control_points.csv if it exists
+                self.orthotable_load_csv_on_open(ground_control_points_path)
+            elif "orthotable_dataframe" in project_dict:
+                # Fallback to project_dict["orthotable_dataframe"] if
+                # no CSV file
+                self.orthotable_dataframe = pd.DataFrame(
+                    project_dict["orthotable_dataframe"]
                 )
-                if os.path.exists(cross_section_file_path):
-                    # Prioritize loading cross_section_ac3.mat if it exists
-                    self.xs_survey.load_areacomp(cross_section_file_path)
+                self.orthotable_file_survey_units = "Metric"  # Always metric
+                self.orthotable_populate_table(self.orthotable_dataframe)
+                self.orthotable_update_table_headers()
+                self.orthotable_change_units()
+                self.is_ortho_table_loaded = True
+                self.set_button_color("toolbuttonOpenOrthoPointsTable", "good")
+                self.set_menu_item_color(
+                    "actionImport_Ground_Control_Points_Table", "good"
+                )
+                # Write DataFrame to ground_control_points.csv. This
+                # file will always be in meters.
+                self.orthotable_dataframe.to_csv(
+                    ground_control_points_path, index=False
+                )
+                logging.info(
+                    f"PROJECT IMPORT: GCP file was not present in the "
+                    f"project file "
+                    f"(possibly an earlier version of IVy). A copy "
+                    f"of the currently loaded GCP table saved to "
+                    f"project structure. NOTE: units are METERS."
+                )
+        except Exception as e:
+            # Log or handle exception
+            pass
+
+        # Water surface elevation
+        try:
+            if project_dict.get("water_surface_elevation") is not None:
+                self.ortho_rectified_wse_m = project_dict["water_surface_elevation"]
+                self.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(
+                    self.ortho_rectified_wse_m *
+                    units_conversion(self.display_units)['L'])
+        except Exception as e:
+            # Log or handle exception
+            pass
+
+        # Pixel ground scale distance
+        try:
+            if project_dict.get("pixel_ground_scale_distance_m") is not None:
+                self.pixel_ground_scale_distance_m = project_dict[
+                    "pixel_ground_scale_distance_m"
+                ]
+                self.lineeditPixelGSD.setText(
+                    f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']}"
+                )
+        except Exception as e:
+            # Log or handle exception
+            pass
+
+        if project_dict.get("is_ortho_flip_x") is not None:
+            self.is_ortho_flip_x = project_dict.get("is_ortho_flip_x")
+            self.checkBoxOrthoFlipX.setChecked(self.is_ortho_flip_x)
+        if project_dict.get("is_ortho_flip_y") is not None:
+            self.is_ortho_flip_y = project_dict.get("is_ortho_flip_y")
+            self.checkBoxOrthoFlipY.setChecked(self.is_ortho_flip_y)
+
+        # Rectify image?
+        self.groupboxOrthoOrigImageTools.setEnabled(True)
+        self.groupboxExportOrthoFrames.setEnabled(True)
+        self.toolbuttonOrthoOrigImageDigitizePoint.setEnabled(
+            True
+        )  # must load table first
+        self.toolbuttonOpenOrthoPointsTable.setEnabled(True)
+
+        try:
+            # if we have this, the user previous rectified, so go ahead
+            # and trigger rectify single frame
+
+            # Apply the same flip X & Y the user saved.
+
+
+            if project_dict["pixel_ground_scale_distance_m"] is not None:
+                self.rectify_single_frame()
+                self.set_button_color("buttonRectifyCurrentImage", "good")
+        except:
+            pass
+
+        # Task 4 - Cross-section geometry
+        # Look for the AC3 file in 5-discharge and load from there. If
+        # that file is not present, try t oload what is in the
+        # project_dict. Otherwise skip this step.
+        try:
+            cross_section_file_path = os.path.join(
+                self.swap_discharge_directory, "cross_section_ac3.mat"
+            )
+            if os.path.exists(cross_section_file_path):
+                # Prioritize loading cross_section_ac3.mat if it exists
+                self.xs_survey.load_areacomp(cross_section_file_path)
+                self.is_area_comp_loaded = True
+                self.toolBox_bathymetry.setEnabled(True)
+            elif project_dict["bathymetry_ac3_filename"] is not None:
+                fname = project_dict["bathymetry_ac3_filename"]
+                if os.path.exists(fname):
+                    self.xs_survey.load_areacomp(fname)
                     self.is_area_comp_loaded = True
                     self.toolBox_bathymetry.setEnabled(True)
-                elif project_dict["bathymetry_ac3_filename"] is not None:
-                    fname = project_dict["bathymetry_ac3_filename"]
-                    if os.path.exists(fname):
-                        self.xs_survey.load_areacomp(fname)
-                        self.is_area_comp_loaded = True
-                        self.toolBox_bathymetry.setEnabled(True)
-                    else:
-                        self.warning_dialog(
-                            "AreaComp File Not Found",
-                            "Unable to load AreaComp3 file path "
-                            "that was saved in the IVy Project "
-                            "file. Please verify it exists. "
-                            "\n\nYou can re-import bathymetry "
-                            "with the Import Menu.",
-                            style="ok",
-                            icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
-                        )
+                else:
+                    self.warning_dialog(
+                        "AreaComp File Not Found",
+                        "Unable to load AreaComp3 file path "
+                        "that was saved in the IVy Project "
+                        "file. Please verify it exists. "
+                        "\n\nYou can re-import bathymetry "
+                        "with the Import Menu.",
+                        style="ok",
+                        icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+                    )
 
-                cross_section_start_bank = project_dict.get(
-                    "cross_section_start_bank")
-                if cross_section_start_bank is not None:
-                    self.cross_section_start_bank = cross_section_start_bank
+            cross_section_start_bank = project_dict.get(
+                "cross_section_start_bank")
+            if cross_section_start_bank is not None:
+                self.cross_section_start_bank = cross_section_start_bank
 
-                cross_section_line = project_dict.get("cross_section_line")
-                if cross_section_line is not None:
-                    self.cross_section_line = deserialize_numpy_array(
-                        cross_section_line)
-                    self.cross_section_rectified_eps = self.cross_section_line.reshape(
-                        2, 2)
+            cross_section_line = project_dict.get("cross_section_line")
+            if cross_section_line is not None:
+                self.cross_section_line = deserialize_numpy_array(
+                    cross_section_line)
+                self.cross_section_rectified_eps = self.cross_section_line.reshape(
+                    2, 2)
 
-                    # Update the UI
-                    self._draw_cross_section_line()
-                    self._update_cross_section_spinboxes()
-                    self._project_cross_section_line()
+                # Update the UI
+                self._draw_cross_section_line()
+                self._update_cross_section_spinboxes()
+                self._project_cross_section_line()
 
-                rectification_method = project_dict.get("rectification_method")
-                if rectification_method is not None:
-                    self.rectification_method = rectification_method
+            rectification_method = project_dict.get("rectification_method")
+            if rectification_method is not None:
+                self.rectification_method = rectification_method
 
-                    self.set_menu_item_color("actionImport_Bathymetry", "good")
-                    self.set_tab_icon("tabCrossSectionGeometry", "good")
+                self.set_menu_item_color("actionImport_Bathymetry", "good")
+                self.set_tab_icon("tabCrossSectionGeometry", "good")
 
-            except (TypeError, AttributeError, KeyError) as e:
-                logging.warning(f"Failed to load Cross-section parameters: {e}")
+        except (TypeError, AttributeError, KeyError) as e:
+            logging.warning(f"Failed to load Cross-section parameters: {e}")
 
-            # Task 5 - Grid Preparation
-            try:
-                # Handle mask polygons
-                mask_polygons = project_dict.get("mask_polygons")
-                if mask_polygons:
-                    for polygon in mask_polygons:
-                        self.gridpreparation.imageBrowser.scene.set_current_instruction(
-                            Instructions.ADD_POLYGON_INSTRUCTION,
-                            points=deserialize_numpy_array(polygon),
-                        )
+        # Task 5 - Grid Preparation
+        try:
+            # Handle mask polygons
+            mask_polygons = project_dict.get("mask_polygons")
+            if mask_polygons:
+                for polygon in mask_polygons:
+                    self.gridpreparation.imageBrowser.scene.set_current_instruction(
+                        Instructions.ADD_POLYGON_INSTRUCTION,
+                        points=deserialize_numpy_array(polygon),
+                    )
 
-                # Handle cross-section grid
-                if project_dict.get("is_cross_section_grid"):
-                    self.is_cross_section_grid = True
-                    num_points = project_dict.get("number_grid_points_along_xs_line")
+            # Handle cross-section grid
+            if project_dict.get("is_cross_section_grid"):
+                self.is_cross_section_grid = True
+                num_points = project_dict.get("number_grid_points_along_xs_line")
 
-                    if num_points:
-                        self.rectify_single_frame()
-                        self.number_grid_points_along_xs_line = num_points
-                        self.spinbocXsLineNumPoints.setValue(num_points)
-
-                        self.toolbuttonCreateXsLine.setChecked(True)
-                        self.gridpreparation.add_line_of_given_length()
-                        self.create_line_grid(mode="cross_section")
-                        self.toolbuttonCreateXsLine.setChecked(False)
-                        self.set_tab_icon("tabGridCreation", "good")
-
-                # Handle results grid
-                results_grid = project_dict.get("results_grid")
-                if results_grid:
+                if num_points:
                     self.rectify_single_frame()
-                    self.line_mode = project_dict.get("line_mode")
+                    self.number_grid_points_along_xs_line = num_points
+                    self.spinbocXsLineNumPoints.setValue(num_points)
 
-                    if self.cross_section_line_exists:
-                        self.gridpreparation.add_line_of_given_length()
-                        num_points = project_dict.get("number_grid_points_along_xs_line",
-                                                      0)
-                        self.spinbocXsLineNumPoints.setValue(num_points)
-                        self.create_line_grid(mode="cross_section")
+                    self.toolbuttonCreateXsLine.setChecked(True)
+                    self.gridpreparation.add_line_of_given_length()
+                    self.create_line_grid(mode="cross_section")
+                    self.toolbuttonCreateXsLine.setChecked(False)
+                    self.set_tab_icon("tabGridCreation", "good")
 
-                # Handle horizontal grid spacing
-                horz_grid_size = project_dict.get("horz_grid_size")
-                if horz_grid_size is not None:
-                    self.spinboxHorizGridSpacing.setValue(horz_grid_size)
+            # Handle results grid
+            results_grid = project_dict.get("results_grid")
+            if results_grid:
+                self.rectify_single_frame()
+                self.line_mode = project_dict.get("line_mode")
 
-            except (TypeError, AttributeError, KeyError) as e:
-                logging.warning(f"Failed to load Grid Prep parameters: {e}")
+                if self.cross_section_line_exists:
+                    self.gridpreparation.add_line_of_given_length()
+                    num_points = project_dict.get("number_grid_points_along_xs_line",
+                                                  0)
+                    self.spinbocXsLineNumPoints.setValue(num_points)
+                    self.create_line_grid(mode="cross_section")
 
-            # Task 6 - STIV information
-            try:
-                # Set Keys that map directly to attributes and widgets
-                stiv_params = [
-                    ("stiv_dphi", "stiv_dphi", self.spinboxSTIVdPhi),
-                    ("stiv_phi_origin", "stiv_phi_origin",
-                     self.spinboxSTIVPhiOrigin),
-                    ("stiv_phi_range", "stiv_phi_range",
-                     self.spinboxSTIVPhiRange),
-                    ("stiv_max_vel_threshold_mps", "stiv_max_vel_threshold_mps",
-                     self.spinboxSTIVMaxVelThreshold),
-                    ("stiv_gaussian_blur_sigma", "stiv_gaussian_blur_sigma",
-                     self.doublespinboxStivGaussianBlurSigma),
-                ]
+            # Handle horizontal grid spacing
+            horz_grid_size = project_dict.get("horz_grid_size")
+            if horz_grid_size is not None:
+                self.spinboxHorizGridSpacing.setValue(horz_grid_size)
 
-                for key, attr, item in stiv_params:
-                    value = project_dict.get(key)
-                    if value is not None:
-                        setattr(self, attr, value)
-                        item.setValue(value)
+        except (TypeError, AttributeError, KeyError) as e:
+            logging.warning(f"Failed to load Grid Prep parameters: {e}")
 
-                # Special handling for stiv_num_pixels since it has extra logic
-                stiv_num_pixels = project_dict.get("stiv_num_pixels")
-                stiv_search_line_length = project_dict.get(
-                    "stiv_search_line_length_m")
-                if stiv_num_pixels is not None and self.pixel_ground_scale_distance_m is not None:
-                    self.stiv_num_pixels = stiv_num_pixels
+        # Task 6 - STIV information
+        try:
+            # Set Keys that map directly to attributes and widgets
+            stiv_params = [
+                ("stiv_dphi", "stiv_dphi", self.spinboxSTIVdPhi),
+                ("stiv_phi_origin", "stiv_phi_origin",
+                 self.spinboxSTIVPhiOrigin),
+                ("stiv_phi_range", "stiv_phi_range",
+                 self.spinboxSTIVPhiRange),
+                ("stiv_max_vel_threshold_mps", "stiv_max_vel_threshold_mps",
+                 self.spinboxSTIVMaxVelThreshold),
+                ("stiv_gaussian_blur_sigma", "stiv_gaussian_blur_sigma",
+                 self.doublespinboxStivGaussianBlurSigma),
+            ]
 
-                    if stiv_search_line_length is None:  # Will be meters
-                        self.stiv_search_line_length_m = (
-                                stiv_num_pixels * self.pixel_ground_scale_distance_m
-                        )
-                    else:
-                        self.stiv_search_line_length_m = stiv_search_line_length
+            for key, attr, item in stiv_params:
+                value = project_dict.get(key)
+                if value is not None:
+                    setattr(self, attr, value)
+                    item.setValue(value)
 
-                    # Set in the UI
-                    self.doublespinboxStivSearchLineDistance.setValue(
-                        self.stiv_search_line_length_m * self.survey_units["L"]
+            # Special handling for stiv_num_pixels since it has extra logic
+            stiv_num_pixels = project_dict.get("stiv_num_pixels")
+            stiv_search_line_length = project_dict.get(
+                "stiv_search_line_length_m")
+            if stiv_num_pixels is not None and self.pixel_ground_scale_distance_m is not None:
+                self.stiv_num_pixels = stiv_num_pixels
+
+                if stiv_search_line_length is None:  # Will be meters
+                    self.stiv_search_line_length_m = (
+                            stiv_num_pixels * self.pixel_ground_scale_distance_m
                     )
+                else:
+                    self.stiv_search_line_length_m = stiv_search_line_length
+
+                # Set in the UI
+                self.doublespinboxStivSearchLineDistance.setValue(
+                    self.stiv_search_line_length_m * self.survey_units["L"]
+                )
 
 
-            except (TypeError, AttributeError, KeyError) as e:
-                logging.warning(f"Failed to load STIV parameters: {e}")
+        except (TypeError, AttributeError, KeyError) as e:
+            logging.warning(f"Failed to load STIV parameters: {e}")
 
-            # Task 7 - STIV Results
-            try:
-                # Load STIV Normals if available
-                normals = project_dict.get("stiv_magnitude_normals")
-                if normals is not None:
-                    self.stiv.magnitude_normals_mps = deserialize_numpy_array(
-                        normals)
+        # Task 7 - STIV Results
+        try:
+            # Load STIV Normals if available
+            normals = project_dict.get("stiv_magnitude_normals")
+            if normals is not None:
+                self.stiv.magnitude_normals_mps = deserialize_numpy_array(
+                    normals)
 
-                # Load STIV Magnitudes and Directions if available
-                magnitudes_mps = project_dict.get("stiv_magnitudes")
-                if magnitudes_mps is not None:
-                    self.results_grid = deserialize_numpy_array(
-                        project_dict["results_grid"])
-                    self.stiv.magnitudes_mps = deserialize_numpy_array(magnitudes_mps)
-                    self.stiv.directions = deserialize_numpy_array(
-                        project_dict["stiv_directions"])
+            # Load STIV Magnitudes and Directions if available
+            magnitudes_mps = project_dict.get("stiv_magnitudes")
+            if magnitudes_mps is not None:
+                self.results_grid = deserialize_numpy_array(
+                    project_dict["results_grid"])
+                self.stiv.magnitudes_mps = deserialize_numpy_array(magnitudes_mps)
+                self.stiv.directions = deserialize_numpy_array(
+                    project_dict["stiv_directions"])
 
-                    directions_rad = np.radians(self.stiv.directions)
-                    X = self.results_grid[:, 0].astype(float)
-                    Y = self.results_grid[:, 1].astype(float)
+                directions_rad = np.radians(self.stiv.directions)
+                X = self.results_grid[:, 0].astype(float)
+                Y = self.results_grid[:, 1].astype(float)
 
-                    # Attempt to load from CSV (overrides the above if successful)
-                    csv_file_path = os.path.join(
-                        self.swap_velocities_directory, "stiv_results.csv")
-                    csv_data = self._load_stiv_results_from_csv(csv_file_path)
-                    if csv_data:
-                        X = csv_data["X"]
-                        Y = csv_data["Y"]
+                # Attempt to load from CSV (overrides the above if successful)
+                csv_file_path = os.path.join(
+                    self.swap_velocities_directory, "stiv_results.csv")
+                csv_data = self._load_stiv_results_from_csv(csv_file_path)
+                if csv_data:
+                    X = csv_data["X"]
+                    Y = csv_data["Y"]
 
-                    directions_deg_geo = self.stiv.directions
+                directions_deg_geo = self.stiv.directions
 
-                    # Ensure the U,V components are in the correct quadrant
-                    # orientation
-                    U, V = calculate_uv_components(
-                        self.stiv.magnitudes_mps, directions_deg_geo
+                # Ensure the U,V components are in the correct quadrant
+                # orientation
+                U, V = calculate_uv_components(
+                    self.stiv.magnitudes_mps, directions_deg_geo
+                )
+                M = np.sqrt(U**2 + V**2)
+
+                # Project the normals
+                (
+                    vectors,
+                    norm_vectors,
+                    normal_unit_vector,
+                    scalar_projections,
+                    tagline_dir_geog_deg,
+                    mean_flow_dir_geog_deg,
+                ) = compute_vectors_with_projections(X, Y, U, V)
+
+                # Clear existing vectors, then Plot the new vectors
+                # Check for NaN values in U and V arrays prior to plotting
+                nan_indices = np.logical_or(
+                    np.isnan(vectors[:, 2]), np.isnan(vectors[:, 3])
+                )
+                self.stiv.imageBrowser.clearLines()
+                if np.all(nan_indices):
+                    logging.warning(
+                        "STIV: There are no valid velocities, check settings."
                     )
-                    M = np.sqrt(U**2 + V**2)
-
-                    # Project the normals
-                    (
-                        vectors,
-                        norm_vectors,
-                        normal_unit_vector,
-                        scalar_projections,
-                        tagline_dir_geog_deg,
-                        mean_flow_dir_geog_deg,
-                    ) = compute_vectors_with_projections(X, Y, U, V)
-
-                    # Clear existing vectors, then Plot the new vectors
-                    # Check for NaN values in U and V arrays prior to plotting
-                    nan_indices = np.logical_or(
-                        np.isnan(vectors[:, 2]), np.isnan(vectors[:, 3])
+                    scalar_projections = np.zeros_like(M)
+                else:
+                    vectors_draw = quiver(
+                        vectors[~nan_indices, 0],
+                        vectors[~nan_indices, 1],
+                        vectors[~nan_indices, 2],
+                        vectors[~nan_indices, 3],
+                        global_scale=self.vector_scale,
                     )
-                    self.stiv.imageBrowser.clearLines()
-                    if np.all(nan_indices):
-                        logging.warning(
-                            "STIV: There are no valid velocities, check settings."
-                        )
-                        scalar_projections = np.zeros_like(M)
-                    else:
-                        vectors_draw = quiver(
-                            vectors[~nan_indices, 0],
-                            vectors[~nan_indices, 1],
-                            vectors[~nan_indices, 2],
-                            vectors[~nan_indices, 3],
-                            global_scale=self.vector_scale,
-                        )
-                        norm_vectors_draw = quiver(
-                            norm_vectors[~nan_indices, 0],
-                            norm_vectors[~nan_indices, 1],
-                            norm_vectors[~nan_indices, 2],
-                            norm_vectors[~nan_indices, 3],
-                            global_scale=self.vector_scale,
-                        )
-                        plot_quivers(self.stiv.imageBrowser, vectors_draw,
-                                     "green", Qt.DotLine)
-                        plot_quivers(self.stiv.imageBrowser, norm_vectors_draw,
-                                     "yellow", Qt.SolidLine)
-                    self.stiv.magnitude_normals_mps = np.abs(scalar_projections)
-                    self.stiv_exists = True
+                    norm_vectors_draw = quiver(
+                        norm_vectors[~nan_indices, 0],
+                        norm_vectors[~nan_indices, 1],
+                        norm_vectors[~nan_indices, 2],
+                        norm_vectors[~nan_indices, 3],
+                        global_scale=self.vector_scale,
+                    )
+                    plot_quivers(self.stiv.imageBrowser, vectors_draw,
+                                 "green", Qt.DotLine)
+                    plot_quivers(self.stiv.imageBrowser, norm_vectors_draw,
+                                 "yellow", Qt.SolidLine)
+                self.stiv.magnitude_normals_mps = np.abs(scalar_projections)
+                self.stiv_exists = True
 
-                    self.set_qwidget_state_by_name("tabSTIVExhaustive", True)
-                    self.set_tab_icon("tabImageVelocimetry", "good")
+                self.set_qwidget_state_by_name("tabSTIVExhaustive", True)
+                self.set_tab_icon("tabImageVelocimetry", "good")
+                self.set_tab_icon(
+                    "tabSTIVExhaustive",
+                    "good",
+                    self.tabWidget_ImageVelocimetryMethods,
+                )
+
+                # Load any STIs
+                if glob.glob(os.path.join(self.swap_image_directory, "STI*.jpg")):
+                    thetas = project_dict.get("thetas", None)
+                    if thetas is not None:
+                        self.stiv.thetas = deserialize_numpy_array(thetas)
+                    self.is_stis = True
+                    sti_paths = glob.glob(
+                        os.path.join(self.swap_image_directory, "STI*.jpg")
+                    )
+                    self.sti.table_load_data(sti_images=sti_paths)
+
+                # Add any manual STI streak angles
+                manual_sti_lines = project_dict.get("manual_sti_lines", None)
+                if manual_sti_lines is not None:
+                    self.sti.manual_sti_lines = manual_sti_lines
+                manual_average_directions = project_dict.get(
+                    "manual_average_directions", None
+                )
+                if manual_average_directions is not None:
+                    self.sti.manual_average_directions = manual_average_directions
+                    self.is_manual_sti_corrections = True
+                    for row, average_direction in enumerate(
+                        manual_average_directions
+                    ):
+                        if average_direction:
+                            sti_path = sti_paths[row]
+                            theta = self.stiv.thetas[row]
+                            sti_pixmap = self.sti.draw_manual_lines_on_image(
+                                sti_path, theta, average_direction
+                            )
+                            sti_label = QtWidgets.QLabel()
+                            sti_label.setPixmap(sti_pixmap)
+                            self.sti.Table.setCellWidget(row, 1, sti_label)
+
+                            # Set the manual velocity
+                            # Convert to velocity
+                            gsd = self.pixel_ground_scale_distance_m
+                            dt = self.extraction_timestep_ms / 1000
+                            manual_velocity = (
+                                -np.tan(np.deg2rad(average_direction)) * gsd / dt
+                            )
+                            new_item = QtWidgets.QTableWidgetItem(
+                                f"{manual_velocity * self.survey_units['V']:.2f}"
+                            )
+                            self.sti.Table.setItem(
+                                row, 5, QtWidgets.QTableWidgetItem(new_item)
+                            )
+
+                # Load and STI Comments into the table
+                try:
+                    if project_dict.get("sti_comments") is not None:
+                        set_column_contents(
+                            self.sti.Table,
+                            column_index=6,
+                            data=project_dict["sti_comments"],
+                        )
+                except IndexError:
+                    logging.warning(
+                        f"OPEN PROJECT: Attempted to load "
+                        f"STI comments from the project file "
+                        f"but an invalid column index was "
+                        f"passed."
+                    )
                     self.set_tab_icon(
-                        "tabSTIVExhaustive",
+                        "tabSpaceTimeImageReview",
                         "good",
                         self.tabWidget_ImageVelocimetryMethods,
                     )
 
-                    # Load any STIs
-                    if glob.glob(os.path.join(self.swap_image_directory, "STI*.jpg")):
-                        thetas = project_dict.get("thetas", None)
-                        if thetas is not None:
-                            self.stiv.thetas = deserialize_numpy_array(thetas)
-                        self.is_stis = True
-                        sti_paths = glob.glob(
-                            os.path.join(self.swap_image_directory, "STI*.jpg")
-                        )
-                        self.sti.table_load_data(sti_images=sti_paths)
+        except KeyError:
+            pass
 
-                    # Add any manual STI streak angles
-                    manual_sti_lines = project_dict.get("manual_sti_lines", None)
-                    if manual_sti_lines is not None:
-                        self.sti.manual_sti_lines = manual_sti_lines
-                    manual_average_directions = project_dict.get(
-                        "manual_average_directions", None
-                    )
-                    if manual_average_directions is not None:
-                        self.sti.manual_average_directions = manual_average_directions
-                        self.is_manual_sti_corrections = True
-                        for row, average_direction in enumerate(
-                            manual_average_directions
-                        ):
-                            if average_direction:
-                                sti_path = sti_paths[row]
-                                theta = self.stiv.thetas[row]
-                                sti_pixmap = self.sti.draw_manual_lines_on_image(
-                                    sti_path, theta, average_direction
-                                )
-                                sti_label = QtWidgets.QLabel()
-                                sti_label.setPixmap(sti_pixmap)
-                                self.sti.Table.setCellWidget(row, 1, sti_label)
+        # Task 8 - Discharge
+        discharge_results = project_dict.get("discharge_results")
+        if discharge_results is not None:
+            self.dischargecomputaton.update_discharge_results()
+            self.enable_disable_tabs(self.tabWidget, "tabDischarge", True)
+            # If there are manual STI changes, they need to be applied
+            if self.is_manual_sti_corrections:
+                self.sti.update_discharge_results_in_tab()
 
-                                # Set the manual velocity
-                                # Convert to velocity
-                                gsd = self.pixel_ground_scale_distance_m
-                                dt = self.extraction_timestep_ms / 1000
-                                manual_velocity = (
-                                    -np.tan(np.deg2rad(average_direction)) * gsd / dt
-                                )
-                                new_item = QtWidgets.QTableWidgetItem(
-                                    f"{manual_velocity * self.survey_units['V']:.2f}"
-                                )
-                                self.sti.Table.setItem(
-                                    row, 5, QtWidgets.QTableWidgetItem(new_item)
-                                )
+            # If we got here, enable the Report Button
+            self.toolButtonExportPDF.setEnabled(True)
 
-                    # Load and STI Comments into the table
-                    try:
-                        if project_dict.get("sti_comments") is not None:
-                            set_column_contents(
-                                self.sti.Table,
-                                column_index=6,
-                                data=project_dict["sti_comments"],
-                            )
-                    except IndexError:
-                        logging.warning(
-                            f"OPEN PROJECT: Attempted to load "
-                            f"STI comments from the project file "
-                            f"but an invalid column index was "
-                            f"passed."
-                        )
-                        self.set_tab_icon(
-                            "tabSpaceTimeImageReview",
-                            "good",
-                            self.tabWidget_ImageVelocimetryMethods,
-                        )
 
-            except KeyError:
+        # Update this associated with last process step
+        process_step = project_dict.get("process_step")
+        if process_step is not None:
+            self.process_step = process_step
+            if self.process_step == "Rectify Single Frame":
+                self.rectify_single_frame()
+            if self.process_step == "Rectify Many Frames":
+                # Show result in the Grid Preparation tab
+                first_transformed_image = self.imagebrowser.sequence[0]
+
+                self.gridpreparation.imageBrowser.scene.load_image(
+                    first_transformed_image
+                )
+                self.gridpreparation.imageBrowser.setEnabled(True)
+            if (
+                self.process_step == "Process STIV Exhaustive"
+                or self.process_step == "Process STIV"
+            ):  # Stay backwards compatible
+
+                pass
+            if self.process_step == "Process STIV Optimized":
                 pass
 
-            # Task 8 - Discharge
-            discharge_results = project_dict.get("discharge_results")
-            if discharge_results is not None:
-                self.dischargecomputaton.update_discharge_results()
-                self.enable_disable_tabs(self.tabWidget, "tabDischarge", True)
-                # If there are manual STI changes, they need to be applied
-                if self.is_manual_sti_corrections:
-                    self.sti.update_discharge_results_in_tab()
+        # Set to last used tab
+        try:
+            tab = project_dict["open_tab_index"]
+            self.tabWidget.setCurrentIndex(tab)
+        except KeyError:
+            msg = f"OPEN PROJECT: Error setting last tab"
+            logging.error(msg)
 
-                # If we got here, enable the Report Button
-                self.toolButtonExportPDF.setEnabled(True)
+        # Disable the other Grid Prep methods
+        to_disable = [
+            "PointPage",
+            "SimpleLinePage",
+            "RegularGridPage",
+        ]
+        self.set_qwidget_state_by_name(to_disable, False)
 
-
-            # Update this associated with last process step
-            process_step = project_dict.get("process_step")
-            if process_step is not None:
-                self.process_step = process_step
-                if self.process_step == "Rectify Single Frame":
-                    self.rectify_single_frame()
-                if self.process_step == "Rectify Many Frames":
-                    # Show result in the Grid Preparation tab
-                    first_transformed_image = self.imagebrowser.sequence[0]
-
-                    self.gridpreparation.imageBrowser.scene.load_image(
-                        first_transformed_image
-                    )
-                    self.gridpreparation.imageBrowser.setEnabled(True)
-                if (
-                    self.process_step == "Process STIV Exhaustive"
-                    or self.process_step == "Process STIV"
-                ):  # Stay backwards compatible
-
-                    pass
-                if self.process_step == "Process STIV Optimized":
-                    pass
-
-            # Set to last used tab
-            try:
-                tab = project_dict["open_tab_index"]
-                self.tabWidget.setCurrentIndex(tab)
-            except KeyError:
-                msg = f"OPEN PROJECT: Error setting last tab"
-                logging.error(msg)
-
-            # Disable the other Grid Prep methods
-            to_disable = [
-                "PointPage",
-                "SimpleLinePage",
-                "RegularGridPage",
-            ]
-            self.set_qwidget_state_by_name(to_disable, False)
-
-            # Check for image_stack if there are vectors
-            # Ask user if they want to make the stack
-            image_stack_memory_map_exists = os.path.exists(
-                os.path.join(self.swap_directory, "image_stack.dat")
+        # Check for image_stack if there are vectors
+        # Ask user if they want to make the stack
+        image_stack_memory_map_exists = os.path.exists(
+            os.path.join(self.swap_directory, "image_stack.dat")
+        )
+        if isinstance(self.stiv.image_stack, np.ndarray):
+            image_stack_exists = True
+        else:
+            image_stack_exists = False
+        stiv_exist = np.logical_or(
+            "stiv_magnitudes" in project_dict, "stiv_opt_magnitudes" in project_dict
+        )
+        if stiv_exist and not image_stack_exists:
+            message = (
+                f"Frames are extracted, but no Image Stack has been "
+                f"created. Would you like to create the Image Stack now?\n\n"
+                f"Note: An image stack is required before performing "
+                f"Image Velocimetry analyses."
             )
-            if isinstance(self.stiv.image_stack, np.ndarray):
-                image_stack_exists = True
-            else:
-                image_stack_exists = False
-            stiv_exist = np.logical_or(
-                "stiv_magnitudes" in project_dict, "stiv_opt_magnitudes" in project_dict
+            result = self.warning_dialog(
+                "Create Image Stack?",
+                message,
+                "YesCancel",
+                icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
             )
-            if stiv_exist and not image_stack_exists:
+            if result == "yes" and not self.image_processor_thread_is_running:
                 message = (
-                    f"Frames are extracted, but no Image Stack has been "
-                    f"created. Would you like to create the Image Stack now?\n\n"
-                    f"Note: An image stack is required before performing "
-                    f"Image Velocimetry analyses."
+                    "ORTHORECTIFICATION: Creating Image Stack. Image "
+                    "Velocimetry functions will be enabled when finished."
                 )
-                result = self.warning_dialog(
-                    "Create Image Stack?",
-                    message,
-                    "YesCancel",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+                self.update_statusbar(message)
+                # Create an image_stack of the resultant frames
+                # Update the ImageProcessor instance with the arguments and run
+                logging.debug(
+                    "orthorectify_many_thread_finished: About to "
+                    "execute self.start_image_stack_process()"
                 )
-                if result == "yes" and not self.image_processor_thread_is_running:
-                    message = (
-                        "ORTHORECTIFICATION: Creating Image Stack. Image "
-                        "Velocimetry functions will be enabled when finished."
-                    )
-                    self.update_statusbar(message)
-                    # Create an image_stack of the resultant frames
-                    # Update the ImageProcessor instance with the arguments and run
-                    logging.debug(
-                        "orthorectify_many_thread_finished: About to "
-                        "execute self.start_image_stack_process()"
-                    )
-                    self.start_image_stack_process()
+                self.start_image_stack_process()
 
-                    # Disable the Export Projected Frames button while the stack
-                    # process is running
-                    # self.set_qwidget_state_by_name(
-                    #     "pushbuttonExportProjectedFrames", False)
-                if result == "cancel":
-                    return
+                # Disable the Export Projected Frames button while the stack
+                # process is running
+                # self.set_qwidget_state_by_name(
+                #     "pushbuttonExportProjectedFrames", False)
+            if result == "cancel":
+                return
 
     def save_video_clip(self):
         """Executes when user clips save video clip. Prompts user for a save location for the video clip."""
