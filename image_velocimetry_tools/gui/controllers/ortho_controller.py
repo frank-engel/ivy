@@ -1080,8 +1080,8 @@ class OrthoController(BaseController):
             )
 
         # Display rectified image
-        mw.ortho_rectified_image.clearImage()
-        mw.ortho_rectified_image.addImage(transformed_image)
+        mw.ortho_rectified_image.scene.clearImage()
+        mw.ortho_rectified_image.scene.setImage(transformed_image)
         mw.ortho_rectified_image.setEnabled(True)
 
         # Update UI widgets
@@ -1173,8 +1173,8 @@ class OrthoController(BaseController):
         mw.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
 
         # Display rectified image
-        mw.ortho_rectified_image.clearImage()
-        mw.ortho_rectified_image.addImage(transformed_image)
+        mw.ortho_rectified_image.scene.clearImage()
+        mw.ortho_rectified_image.scene.setImage(transformed_image)
         mw.ortho_rectified_image.setEnabled(True)
 
         # Update UI widgets
@@ -1255,8 +1255,8 @@ class OrthoController(BaseController):
             mw.rectification_rmse_m = camera_params["projection_rms_error"]
 
         # Display rectified image
-        mw.ortho_rectified_image.clearImage()
-        mw.ortho_rectified_image.addImage(transformed_image)
+        mw.ortho_rectified_image.scene.clearImage()
+        mw.ortho_rectified_image.scene.setImage(transformed_image)
         mw.ortho_rectified_image.setEnabled(True)
 
         # Update UI widgets
