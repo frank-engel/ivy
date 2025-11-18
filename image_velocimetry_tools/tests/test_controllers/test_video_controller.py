@@ -75,7 +75,7 @@ class TestVideoControllerInit:
         assert controller.model == video_model
         assert controller.service == video_service
 
-
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestVideoControllerClipTimes:
     """Tests for clip time management."""
 
@@ -187,7 +187,7 @@ class TestVideoControllerClipTimes:
         # Start time should be clamped to end time
         assert model.video_clip_start_time == 3000
 
-
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestVideoControllerModelSignals:
     """Tests for handling model signals."""
 

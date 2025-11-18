@@ -1308,58 +1308,60 @@ class OrthoController(BaseController):
         projected_points = []
 
         # For each GCP, calculate where the ray from camera through GCP intersects water surface
-        for i, (pixel_xy, world_xyz) in enumerate(zip(pixel_coords, world_coords)):
-            # Ray direction: from camera position through GCP world position
-            ray_direction = world_xyz - camera_position
-            ray_direction = ray_direction / np.linalg.norm(ray_direction)  # Normalize
-
-            # Calculate intersection with water surface plane (Z = water_surface_elev)
-            # Ray equation: P = camera_position + t * ray_direction
-            # Plane equation: Z = water_surface_elev
-            # Solve: camera_position[2] + t * ray_direction[2] = water_surface_elev
-
-            if abs(ray_direction[2]) < 1e-10:
-                # Ray is parallel to water surface, skip
-                continue
-
-            # Parameter t at intersection
-            t = (water_surface_elev - camera_position[2]) / ray_direction[2]
-
-            if t < 0:
-                # Intersection is behind camera, skip
-                continue
-
-            # 3D intersection point on water surface
-            intersection_world = camera_position + t * ray_direction
-            intersection_world[2] = water_surface_elev  # Ensure exactly on plane
-
-            # Project intersection point back to pixel coordinates using camera matrix
-            # P_image = K * [X, Y, Z, 1]^T
-            world_homogeneous = np.array([
-                intersection_world[0],
-                intersection_world[1],
-                intersection_world[2],
-                1.0
-            ])
-
-            pixel_homogeneous = camera_matrix @ world_homogeneous
-            if abs(pixel_homogeneous[2]) > 1e-10:
-                intersection_pixel = pixel_homogeneous[:2] / pixel_homogeneous[2]
-            else:
-                continue
-
-            # Store for model
-            projected_points.append(intersection_pixel)
-
-            # Draw line from GCP pixel to projected pixel
-            # Line points: [GCP pixel, intersection pixel]
-            line_points = [
-                (float(pixel_xy[0]), float(pixel_xy[1])),
-                (float(intersection_pixel[0]), float(intersection_pixel[1]))
-            ]
-
-            # Draw on original image scene
-            self._add_dashed_line_to_scene(mw.ortho_original_image.scene, line_points)
+        # TODO: this math is not correct. It's projecting rays through the Principle Point and not along the
+        #  Z-axis for each point.
+        # for i, (pixel_xy, world_xyz) in enumerate(zip(pixel_coords, world_coords)):
+        #     # Ray direction: from camera position through GCP world position
+        #     ray_direction = world_xyz - camera_position
+        #     ray_direction = ray_direction / np.linalg.norm(ray_direction)  # Normalize
+        #
+        #     # Calculate intersection with water surface plane (Z = water_surface_elev)
+        #     # Ray equation: P = camera_position + t * ray_direction
+        #     # Plane equation: Z = water_surface_elev
+        #     # Solve: camera_position[2] + t * ray_direction[2] = water_surface_elev
+        #
+        #     if abs(ray_direction[2]) < 1e-10:
+        #         # Ray is parallel to water surface, skip
+        #         continue
+        #
+        #     # Parameter t at intersection
+        #     t = (water_surface_elev - camera_position[2]) / ray_direction[2]
+        #
+        #     if t < 0:
+        #         # Intersection is behind camera, skip
+        #         continue
+        #
+        #     # 3D intersection point on water surface
+        #     intersection_world = camera_position + t * ray_direction
+        #     intersection_world[2] = water_surface_elev  # Ensure exactly on plane
+        #
+        #     # Project intersection point back to pixel coordinates using camera matrix
+        #     # P_image = K * [X, Y, Z, 1]^T
+        #     world_homogeneous = np.array([
+        #         intersection_world[0],
+        #         intersection_world[1],
+        #         intersection_world[2],
+        #         1.0
+        #     ])
+        #
+        #     pixel_homogeneous = camera_matrix @ world_homogeneous
+        #     if abs(pixel_homogeneous[2]) > 1e-10:
+        #         intersection_pixel = pixel_homogeneous[:2] / pixel_homogeneous[2]
+        #     else:
+        #         continue
+        #
+        #     # Store for model
+        #     projected_points.append(intersection_pixel)
+        #
+        #     # Draw line from GCP pixel to projected pixel
+        #     # Line points: [GCP pixel, intersection pixel]
+        #     line_points = [
+        #         (float(pixel_xy[0]), float(pixel_xy[1])),
+        #         (float(intersection_pixel[0]), float(intersection_pixel[1]))
+        #     ]
+        #
+        #     # Draw on original image scene
+        #     self._add_dashed_line_to_scene(mw.ortho_original_image.scene, line_points)
 
         # Store projected points in model
         if projected_points:

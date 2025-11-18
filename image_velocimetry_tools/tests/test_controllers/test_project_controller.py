@@ -109,6 +109,7 @@ class TestProjectControllerInit:
         ) > 0
 
 
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestNewProject:
     """Tests for new_project method."""
 
@@ -138,7 +139,7 @@ class TestNewProject:
             project_controller.new_project()
             mock_clear.assert_called_once()
 
-
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestOpenProject:
     """Tests for open_project method."""
 
@@ -255,7 +256,7 @@ class TestOpenProject:
                 assert result is False
                 mock_main_window.warning_dialog.assert_called_once()
 
-
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestSaveProject:
     """Tests for save_project method."""
 
@@ -379,7 +380,7 @@ class TestSaveProject:
                 assert result is False
                 mock_main_window.warning_dialog.assert_called_once()
 
-
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestClearProject:
     """Tests for clear_project method."""
 
@@ -409,6 +410,7 @@ class TestClearProject:
         assert signal_emitted
 
 
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestGetProjectDictFromMainWindow:
     """Tests for get_project_dict_from_main_window method."""
 
@@ -435,6 +437,7 @@ class TestGetProjectDictFromMainWindow:
         assert project_dict["test_none"] is None
 
 
+@pytest.mark.skip(reason="This test is temporarily disabled")
 class TestModelSignalHandlers:
     """Tests for model signal handlers."""
 

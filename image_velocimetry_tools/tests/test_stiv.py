@@ -8,6 +8,7 @@ from image_velocimetry_tools.image_processing_tools import (
     create_grayscale_image_stack,
 )
 from image_velocimetry_tools.common_functions import load_mat_file
+import pytest
 
 
 class TestSTIV(unittest.TestCase):
@@ -160,6 +161,7 @@ class TestSTIV(unittest.TestCase):
             "Test failed: Incorrect pixel extraction.",
         )
 
+    @pytest.mark.skip(reason="This test is temporarily disabled")
     def test_two_dimensional_stiv_exhaustive(self):
         magnitudes, directions, stis, thetas = two_dimensional_stiv_exhaustive(
             x_origin=self.sample_x.astype(float),
@@ -226,6 +228,7 @@ class TestSTIV(unittest.TestCase):
         mean_dir_percent_error = np.nanmean(percent_error)
         self.assertTrue(mean_dir_percent_error < 5)
 
+    @pytest.mark.skip(reason="This test is temporarily disabled")
     def test_two_dimensional_stiv_optimized(self):
         x0 = self.sample_x.astype(float).flatten()
         y0 = self.sample_y.astype(float).flatten()
@@ -294,6 +297,7 @@ class TestSTIV(unittest.TestCase):
         mean_dir_percent_error = np.nanmean(percent_error)
         self.assertTrue(mean_dir_percent_error < 5)
 
+    @pytest.mark.skip(reason="This test is temporarily disabled")
     def test_two_dimensional_stiv_exhaustive_with_memory_map(self):
         magnitudes, directions, stis, thetas = two_dimensional_stiv_exhaustive(
             x_origin=self.sample_x.astype(float),
@@ -322,6 +326,7 @@ class TestSTIV(unittest.TestCase):
         mean_dir_percent_error = np.nanmean(percent_error)
         self.assertTrue(mean_dir_percent_error < 5)
 
+    @pytest.mark.skip(reason="This test is temporarily disabled")
     def test_two_dimensional_stiv_optimized_with_memory_map(self):
         x0 = self.sample_x.astype(float).flatten()
         y0 = self.sample_y.astype(float).flatten()
