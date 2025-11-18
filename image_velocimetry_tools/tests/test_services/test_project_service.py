@@ -7,6 +7,7 @@ import tempfile
 import shutil
 import pytest
 from pathlib import Path
+import platform
 
 from image_velocimetry_tools.services.project_service import ProjectService
 
@@ -83,13 +84,18 @@ class TestProjectServiceSaveJSON:
             project_service.save_project_to_json(sample_project_dict, "")
 
     def test_save_with_invalid_path_raises_error(self, project_service, sample_project_dict):
-        """Test that invalid path raises IOError."""
-        # Skip this test if running as root (can write anywhere)
-        if os.getuid() == 0:
-            pytest.skip("Skipping permission test when running as root")
+        """Test that invalid path raises IOError on all platforms."""
 
-        # Path with invalid characters or to unwritable location
-        invalid_path = "/root/cannot_write_here/project.json"
+        # Windows: use a protected directory
+        if platform.system() == "Windows":
+            invalid_path = r"C:\Windows\System32\__cannot_write_here.json"
+
+        # Unix: use a root-protected directory -- left in here as one day we may want to run IVyTools in linux
+        else:
+            # skip if running as root
+            if hasattr(os, "getuid") and os.getuid() == 0:
+                pytest.skip("Skipping permission test when running as root")
+            invalid_path = "/root/cannot_write_here/project.json"
 
         with pytest.raises(IOError):
             project_service.save_project_to_json(sample_project_dict, invalid_path)
