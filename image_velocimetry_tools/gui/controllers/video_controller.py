@@ -216,6 +216,10 @@ class VideoController(BaseController):
         """
         mw = self.main_window
 
+        # CRITICAL: Sync video file path to ivy.py properties
+        # Many methods in ivy.py still read from these properties
+        mw.video_file_name = file_path
+
         # Reset state flags
         mw.is_clip_created = False
         mw.is_frames_extracted = False
@@ -277,6 +281,13 @@ class VideoController(BaseController):
             metadata: Video metadata dictionary
         """
         mw = self.main_window
+
+        # CRITICAL: Update ivy.py's own metadata properties
+        # Many methods in ivy.py still read from these properties
+        mw.set_video_metadata(metadata)
+
+        # Note: set_video_metadata() already updates most UI labels, but we keep
+        # these here for consistency with the refactored structure
 
         # Update metadata labels
         mw.labelVideoFramerateValue.setText(
@@ -359,6 +370,11 @@ class VideoController(BaseController):
             end_ms: Clip end time in milliseconds
         """
         mw = self.main_window
+
+        # CRITICAL: Sync clip times back to ivy.py properties
+        # Many methods in ivy.py still read from these properties
+        mw.video_clip_start_time = start_ms
+        mw.video_clip_end_time = end_ms
 
         # Update clip start button
         if start_ms > 0:
