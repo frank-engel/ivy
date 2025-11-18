@@ -100,6 +100,7 @@ from image_velocimetry_tools.gui.filesystem import (
     Worker,
 )
 from image_velocimetry_tools.services.video_service import VideoService
+from image_velocimetry_tools.services.project_service import ProjectService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
@@ -892,11 +893,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
             # Extract the zip file to the swap directory
             try:
-                with zipfile.ZipFile(self.project_filename, "r") as zipf:
-                    zipf.extractall(self.swap_directory)
-            except Exception as e:
-                # Handle the exception, display a warning
-                # dialog, and log the error
+                self.project_service.extract_project_archive(
+                    self.project_filename,
+                    self.swap_directory
+                )
+            except (zipfile.BadZipFile, IOError, FileNotFoundError, ValueError) as e:
+                # Handle the exception, display a warning dialog, and log the error
                 self.warning_dialog(
                     "Error Opening Project",
                     f"An error occurred while opening the project: {str(e)}",
@@ -904,26 +906,23 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
                 )
                 logging.error(f"Error opening project: {str(e)}")
+                return
 
             # Load the project_dict from the JSON file in the swap directory
             json_filename = os.path.join(self.swap_directory, "project_data.json")
             try:
-                with open(json_filename) as json_file:
-                    project_dict = json.load(json_file)
-                    project_dict["project_file_path"] = project_filename
-            except FileNotFoundError:
-                # Handle the file not found error, display a warning
-                # dialog, and log the error
+                project_dict = self.project_service.load_project_from_json(json_filename)
+                project_dict["project_file_path"] = project_filename
+            except (FileNotFoundError, ValueError, IOError) as e:
+                # Handle the file not found error, display a warning dialog, and log the error
                 self.warning_dialog(
                     "Error Opening Project",
-                    f"An error occurred while opening the project: "
-                    f"Project data file not found.",
+                    f"An error occurred while opening the project: {str(e)}",
                     style="ok",
                     icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
                 )
-                logging.error(
-                    f"Error opening project: Project " f"data file not found."
-                )
+                logging.error(f"Error opening project: {str(e)}")
+                return
 
             # Task 0 - Comments and Reporting items
             # Loaded first, because the comments may be useful for debugging or
@@ -2089,8 +2088,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             json_filename = os.path.join(self.swap_directory, "project_data.json")
             project_dict["project_filename"] = json_filename
 
-            with open(json_filename, "w") as fp:
-                json.dump(project_dict, fp, indent=4)
+            try:
+                self.project_service.save_project_to_json(project_dict, json_filename)
+            except (IOError, ValueError) as e:
+                self.warning_dialog(
+                    "Error Saving Project",
+                    f"Failed to save project JSON: {str(e)}",
+                    style="ok",
+                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+                )
+                logging.error(f"Error saving project JSON: {str(e)}")
+                return
 
             # Step 2: Create a zip archive of the swap directory
             message = (
@@ -2100,75 +2108,30 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.update_statusbar(message)
             self.progressBar.show()
             self.progressBar.setValue(0)
-            file_count = 0
-            dir_count = 0
-            for root, _, files in os.walk(self.swap_directory):
-                dir_count += 1
-                file_count += len(files)
-            total_items = file_count + dir_count
-            items_done = 0
-            with self.wait_cursor():
-                # TODO: for very large project structures, this can threadlock
-                #  the apllication. Would be good to put this in it's own thread
-                zip_filename = self.project_filename  # Set the zip filename
-                try:
-                    with zipfile.ZipFile(
-                        zip_filename, "w", zipfile.ZIP_DEFLATED
-                    ) as zipf:
-                        for root, _, files in os.walk(self.swap_directory):
-                            for file in files:
-                                file_path = os.path.join(root, file)
-                                if not file_path.endswith(".dat"):
-                                    arcname = os.path.relpath(
-                                        file_path, self.swap_directory
-                                    )
-                                    try:
-                                        zipf.write(file_path, arcname=arcname)
-                                    except Exception as e:
-                                        # Handle the exception, display a warning dialog, and log the error
-                                        self.warning_dialog(
-                                            "Error Saving Project",
-                                            f"An error occurred while saving the project: {str(e)}",
-                                            style="ok",
-                                            icon=self.__icon_path__
-                                            + os.sep
-                                            + "IVy_logo.ico",
-                                        )
-                                        logging.error(f"Error saving project: {str(e)}")
-                                items_done += 1
-                                progress = int(100 * items_done / total_items)
-                                self.progressBar.setValue(progress)
 
-                        # Add empty directories to the zip archive
-                        for root, dirs, _ in os.walk(self.swap_directory):
-                            for directory in dirs:
-                                dir_path = os.path.join(root, directory)
-                                arcname = os.path.relpath(dir_path, self.swap_directory)
-                                try:
-                                    # Add a dummy file to represent the directory (empty)
-                                    zipf.write(dir_path, arcname=arcname)
-                                except Exception as e:
-                                    # Handle the exception, display a warning dialog, and log the error
-                                    self.warning_dialog(
-                                        "Error Saving Project",
-                                        f"An error occurred while saving the project: {str(e)}",
-                                        style="ok",
-                                        icon=self.__icon_path__
-                                        + os.sep
-                                        + "IVy_logo.ico",
-                                    )
-                                    logging.error(f"Error saving project: {str(e)}")
-                                items_done += 1
-                                progress = int(100 * items_done / total_items)
-                                self.progressBar.setValue(progress)
-                except Exception as e:
+            # Progress callback for archive creation
+            def update_progress(current, total):
+                progress = int(100 * current / total) if total > 0 else 0
+                self.progressBar.setValue(progress)
+
+            with self.wait_cursor():
+                try:
+                    self.project_service.create_project_archive(
+                        self.swap_directory,
+                        self.project_filename,
+                        progress_callback=update_progress,
+                        exclude_extensions=[".dat"]
+                    )
+                except (IOError, FileNotFoundError) as e:
                     # Handle the exception, display a warning dialog, and log the error
                     self.warning_dialog(
                         "Error Saving Project",
                         f"An error occurred while saving the project: {str(e)}",
                         style="ok",
+                        icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
                     )
                     logging.error(f"Error saving project: {str(e)}")
+                    return
             self.progressBar.hide()
             message = (
                 f"SAVING PROJECT: Successfully saved project file: "
@@ -6631,6 +6594,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialize services and models
         self.video_service = VideoService()
+        self.project_service = ProjectService()
         self.video_model = VideoModel()
 
         # Global init related
