@@ -872,126 +872,91 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
     def open_project(self):
         """Open an IVy Project Session File"""
 
-        # Load the last project filename
+        # Delegate file operations to ProjectController
+        # This handles: file dialog, archive extraction, JSON loading, error dialogs
+        success = self.project_controller.open_project()
+
+        if not success:
+            return  # User cancelled or error occurred
+
+        # Get the loaded project data
+        json_filename = os.path.join(self.swap_directory, "project_data.json")
         try:
-            ss = self.sticky_settings.get("last_project_filename")
-            self.project_filename = ss
-        except KeyError:
-            self.project_filename = f"{QDir.homePath()}{os.sep}New_IVy_Project.ivy"
-            self.sticky_settings.new("last_project_filename", self.project_filename)
+            project_dict = self.project_service.load_project_from_json(json_filename)
+            project_dict["project_file_path"] = self.project_model.project_filename
+        except (FileNotFoundError, ValueError, IOError) as e:
+            logging.error(f"Error loading project data after successful open: {str(e)}")
+            return
 
-        # Open a project file
-        filter_spec = "IVy Project (*.ivy);;All files (*.*)"
-        project_filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            None,
-            "Open IVy Project File",
-            self.project_filename,
-            # path
-            filter_spec,
-        )
-        if project_filename:
-            self.project_filename = project_filename
-            logging.info(f"Project file loaded: {project_filename}")
+        # Update self.project_filename for backwards compatibility
+        self.project_filename = self.project_model.project_filename
 
-            # Extract the zip file to the swap directory
-            try:
-                self.project_service.extract_project_archive(
-                    self.project_filename,
-                    self.swap_directory
+        # Task 0 - Comments and Reporting items
+        # Loaded first, because the comments may be useful for debugging or
+        # review purposes.
+        try:
+            comments = project_dict.get("comments", None)
+            if comments is not None:
+                if isinstance(comments, dict):
+                    self.comments.load_dict(comments)
+                    self.update_comment_tbl()
+            else:
+                logging.debug(f"No comments in the supplied *.ivy Project file.")
+        except Exception as e:
+            logging.error(f"An error occurred while loading comments: {e}")
+
+        # Reporting items
+        reporting = project_dict.get("reporting", None)
+        if reporting is not None:
+            if isinstance(reporting, dict):
+                self.reporting.station_name = reporting.get("station_name")
+                set_text_if_not_none(
+                    reporting.get("station_name"), self.stationNamelineEdit
                 )
-            except (zipfile.BadZipFile, IOError, FileNotFoundError, ValueError) as e:
-                # Handle the exception, display a warning dialog, and log the error
-                self.warning_dialog(
-                    "Error Opening Project",
-                    f"An error occurred while opening the project: {str(e)}",
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+
+                self.reporting.station_number = reporting.get("station_number")
+                set_text_if_not_none(
+                    reporting.get("station_number"), self.stationNumberLineEdit
                 )
-                logging.error(f"Error opening project: {str(e)}")
-                return
 
-            # Load the project_dict from the JSON file in the swap directory
-            json_filename = os.path.join(self.swap_directory, "project_data.json")
-            try:
-                project_dict = self.project_service.load_project_from_json(json_filename)
-                project_dict["project_file_path"] = project_filename
-            except (FileNotFoundError, ValueError, IOError) as e:
-                # Handle the file not found error, display a warning dialog, and log the error
-                self.warning_dialog(
-                    "Error Opening Project",
-                    f"An error occurred while opening the project: {str(e)}",
-                    style="ok",
-                    icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
+                self.reporting.party = reporting.get("party")
+                set_text_if_not_none(reporting.get("party"), self.partyLineEdit)
+
+                self.reporting.weather = reporting.get("weather")
+                set_text_if_not_none(reporting.get("weather"), self.weatherLineEdit)
+
+                self.reporting.meas_date = reporting.get("meas_date")
+                set_date(reporting.get("meas_date"), self.measDate)
+
+                self.reporting.gage_ht = reporting.get("gage_ht")
+                set_value_if_not_none(
+                    reporting.get("gage_ht"), self.gageHeightdoubleSpinBox
                 )
-                logging.error(f"Error opening project: {str(e)}")
-                return
 
-            # Task 0 - Comments and Reporting items
-            # Loaded first, because the comments may be useful for debugging or
-            # review purposes.
-            try:
-                comments = project_dict.get("comments", None)
-                if comments is not None:
-                    if isinstance(comments, dict):
-                        self.comments.load_dict(comments)
-                        self.update_comment_tbl()
-                else:
-                    logging.debug(f"No comments in the supplied *.ivy Project file.")
-            except Exception as e:
-                logging.error(f"An error occurred while loading comments: {e}")
+                self.reporting.start_time = reporting.get("start_time")
+                set_time(reporting.get("start_time"), self.measStartTime)
 
-            # Reporting items
-            reporting = project_dict.get("reporting", None)
-            if reporting is not None:
-                if isinstance(reporting, dict):
-                    self.reporting.station_name = reporting.get("station_name")
-                    set_text_if_not_none(
-                        reporting.get("station_name"), self.stationNamelineEdit
-                    )
+                self.reporting.end_time = reporting.get("end_time")
+                set_time(reporting.get("end_time"), self.measEndTime)
+                try:
+                    self.reporting.calc_mid_time()
+                except:
+                    pass
 
-                    self.reporting.station_number = reporting.get("station_number")
-                    set_text_if_not_none(
-                        reporting.get("station_number"), self.stationNumberLineEdit
-                    )
+                self.reporting.meas_number = reporting.get("meas_number")
+                set_value_if_not_none(
+                    reporting.get("meas_number"), self.measurementNumberspinBox, int
+                )
 
-                    self.reporting.party = reporting.get("party")
-                    set_text_if_not_none(reporting.get("party"), self.partyLineEdit)
+                self.reporting.project_description = reporting.get(
+                    "project_description"
+                )
+                set_text_if_not_none(
+                    reporting.get("project_description"),
+                    self.projectDescriptionTextEdit,
+                )
 
-                    self.reporting.weather = reporting.get("weather")
-                    set_text_if_not_none(reporting.get("weather"), self.weatherLineEdit)
-
-                    self.reporting.meas_date = reporting.get("meas_date")
-                    set_date(reporting.get("meas_date"), self.measDate)
-
-                    self.reporting.gage_ht = reporting.get("gage_ht")
-                    set_value_if_not_none(
-                        reporting.get("gage_ht"), self.gageHeightdoubleSpinBox
-                    )
-
-                    self.reporting.start_time = reporting.get("start_time")
-                    set_time(reporting.get("start_time"), self.measStartTime)
-
-                    self.reporting.end_time = reporting.get("end_time")
-                    set_time(reporting.get("end_time"), self.measEndTime)
-                    try:
-                        self.reporting.calc_mid_time()
-                    except:
-                        pass
-
-                    self.reporting.meas_number = reporting.get("meas_number")
-                    set_value_if_not_none(
-                        reporting.get("meas_number"), self.measurementNumberspinBox, int
-                    )
-
-                    self.reporting.project_description = reporting.get(
-                        "project_description"
-                    )
-                    set_text_if_not_none(
-                        reporting.get("project_description"),
-                        self.projectDescriptionTextEdit,
-                    )
-
-            # Task 1 - Video
+        # Task 1 - Video
             video_file_name = project_dict.get("video_file_name", None)
             if video_file_name is not None:
                 self.video_file_name = locate_video_file(project_dict)
