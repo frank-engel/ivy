@@ -54,7 +54,8 @@ from image_velocimetry_tools.common_functions import (
     parse_creation_time,
     calculate_uv_components,
     calculate_endpoint,
-    dict_arrays_to_list
+    dict_arrays_to_list,
+    hhmmss_to_seconds,
 )
 from image_velocimetry_tools.ffmpeg_tools import (
     create_ffmpeg_command,
@@ -1026,8 +1027,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     )
                     return
             try:
-                start_time = project_dict["video_clip_start_time"]
-                end_time = project_dict["video_clip_end_time"]
+                start_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["start_time"]) * 1000  # ms
+                end_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["end_time"]) * 1000   # ms
+
                 # Update model - this will emit signals that update UI
                 self.video_model.set_clip_times(start_time, end_time)
                 # UI labels are updated automatically by VideoController signal handler
