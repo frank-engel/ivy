@@ -5,14 +5,27 @@ import tempfile
 from unittest.mock import MagicMock, patch
 import pytest
 from PyQt5.QtCore import QDir
+from PyQt5.QtWidgets import QApplication
 
 from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.services.project_service import ProjectService
 
 
+# Create QApplication instance for Qt testing
+# This must be done before creating any QObject instances
+@pytest.fixture(scope="session")
+def qapp():
+    """Create QApplication instance for testing."""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    yield app
+    # Don't call app.quit() here as it can cause issues with other tests
+
+
 @pytest.fixture
-def mock_main_window():
+def mock_main_window(qapp):
     """Create a mock main window for testing."""
     mw = MagicMock()
 
@@ -55,19 +68,19 @@ def mock_main_window():
 
 
 @pytest.fixture
-def project_model():
+def project_model(qapp):
     """Create a ProjectModel instance for testing."""
     return ProjectModel()
 
 
 @pytest.fixture
-def project_service():
+def project_service(qapp):
     """Create a ProjectService instance for testing."""
     return ProjectService()
 
 
 @pytest.fixture
-def project_controller(mock_main_window, project_model, project_service):
+def project_controller(qapp, mock_main_window, project_model, project_service):
     """Create a ProjectController instance for testing."""
     return ProjectController(mock_main_window, project_model, project_service)
 
