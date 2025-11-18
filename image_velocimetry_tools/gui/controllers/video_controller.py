@@ -367,7 +367,7 @@ class VideoController(BaseController):
 
         Args:
             start_ms: Clip start time in milliseconds
-            end_ms: Clip end time in milliseconds
+            end_ms: Clip end time in milliseconds (0 means full video duration)
         """
         mw = self.main_window
 
@@ -376,7 +376,15 @@ class VideoController(BaseController):
         mw.video_clip_start_time = start_ms
         mw.video_clip_end_time = end_ms
 
-        # Update clip start button
+        # Handle end_ms == 0 case (means full video)
+        display_end_ms = end_ms if end_ms > 0 else self.video_model.video_duration
+
+        # Check if we have video metadata loaded yet
+        if self.video_model.video_frame_rate is None or self.video_model.video_frame_rate == 0:
+            self.logger.warning("Video frame rate not available yet, skipping UI update")
+            return
+
+        # Update clip start button and frame label
         if start_ms > 0:
             start_str = seconds_to_hhmmss(start_ms / 1000, precision='high')
             mw.buttonClipStart.setText(f"Clip Start [{start_str}]")
@@ -389,35 +397,47 @@ class VideoController(BaseController):
             mw.buttonClipStart.setText("Clip Start")
             mw.labelStartFrameValue.setText("0")
 
-        # Update clip end button
+        # Update clip end button and frame label
+        # end_ms == 0 means "use full video", > 0 means user set a specific time
         if end_ms > 0:
-            end_str = seconds_to_hhmmss(end_ms / 1000, precision='high')
+            # User set a specific end time
+            end_str = seconds_to_hhmmss(display_end_ms / 1000, precision='high')
             mw.buttonClipEnd.setText(f"Clip End [{end_str}]")
             end_frame = seconds_to_frame_number(
-                end_ms / 1000,
+                display_end_ms / 1000,
                 self.video_model.video_frame_rate
             )
             mw.labelEndFrameValue.setText(f"{end_frame}")
         else:
+            # Full video (end_ms was 0)
             mw.buttonClipEnd.setText("Clip End")
-            mw.labelEndFrameValue.setText(
-                f"{self.video_model.video_num_frames}"
-            )
+            if self.video_model.video_num_frames:
+                mw.labelEndFrameValue.setText(f"{self.video_model.video_num_frames}")
 
-        # Show clip information in status bar
+        # Show clip information in status bar and update extraction UI
         self._show_clip_information()
 
     def _show_clip_information(self):
         """Update the statusbar and extraction UI with clip information."""
         if not self.video_model.is_video_loaded:
+            self.logger.debug("_show_clip_information: Video not loaded yet")
+            return
+
+        # Check if we have necessary metadata
+        if (self.video_model.video_frame_rate is None or
+            self.video_model.video_frame_rate == 0):
+            self.logger.warning("_show_clip_information: Video frame rate not available yet")
             return
 
         mw = self.main_window
         start_ms = self.video_model.video_clip_start_time
         end_ms = self.video_model.video_clip_end_time
 
+        self.logger.debug(f"_show_clip_information: start={start_ms}ms, end={end_ms}ms")
+
         if end_ms == 0 or end_ms is None:
             end_ms = self.video_model.video_duration
+            self.logger.debug(f"_show_clip_information: Using video duration: {end_ms}ms")
 
         # Calculate start and end frames
         start_frame = seconds_to_frame_number(
@@ -431,6 +451,8 @@ class VideoController(BaseController):
         if end_frame == 0:
             end_frame = self.video_model.video_num_frames
 
+        self.logger.debug(f"_show_clip_information: frames {start_frame} to {end_frame}, step={mw.extraction_frame_step}")
+
         # Calculate extraction parameters based on clip times
         mw.extraction_frame_rate = (
             self.video_model.video_frame_rate / mw.extraction_frame_step
@@ -439,6 +461,8 @@ class VideoController(BaseController):
         mw.extraction_num_frames = int(
             (end_frame - start_frame) / mw.extraction_frame_step
         )
+
+        self.logger.debug(f"_show_clip_information: extraction_num_frames={mw.extraction_num_frames}")
 
         # Update extraction UI labels
         mw.labelNewFrameRateValue.setText(f"{mw.extraction_frame_rate:.3f} fps")
