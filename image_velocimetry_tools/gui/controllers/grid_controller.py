@@ -140,8 +140,8 @@ class GridController(BaseController):
             # Generate grid using service
             height, width = image.shape[:2]
 
-            # Handle mask_polygons - check for None before checking size
-            has_mask = mask_polygons is not None and mask_polygons.size > 0
+            # Handle mask_polygons - polygons_ndarray() returns a list of numpy arrays or None
+            has_mask = mask_polygons is not None and len(mask_polygons) > 0
 
             try:
                 grid, binary_mask = self.grid_service.generate_regular_grid(
@@ -257,8 +257,8 @@ class GridController(BaseController):
             # Generate line grid using service
             height, width = image.shape[:2]
 
-            # Handle mask_polygons - check for None before checking size
-            has_mask = mask_polygons is not None and mask_polygons.size > 0
+            # Handle mask_polygons - polygons_ndarray() returns a list of numpy arrays or None
+            has_mask = mask_polygons is not None and len(mask_polygons) > 0
 
             try:
                 line_grid, binary_mask = self.grid_service.generate_line_grid(

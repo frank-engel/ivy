@@ -1062,12 +1062,24 @@ class OrthoController(BaseController):
             except Exception as e:
                 logging.warning(f"Failed to load image into STIV-Opt tab: {e}")
 
-            # Load rectified image into Cross-section tab
+            # Load rectified image into Cross-section tab (rectified view)
             try:
-                mw.bathymetry.imageBrowser.scene.load_image(output_path)
-                logging.debug("Loaded rectified image into Cross-section tab")
+                mw.rectified_xs_image.scene.load_image(output_path)
+                mw.rectified_xs_image.setEnabled(True)
+                logging.debug("Loaded rectified image into Cross-section rectified view")
             except Exception as e:
-                logging.warning(f"Failed to load image into Cross-section tab: {e}")
+                logging.warning(f"Failed to load image into Cross-section rectified view: {e}")
+
+            # Load perspective image into Cross-section tab (perspective view)
+            try:
+                # Get the original GCP image
+                original_image_path = mw.ortho_original_image.image_file_path
+                if original_image_path and os.path.exists(original_image_path):
+                    mw.perspective_xs_image.scene.load_image(original_image_path)
+                    mw.perspective_xs_image.setEnabled(True)
+                    logging.debug("Loaded perspective image into Cross-section perspective view")
+            except Exception as e:
+                logging.warning(f"Failed to load image into Cross-section perspective view: {e}")
 
         except Exception as e:
             logging.error(f"Error saving and propagating rectified image: {e}")
