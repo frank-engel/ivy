@@ -6,6 +6,8 @@ from .project_service import ProjectService
 from .orthorectification_service import OrthorectificationService
 from .grid_service import GridService
 from .image_stack_service import ImageStackService
+from .discharge_service import DischargeService
+from .stiv_service import STIVService
 
 __all__ = [
     'BaseService',
@@ -13,5 +15,7 @@ __all__ = [
     'ProjectService',
     'OrthorectificationService',
     'GridService',
-    'ImageStackService'
+    'ImageStackService',
+    'DischargeService',
+    'STIVService'
 ]

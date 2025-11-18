@@ -31,6 +31,7 @@ from image_velocimetry_tools.stiv import (
     two_dimensional_stiv_exhaustive,
     two_dimensional_stiv_optimized,
 )
+from image_velocimetry_tools.services.stiv_service import STIVService
 
 global icons_path
 icon_path = "icons"
@@ -180,6 +181,7 @@ class STIReviewTab:
             ivy_framework (IVyTools object): the IVyTools main object
         """
         self.ivy_framework = ivy_framework
+        self.stiv_service = STIVService()
         self.original_magnitudes_mps = None
         self.original_directions = None
         self.sti_paths = None
@@ -263,23 +265,15 @@ class STIReviewTab:
                 dialog = ImageDialog(sti_image_path=self.sti_paths[row], parent=None)
             if dialog.exec_() == QDialog.Accepted:
                 average_direction = dialog.average_direction
-                if average_direction <= -900:
-                    manual_velocity_mps = np.nan
-                else:
-                    # put result in the right quadrant
-                    # average_direction = 90 + (90 - average_direction)
+                # Delegate to service for velocity calculation
+                gsd = self.ivy_framework.pixel_ground_scale_distance_m
+                dt = self.ivy_framework.extraction_timestep_ms / 1000
+                manual_velocity_mps = self.stiv_service.compute_velocity_from_manual_angle(
+                    average_direction, gsd, dt, dialog.is_upstream
+                )
+
+                if not np.isnan(manual_velocity_mps):
                     logging.debug(f"Average direction: {average_direction} degrees")
-
-                    # Convert to velocity, take absolute magnitude
-                    gsd = self.ivy_framework.pixel_ground_scale_distance_m
-                    dt = self.ivy_framework.extraction_timestep_ms / 1000
-                    manual_velocity_mps = np.abs(
-                        np.tan(np.deg2rad(average_direction)) * gsd / dt
-                    )
-
-                # Check if user set upstream flow
-                if dialog.is_upstream:
-                    manual_velocity_mps = -manual_velocity_mps
 
                 # Set manual velocity for the current row in the Table
                 new_item = QtWidgets.QTableWidgetItem(
@@ -391,18 +385,22 @@ class STIReviewTab:
 
         return sti_pixmap
 
-    @staticmethod
-    def compute_sti_velocity(theta, gsd, dt):
+    def compute_sti_velocity(self, theta, gsd, dt):
         """Calculate velocity by bringing in the pixel size and frame
-        interval See equation 16 of Fujita et al. (2007)."""
-        return np.tan(np.deg2rad(theta)) * gsd / dt
+        interval See equation 16 of Fujita et al. (2007).
 
-    @staticmethod
-    def compute_sti_angle(velocity, gsd, dt):
+        Delegates to STIVService.
+        """
+        return self.stiv_service.compute_sti_velocity(theta, gsd, dt)
+
+    def compute_sti_angle(self, velocity, gsd, dt):
         """Calculate angle in degrees of a STI image given the velocity,
         pixel size, and frame interval. See equation 16 of Fujita et al.
-        (2007)."""
-        return np.degrees(np.arctan((-velocity * dt) / gsd))
+        (2007).
+
+        Delegates to STIVService.
+        """
+        return self.stiv_service.compute_sti_angle(velocity, gsd, dt)
 
     def table_init(self):
         """Executes at startup, sets up the table."""
@@ -684,46 +682,40 @@ class STIReviewTab:
         return data_array
 
     def update_discharge_results_in_tab(self):
-        """Update the discharge results using the current table contents"""
+        """Update the discharge results using the current table contents.
+
+        Delegates to STIVService for applying manual corrections.
+        """
         # Find where manual changes are applied, if nothing changed,
         # do nothing else
         idx = [index for index, element in enumerate(self.manual_sti_lines) if element]
         if idx:
-            # Load the original results
+            # Load the original results using service
             csv_file_path = (
                 f"{self.ivy_framework.swap_velocities_directory}"
                 f"{os.sep}"
                 f"stiv_results.csv"
             )
-            headers, data = load_csv_with_numpy(csv_file_path)
-            # X = data[:, 0].astype(float)
-            # Y = data[:, 1].astype(float)
-            # U = data[:, 2].astype(float)
-            # V = data[:, 3].astype(float)
-            # M = data[:, 4].astype(float)
-            scalar_projections_mps = data[:, 5].astype(float)
-            D = data[:, 6].astype(float)
-            tagline_dir_geog = data[:, 7].astype(float)
+            stiv_data = self.stiv_service.load_stiv_results_from_csv(csv_file_path)
 
-            # Grab the table data, convert to English units
-            # new_M = self.extract_manual_velocity_data() * self.survey_units["V"]
+            # Extract manual velocities from the table
+            manual_velocities = self.extract_manual_velocity_data()
 
-            # Compute new scalar magnitudes_mps for any manually modified results
-            for i in idx:
-                scalar_projections_mps[i] = component_in_direction(
-                    magnitudes=self.extract_manual_velocity_data()[i],
-                    directions_deg=geographic_to_arithmetic(D[i]),
-                    tagline_angle_deg=geographic_to_arithmetic(
-                        tagline_dir_geog[0]),
-                )
+            # Apply manual corrections using the service
+            result = self.stiv_service.apply_manual_corrections(
+                stiv_data=stiv_data,
+                manual_velocities=manual_velocities,
+                manual_indices=idx,
+                tagline_direction=stiv_data['Tagline_Direction'][0]
+            )
 
-            # Send updates scalar magnitudes_mps
+            # Send updated scalar magnitudes
             result_dict = {
                 "idx": idx,
-                "manual_velocity": scalar_projections_mps,
-                "normal_direction_geo": data[:, 8].astype(float)
+                "manual_velocity": result['scalar_projections'],
+                "normal_direction_geo": stiv_data['Normal_Direction']
             }
-            self.ivy_framework.stiv.magnitude_normals_mps = scalar_projections_mps
+            self.ivy_framework.stiv.magnitude_normals_mps = result['scalar_projections']
             self.ivy_framework.signal_manual_vectors.emit(result_dict)
 
             # Update the discharge results tab
