@@ -1345,6 +1345,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(
                     self.ortho_rectified_wse_m *
                     units_conversion(self.display_units)['L'])
+
+                # Propagate WSE to cross-section and discharge components
+                # This emits signal_wse_changed which updates the areacomp backend
+                self.signal_wse_changed.emit(self.ortho_rectified_wse_m)
         except Exception as e:
             # Log or handle exception
             pass
