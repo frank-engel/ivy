@@ -13,13 +13,9 @@ from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationTo
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from image_velocimetry_tools.discharge_tools import (
-    compute_discharge_midsection,
-    convert_surface_velocity_rantz,
-)
 from image_velocimetry_tools.gui.dischargeplot import QPlot
 from image_velocimetry_tools.gui.filesystem import TableWidgetDragRows, DataFrameModel
-from image_velocimetry_tools.uncertainty import Uncertainty
+from image_velocimetry_tools.services.discharge_service import DischargeService
 
 global icons_path
 icon_path = "icons"
@@ -29,6 +25,7 @@ class DischargeTab:
 
     def __init__(self, ivy_framework):
         self.ivy_framework = ivy_framework
+        self.discharge_service = DischargeService()
 
         # Configure bold and normal fonts (used for tables)
         self.font = QtGui.QFont()
@@ -368,39 +365,29 @@ class DischargeTab:
 
 
     def compute_uncertainty(self):
-        q_dict = copy.deepcopy(self.ivy_framework.discharge_results)
-        ortho_info = {
-            "rmse_m": self.ivy_framework.rectification_rmse_m,
-            "scene_width_m": self.ivy_framework.cross_section_top_width_m
-
-        }
-        self.ivy_uncertainty = Uncertainty()
-        self.ivy_uncertainty.compute_uncertainty(
-            q_dict,
-            total_discharge=self.ivy_framework.discharge_summary["total_discharge"],
-            ortho_info=ortho_info
-        )
-        logging.info(
-            f"DISCHARGE: Total measurement uncertainty at 95% CI (ISO 748):"
-            f" {self.ivy_uncertainty.u_iso['u95_q'] * 100:.2f} %"
-        )
-        logging.info(
-            f"DISCHARGE: Total measurement uncertainty at 95% CI (IVE):"
-            f" {self.ivy_uncertainty.u_ive['u95_q'] * 100:.2f} %"
+        """Compute discharge uncertainty - delegates to DischargeService."""
+        # Delegate uncertainty computation to service
+        uncertainty_results = self.discharge_service.compute_uncertainty(
+            self.ivy_framework.discharge_results,
+            self.ivy_framework.discharge_summary["total_discharge"],
+            self.ivy_framework.rectification_rmse_m,
+            self.ivy_framework.cross_section_top_width_m
         )
 
+        # Extract uncertainty results
+        u_iso = uncertainty_results["u_iso"]
+        u_ive = uncertainty_results["u_ive"]
+
+        # Create table data
         data = {
-            "IVy-ISO (95%)": [self.ivy_uncertainty.u_iso["u95_q"] * 100],
-            "IVy-IVE (95%)": [self.ivy_uncertainty.u_ive["u95_q"] * 100],
+            "IVy-ISO (95%)": [u_iso["u95_q"] * 100],
+            "IVy-IVE (95%)": [u_ive["u95_q"] * 100],
         }
-
         df = pd.DataFrame(data)
 
-        # Write into the Measurement Uncertainty Table
+        # Update the Measurement Uncertainty Table
         model = DataFrameModel(df)
         self.ivy_framework.measurementUncertaintyTable.setModel(model)
-        # self.measurementResultsTable.setFont(self.font)
-        # self.measurementResultsTable.horizontalHeader().setFont(self.font_bold)
         self.ivy_framework.measurementUncertaintyTable.resizeColumnsToContents()
         self.ivy_framework.measurementUncertaintyTable.resizeRowsToContents()
         self.ivy_framework.measurementUncertaintyTable.horizontalHeader().setFont(
@@ -408,10 +395,8 @@ class DischargeTab:
         )
         self.ivy_framework.measurementUncertaintyTable.verticalHeader().hide()
 
-        # Get the ISO Uncertainty (%) value
+        # Determine user rating index based on ISO uncertainty
         iso_uncertainty = data["IVy-ISO (95%)"][0]
-
-        # Determine the index based on the ISO Uncertainty (%)
         if iso_uncertainty < 3:
             index = 1
         elif 3 <= iso_uncertainty < 5:
@@ -420,55 +405,31 @@ class DischargeTab:
             index = 3
         else:
             index = 4
-
-        # Set the current index of the combobox
         self.ivy_framework.comboboxUserRating.setCurrentIndex(index)
 
-        # Set the results back to the parent object
-        self.ivy_framework.u_iso = self.ivy_uncertainty.u_iso
-        self.ivy_framework.u_iso_contribution = self.ivy_uncertainty.u_iso_contribution
-        self.ivy_framework.u_ive = self.ivy_uncertainty.u_ive
-        self.ivy_framework.u_ive_contribution = self.ivy_uncertainty.u_ive_contribution
-        self.ivy_framework.discharge_summary["ISO_uncertainty"] = (
-            self.ivy_uncertainty.u_iso["u95_q"]
-        )
-        self.ivy_framework.discharge_summary["IVE_uncertainty"] = (
-            self.ivy_uncertainty.u_ive["u95_q"]
-        )
+        # Set results back to parent object
+        self.ivy_framework.u_iso = uncertainty_results["u_iso"]
+        self.ivy_framework.u_iso_contribution = uncertainty_results["u_iso_contribution"]
+        self.ivy_framework.u_ive = uncertainty_results["u_ive"]
+        self.ivy_framework.u_ive_contribution = uncertainty_results["u_ive_contribution"]
+        self.ivy_framework.discharge_summary["ISO_uncertainty"] = u_iso["u95_q"]
+        self.ivy_framework.discharge_summary["IVE_uncertainty"] = u_ive["u95_q"]
 
     def compute_discharge_results(self):
+        """Compute discharge results - delegates to DischargeService."""
         df = self.discharge_data_dataframe  # Work directly with the backend (metric) data
 
         if not df.empty:
-            # Filter to only the rows marked as "Used"
-            used_df = df[df["Status"] == "Used"]
-
-            # Extract required columns and compute values
-            cumulative_distances = used_df["Station Distance"].astype(
-                float).values
-            surface_velocities = used_df["Surface Velocity"].astype(
-                float).values
-            alpha_values = used_df["α (alpha)"].astype(float).values
-            average_velocities = convert_surface_velocity_rantz(
-                surface_velocities, alpha=alpha_values
-            )
-            vertical_depths = used_df["Depth"].astype(float).values
-
-            # Compute discharge and area
-            total_discharge, total_area = compute_discharge_midsection(
-                cumulative_distances, average_velocities, vertical_depths
-            )
-
+            # Delegate discharge computation to service
+            results = self.discharge_service.compute_discharge(df)
 
             # Set the results back to the parent object
-            # The discharge_results dict can be turned into a dataframe like this:
-            #   df = pd.DataFrame.from_dict(q_dict, orient='index')
-            self.ivy_framework.discharge_results = df.to_dict(orient="index")
+            self.ivy_framework.discharge_results = results["discharge_results"]
             self.ivy_framework.discharge_summary = {
-                "total_discharge": total_discharge,
-                "total_area": total_area,
-                "ISO_uncertainty": None,  # iso_uncertainty,
-                "IVE_uncertainty": None,  # ive_uncertainty,
+                "total_discharge": results["total_discharge"],
+                "total_area": results["total_area"],
+                "ISO_uncertainty": None,
+                "IVE_uncertainty": None,
             }
 
             self.update_measurement_results_table()
@@ -478,7 +439,7 @@ class DischargeTab:
             logging.error(f"update_discharge_results: no discharge data to update")
 
     def get_station_and_depth(self):
-        xs = self.ivy_framework.xs_survey
+        """Get station and depth from cross-section - delegates to DischargeService."""
         xy_pixel = self.ivy_framework.results_grid
 
         # AC3 will always process SI units, so we have to ensure the wse fed
@@ -488,14 +449,12 @@ class DischargeTab:
             "water_surface_elev",
             self.ivy_framework.ortho_rectified_wse_m
         )
-        # if self.ivy_framework.display_units == "English":
-        #     wse /= self.ivy_framework.survey_units["L"]
 
-        stations, elevations = self.ivy_framework.xs_survey.get_pixel_xs(xy_pixel)
-
-        # AreaComp will always return elevations (stage).
-        # Convert elevations to depths
-        depths = wse - elevations
+        stations, depths = self.discharge_service.get_station_and_depth(
+            self.ivy_framework.xs_survey,
+            xy_pixel,
+            wse
+        )
 
         return stations, depths
 
@@ -520,31 +479,22 @@ class DischargeTab:
             station, depth = self.get_station_and_depth()
             self.discharge["stations"] = station
             self.discharge["depths"] = depth
-            # Task 2 - Surface Velocity
+            # Task 2 - Surface Velocity (delegate to service)
             what_source = "stiv"  # replace with call to check user comboBox
             if what_source == "stiv":
-                # TODO: Load from the STIV file here
-                D = np.radians(self.ivy_framework.stiv.directions)  # degrees
-                U = self.ivy_framework.stiv.magnitudes_mps * np.cos(D)
-                V = self.ivy_framework.stiv.magnitudes_mps * np.sin(D)
-                if self.ivy_framework.stiv.magnitude_normals_mps is not None and np.any(
-                    self.ivy_framework.stiv.magnitude_normals_mps
-                ):
-                    M = self.ivy_framework.stiv.magnitude_normals_mps
-                else:
-                    M = np.sqrt(U**2 + V**2)
-                sur_vel = M
-                sur_vel = np.insert(sur_vel, 0, 0)  # 0 vel at edge
-                sur_vel = np.append(sur_vel, 0)  # 0 vel at edge
+                sur_vel = self.discharge_service.extract_velocity_from_stiv(
+                    self.ivy_framework.stiv,
+                    add_edge_zeros=True
+                )
                 self.discharge["surf_vel"] = sur_vel
             if what_source == "stiv_opt":
-                D = np.radians(self.ivy_framework.stiv_opt.directions)
-                U = self.ivy_framework.stiv_opt.magnitudes_mps * np.cos(D)
-                V = self.ivy_framework.stiv_opt.magnitudes_mps * np.sin(D)
-                M = np.sqrt(U**2 + V**2)
-                sur_vel = M
-                sur_vel = np.insert(sur_vel, 0, np.nan)
-                sur_vel = np.append(sur_vel, np.nan)
+                sur_vel = self.discharge_service.extract_velocity_from_stiv(
+                    self.ivy_framework.stiv_opt,
+                    add_edge_zeros=True
+                )
+                # Use NaN instead of 0 for stiv_opt edges
+                sur_vel[0] = np.nan
+                sur_vel[-1] = np.nan
                 self.discharge["surf_vel"] = sur_vel
             if what_source == "openpiv":
                 pass
@@ -584,47 +534,28 @@ class DischargeTab:
         total_discharge = discharge_summary["total_discharge"]
         total_area = discharge_summary["total_area"]
 
-        # Extract values from discharge_results
-        unit_discharges = [
-            float(result["Unit Discharge"]) for result in discharge_results.values()
-        ]
-        surface_velocities = [
-            float(result["Surface Velocity"]) for result in discharge_results.values()
-        ]
-        alphas = [float(result["α (alpha)"]) for result in discharge_results.values()]
-
-        # Calculate average velocity (Q/A)
-        average_velocity = total_discharge / total_area
-
-        # Calculate average alpha
-        average_alpha = np.nansum(alphas) / len(alphas)
-
-        # Calculate average surface velocity
-        average_surface_velocity = np.nansum(surface_velocities) / len(
-            surface_velocities
+        # Compute summary statistics using service
+        stats = self.discharge_service.compute_summary_statistics(
+            discharge_results,
+            total_discharge,
+            total_area
         )
-
-        # Find max surface velocity
-        max_surface_velocity = np.nanmax(surface_velocities)
 
         # Create DataFrame, convert values to display units here
         units = self.ivy_framework.survey_units
         data = {
             "Total Discharge": [total_discharge * units["Q"]],
             "Total Area": [total_area * units["A"]],
-            "Average Velocity (Q/A)": [average_velocity * units["V"]],
-            "Average Alpha": [average_alpha],
-            "Average Surface Velocity": [average_surface_velocity * units[
-                "V"]],
-            "Max Surface Velocity": [max_surface_velocity * units["V"]],
+            "Average Velocity (Q/A)": [stats["average_velocity"] * units["V"]],
+            "Average Alpha": [stats["average_alpha"]],
+            "Average Surface Velocity": [stats["average_surface_velocity"] * units["V"]],
+            "Max Surface Velocity": [stats["max_surface_velocity"] * units["V"]],
         }
         df = pd.DataFrame(data)
 
         # Write into the Measurement Results Table
         model = DataFrameModel(df)
         self.ivy_framework.measurementResultsTable.setModel(model)
-        # self.measurementResultsTable.setFont(self.font)
-        # self.measurementResultsTable.horizontalHeader().setFont(self.font_bold)
         self.ivy_framework.measurementResultsTable.resizeColumnsToContents()
         self.ivy_framework.measurementResultsTable.resizeRowsToContents()
         self.ivy_framework.measurementResultsTable.horizontalHeader().setFont(
@@ -712,12 +643,13 @@ class DischargeTab:
         self.plot_canvas.draw()
 
     def create_discharge_data_df(self):
-        """Create the discharge stations dataframe
+        """Create the discharge stations dataframe - delegates to DischargeService.
 
-        This dataframe will always be in metric units
+        This dataframe will always be in metric units.
         """
         num_stations = len(self.discharge["stations"])
 
+        # Determine status for each station
         if self.is_table_loaded:
             df = pd.DataFrame.from_dict(
                 self.ivy_framework.discharge_results, orient="index"
@@ -738,70 +670,19 @@ class DischargeTab:
 
             used_df = df[df["Status"] == "Used"]
             used_index = df.index[df.index.isin(used_df.index)].to_numpy()
-        else:
-            used_index = np.arange(0, num_stations)
-
-        # Set random seed for reproducibility
-        np.random.seed(42)
-
-        # Generate data container
-        data = {
-            "ID": np.arange(0, num_stations),
-            "Status": np.where(
+            existing_status = np.where(
                 np.isin(np.arange(num_stations), used_index), "Used", "Not Used"
-            ),
-            "Station Distance": self.discharge["stations"],
-            "Width": np.zeros(self.discharge["stations"].shape),
-            # Monotonically increasing positive floats
-            "Depth": self.discharge["depths"],
-            "Area": np.zeros(self.discharge["stations"].shape),
-            "Surface Velocity": self.discharge["surf_vel"],
-            "α (alpha)": 0.85,
-            "Unit Discharge": np.zeros(self.discharge["stations"].shape),
-        }
+            )
+        else:
+            existing_status = None
 
-        # compute widths and areas
-        for value in range(1, len(data["Width"]) - 1):
-            data["Width"][value] = (
-                data["Station Distance"][value + 1]
-                - data["Station Distance"][value - 1]
-            ) / 2
-            data["Area"][value] = (data["Width"][value]) * data["Depth"][value]
-
-        data["Width"][0] = (
-            data["Station Distance"][1] - data["Station " "Distance"][0]
-        ) / 2
-        data["Area"][0] = (data["Width"][0] / 2) * data["Depth"][0]
-        data["Width"][-1] = (
-            data["Station Distance"][-1] - data["Station Distance"][-2]
-        ) / 2
-        data["Area"][-1] = (data["Width"][-1] / 2) * data["Depth"][-1]
-        surface_velocity = np.nan_to_num(data["Surface Velocity"], nan=0)
-        data["Unit Discharge"] = data["Area"] * surface_velocity * data["α (alpha)"]
-
-        # Create DataFrame
-        self.discharge_data_dataframe = pd.DataFrame(data)
-
-        # Reorder columns to match the desired order
-        self.discharge_data_dataframe = self.discharge_data_dataframe[
-            [
-                "ID",
-                "Status",
-                "Station Distance",
-                "Width",
-                "Depth",
-                "Area",
-                "Surface Velocity",
-                "α (alpha)",
-                "Unit Discharge",
-            ]
-        ]
-
-        # compute unit discharge
-        self.discharge_data_dataframe["Unit Discharge"] = (
-            self.discharge_data_dataframe["Area"]
-            * self.discharge_data_dataframe["α (alpha)"]
-            * self.discharge_data_dataframe["Surface Velocity"]
+        # Delegate dataframe creation to service
+        self.discharge_data_dataframe = self.discharge_service.create_discharge_dataframe(
+            self.discharge["stations"],
+            self.discharge["depths"],
+            self.discharge["surf_vel"],
+            alpha=0.85,
+            existing_status=existing_status
         )
 
         # Write this table to a CSV file
