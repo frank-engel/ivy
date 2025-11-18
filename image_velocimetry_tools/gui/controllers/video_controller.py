@@ -2,8 +2,9 @@
 
 import logging
 import os
+import datetime
 from typing import Optional
-from PyQt5.QtCore import pyqtSlot, QUrl
+from PyQt5.QtCore import pyqtSlot, QUrl, QTime, QDate
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5 import QtWidgets, QtGui
 
@@ -15,6 +16,7 @@ from image_velocimetry_tools.common_functions import (
     seconds_to_frame_number,
     seconds_to_hhmmss,
     resource_path,
+    parse_creation_time,
 )
 from image_velocimetry_tools.opencv_tools import opencv_get_video_metadata
 from image_velocimetry_tools.ffmpeg_tools import ffprobe_add_exif_metadata
@@ -214,9 +216,49 @@ class VideoController(BaseController):
         """
         mw = self.main_window
 
+        # Reset state flags
+        mw.is_clip_created = False
+        mw.is_frames_extracted = False
+
+        # Set working path
+        mw.video_working_path = mw.swap_image_directory
+
         # Load video into media player
         media_content = QMediaContent(QUrl.fromLocalFile(file_path))
         mw.video_player.setMedia(media_content)
+
+        # CRITICAL: Set video output widget (this was missing!)
+        mw.video_player.setVideoOutput(mw.widgetVideo)
+
+        # Enable playback controls
+        mw.buttonPlay.setEnabled(True)
+        mw.sliderVideoPlayHead.setEnabled(True)
+
+        # Start playing
+        mw.video_player.play()
+        self.logger.debug(f"Playing {file_path}")
+
+        # Switch to video tab
+        mw.tabWidget.setCurrentIndex(0)
+
+        # Set video loaded flag
+        mw.is_video_loaded = True
+
+        # Enable video-related UI widgets
+        to_enable = [
+            "groupboxClipControl",
+            "groupboxClipCreationControls",
+            "buttonPlay",
+            "sliderVideoPlayHead",
+            "groupboxFramePreparation",
+        ]
+        mw.set_qwidget_state_by_name(to_enable, True)
+
+        # Update status
+        import os as os_module
+        message = f"Playing: {os_module.path.basename(file_path)}"
+        mw.set_menu_item_color("actionOpen_Video", "good")
+        mw.update_statusbar(message)
 
         # Update window title
         mw.setWindowTitle(
@@ -279,6 +321,30 @@ class VideoController(BaseController):
 
         # Enable frame extraction controls
         mw.groupboxFrameExtraction.setEnabled(True)
+
+        # Parse and set date/time from EXIF metadata for reporting tab
+        creation_time = metadata.get("exif_creation_time", None)
+        duration = metadata.get("duration", None)
+
+        if creation_time is not None:
+            dt = parse_creation_time(creation_time)
+        else:
+            # Fallback: Try to smart parse the file name
+            dt = parse_creation_time(os.path.basename(self.video_model.video_file_name))
+
+        if dt is not None and duration is not None:
+            # Set date
+            mw.measDate.setDate(QDate(dt.year, dt.month, dt.day))
+
+            # Set start time
+            mw.measStartTime.setTime(QTime(dt.hour, dt.minute, dt.second))
+
+            # Compute and set end time
+            dt_end = dt + datetime.timedelta(milliseconds=duration)
+            mw.measEndTime.setTime(QTime(dt_end.hour, dt_end.minute, dt_end.second))
+        elif dt is None and duration is not None:
+            # If no date/time found, just set duration
+            mw.measEndTime.setTime(QTime(0, 0))
 
         self.logger.debug("Video metadata UI updated")
 
