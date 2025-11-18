@@ -1268,7 +1268,132 @@ class OrthoController(BaseController):
             f"{pixel_gsd * units_conversion(mw.display_units)['L']:.3f}"
         )
 
+        # Draw projection lines from camera through GCPs to water surface
+        self._draw_projection_lines(
+            camera_params['camera_position'],
+            pixel_coords,
+            world_coords,
+            water_surface_elev,
+            mw.rectification_parameters["camera_matrix"]
+        )
+
         logging.info(
             f"Camera matrix rectification complete. Pixel GSD: {pixel_gsd} m/pixel, "
             f"Camera position: {camera_params['camera_position']}"
         )
+
+    def _draw_projection_lines(
+        self,
+        camera_position: np.ndarray,
+        pixel_coords: np.ndarray,
+        world_coords: np.ndarray,
+        water_surface_elev: float,
+        camera_matrix: np.ndarray
+    ):
+        """Draw projection lines from camera through GCP points to water surface.
+
+        This visualizes the 3D geometry by showing dashed red lines from each GCP point
+        down to where the camera ray intersects the water surface plane.
+
+        Args:
+            camera_position: Camera position in world coordinates (3,)
+            pixel_coords: GCP pixel coordinates (N x 2)
+            world_coords: GCP world coordinates (N x 3)
+            water_surface_elev: Water surface elevation in meters
+            camera_matrix: Camera matrix (3 x 4)
+        """
+        mw = self.main_window
+
+        # Store projected points in model
+        projected_points = []
+
+        # For each GCP, calculate where the ray from camera through GCP intersects water surface
+        for i, (pixel_xy, world_xyz) in enumerate(zip(pixel_coords, world_coords)):
+            # Ray direction: from camera position through GCP world position
+            ray_direction = world_xyz - camera_position
+            ray_direction = ray_direction / np.linalg.norm(ray_direction)  # Normalize
+
+            # Calculate intersection with water surface plane (Z = water_surface_elev)
+            # Ray equation: P = camera_position + t * ray_direction
+            # Plane equation: Z = water_surface_elev
+            # Solve: camera_position[2] + t * ray_direction[2] = water_surface_elev
+
+            if abs(ray_direction[2]) < 1e-10:
+                # Ray is parallel to water surface, skip
+                continue
+
+            # Parameter t at intersection
+            t = (water_surface_elev - camera_position[2]) / ray_direction[2]
+
+            if t < 0:
+                # Intersection is behind camera, skip
+                continue
+
+            # 3D intersection point on water surface
+            intersection_world = camera_position + t * ray_direction
+            intersection_world[2] = water_surface_elev  # Ensure exactly on plane
+
+            # Project intersection point back to pixel coordinates using camera matrix
+            # P_image = K * [X, Y, Z, 1]^T
+            world_homogeneous = np.array([
+                intersection_world[0],
+                intersection_world[1],
+                intersection_world[2],
+                1.0
+            ])
+
+            pixel_homogeneous = camera_matrix @ world_homogeneous
+            if abs(pixel_homogeneous[2]) > 1e-10:
+                intersection_pixel = pixel_homogeneous[:2] / pixel_homogeneous[2]
+            else:
+                continue
+
+            # Store for model
+            projected_points.append(intersection_pixel)
+
+            # Draw line from GCP pixel to projected pixel
+            # Line points: [GCP pixel, intersection pixel]
+            line_points = [
+                (float(pixel_xy[0]), float(pixel_xy[1])),
+                (float(intersection_pixel[0]), float(intersection_pixel[1]))
+            ]
+
+            # Draw on original image scene
+            self._add_dashed_line_to_scene(mw.ortho_original_image.scene, line_points)
+
+        # Store projected points in model
+        if projected_points:
+            self.ortho_model._rectified_transformed_gcp_points = np.array(projected_points)
+
+        self.logger.info(f"Drew {len(projected_points)} projection lines to water surface")
+
+    def _add_dashed_line_to_scene(self, scene, points: list):
+        """Add a dashed red line to the annotation scene.
+
+        Args:
+            scene: AnnotationScene to draw on
+            points: List of (x, y) tuples defining the line
+        """
+        from PyQt5.QtCore import Qt
+        from PyQt5.QtGui import QPen, QColor
+        from image_velocimetry_tools.graphics import GripItem
+
+        # Create pen for dashed red line
+        pen = QPen(QColor(255, 0, 0))  # Red
+        pen.setStyle(Qt.DashLine)
+        pen.setWidth(2)
+
+        # Create line item
+        line_item = GripItem()
+        line_item.setPen(pen)
+
+        # Add points to line
+        line_item.addLineFromList(points)
+
+        # Add to scene's line items
+        if scene.line_item is None:
+            scene.line_item = []
+        scene.line_item.append(line_item)
+
+        # Add to scene
+        scene.addItem(line_item)
