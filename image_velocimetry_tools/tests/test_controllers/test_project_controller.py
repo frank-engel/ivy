@@ -4,7 +4,7 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 import pytest
-from PyQt5.QtCore import QDir
+from PyQt5.QtCore import QDir, QCoreApplication
 from PyQt5.QtWidgets import QApplication
 
 from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
@@ -67,22 +67,29 @@ def mock_main_window(qapp):
     return mw
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def project_model(qapp):
-    """Create a ProjectModel instance for testing."""
-    return ProjectModel()
+    """Create a fresh ProjectModel instance for each test."""
+    model = ProjectModel()
+    yield model
+    # Cleanup: block all signals to prevent issues during teardown
+    model.blockSignals(True)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def project_service(qapp):
-    """Create a ProjectService instance for testing."""
+    """Create a fresh ProjectService instance for each test."""
     return ProjectService()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def project_controller(qapp, mock_main_window, project_model, project_service):
-    """Create a ProjectController instance for testing."""
-    return ProjectController(mock_main_window, project_model, project_service)
+    """Create a fresh ProjectController instance for each test."""
+    controller = ProjectController(mock_main_window, project_model, project_service)
+    yield controller
+    # Cleanup: block all signals before destruction
+    controller.blockSignals(True)
+    project_model.blockSignals(True)
 
 
 class TestProjectControllerInit:
