@@ -222,7 +222,7 @@ class VideoController(BaseController):
 
         # Update window title
         mw.setWindowTitle(
-            f"{mw._IvyTools__program_name__} v{mw._IvyTools__version__} -- {file_path}"
+            f"{mw.__program_name__} v{mw.__version__} -- {file_path}"
         )
 
         self.logger.info(f"Video loaded: {file_path}")
