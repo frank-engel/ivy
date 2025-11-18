@@ -103,12 +103,15 @@ from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.services.project_service import ProjectService
 from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
 from image_velocimetry_tools.services.image_stack_service import ImageStackService
+from image_velocimetry_tools.services.grid_service import GridService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
+from image_velocimetry_tools.gui.models.grid_model import GridModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
 from image_velocimetry_tools.gui.controllers.ortho_controller import OrthoController
+from image_velocimetry_tools.gui.controllers.grid_controller import GridController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -3517,157 +3520,52 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         Points are added as GripItems into the scene.
 
         """
-        if not self.gridpreparation.imageBrowser.has_image():
-            return  # No image to draw on
-        self.line_mode = mode
-        if mode == "line":
-            number_points = self.spinboxLineNumPoints.value()
-            message = f"GRID PREPARATION: Creating points along digitized line"
-        if mode == "cross_section":
-            number_points = self.spinbocXsLineNumPoints.value()
-            message = (
-                f"GRID PREPARATION: Creating points along digitized "
-                f"cross-section line"
-            )
-        image = self.gridpreparation.imageBrowser.scene.ndarray()
-        mask_polygons = self.gridpreparation.imageBrowser.polygons_ndarray()
-        line_eps = self.gridpreparation.imageBrowser.lines_ndarray()
-        if np.any(line_eps):
-            line_start = line_eps[-1, 0]
-            line_end = line_eps[-1, 1]
-        else:
-            return
+        # Delegate to grid controller
+        success = self.grid_controller.create_line_grid(mode=mode)
 
-        with self.wait_cursor():
-            self.update_statusbar(message)
-            self.gridpreparation.imageBrowser.clearPoints()
-            self.results_grid = self.gridgenerator.make_line(
-                image, line_start, line_end, number_points, mask_polygons
-            )
-            labels = [str(i + 1) for i in range(self.results_grid.shape[0])]
-            self.gridpreparation.imageBrowser.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=self.results_grid,
-                labels=labels,
-            )
-            self.gridpreparation.imageBrowser.scene.set_current_instruction(
-                Instructions.NO_INSTRUCTION
-            )
-
-            # Add points to the Image Vel images
-            self.stiv.imageBrowser.clearPoints()
-            self.stiv.imageBrowser.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=self.results_grid,
-                labels=labels,
-            )
-
-            self.stiv_opt.imageBrowser.clearPoints()
-            self.stiv_opt.imageBrowser.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=self.results_grid,
-                labels=labels,
-            )
+        if success:
+            # Sync state back to self.* for backwards compatibility
+            self.results_grid = self.grid_model.results_grid
+            self.results_grid_world = self.grid_model.results_grid_world
+            self.binary_mask = self.grid_model.binary_mask
+            self.line_mode = self.grid_model.line_mode
+            self.is_cross_section_grid = self.grid_model.is_cross_section_grid
 
     def create_grid(self):
         """Executed when user clicks Create Grid button in the Grid Preparation tab"""
-        if not self.gridpreparation.imageBrowser.has_image():
-            return  # No image to draw on
-        horz = self.spinboxHorizGridSpacing.value()
-        vert = self.spinboxVertGridSpacing.value()
-        image = self.gridpreparation.imageBrowser.scene.ndarray()
-        mask_polygons = self.gridpreparation.imageBrowser.polygons_ndarray()
-        message = f"GRID PREPARATION: Creating results grid"
+        # Delegate to grid controller
+        success = self.grid_controller.create_regular_grid()
 
-        with self.wait_cursor():
-            self.update_statusbar(message)
-            self.results_grid = self.gridgenerator.make_grid(image, mask_polygons)
-
-            # Clear out any existing grid points or lines
-            self.gridpreparation.imageBrowser.clearPoints()
-            self.gridpreparation.imageBrowser.clearLines()
-
-            self.gridpreparation.imageBrowser.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=self.results_grid,
-                labels=["" for p in self.results_grid],
-            )
-
-            # Save the grid
-            try:
-                self.results_grid_world = self.results_grid  # TODO: fix this
-                # self.results_grid_world = pixels_to_world(self.results_grid, self.rectification_parameters["homography_matrix"])
-
-                # Write a CSV file with X,Y, x, y
-                with open(
-                    os.path.join(self.swap_grids_directory, "results_grid.csv"),
-                    "w",
-                    newline="",
-                ) as csvfile:
-                    fieldnames = [
-                        "world_coords_x",
-                        "world_coords_y",
-                        "pixel_coords_x",
-                        "pixel_coords_y",
-                    ]
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-                    # Write the header row
-                    writer.writeheader()
-
-                    # Write the data rows
-                    for world_coord, pixel_coord in zip(
-                        self.results_grid_world, self.results_grid
-                    ):
-                        row_data = {
-                            "world_coords_x": world_coord[0],
-                            "world_coords_y": world_coord[1],
-                            "pixel_coords_x": pixel_coord[0],
-                            "pixel_coords_y": pixel_coord[1],
-                        }
-                        writer.writerow(row_data)
-            except:
-                pass
-
-            # Save the binary mask
-            try:
-                binary_mask_numpy = self.gridgenerator.binary_mask
-                binary_mask_uint8 = binary_mask_numpy.astype(np.uint8) * 255
-                image = Image.fromarray(binary_mask_uint8)
-
-                # TODO: Save this in a "masks" directory instead of grids?
-                image.save(os.path.join(self.swap_grids_directory, "binary_mask.jpg"))
-            except:
-                pass
-        try:
-            horz_units = f"px ({self.pixel_ground_scale_distance_m * horz:.2f} world)"
-            vert_units = f"px ({self.pixel_ground_scale_distance_m * vert:.2f} world)"
-            self.labelHorzSpacingWorldUnits.setText(horz_units)
-            self.labelVertSpacingWorldUnits.setText(vert_units)
-        except:
-            pass
-        message = f"GRID PREPARATION: Results grid created."
-        self.update_statusbar(message)
-
-        # We have a results grid, enable the image velocimetry processors
-        self.groupboxSpaceTimeParameters.setEnabled(True)
-        self.groupboxSpaceTimeOptParameters.setEnabled(True)
+        if success:
+            # Sync state back to self.* for backwards compatibility
+            self.results_grid = self.grid_model.results_grid
+            self.results_grid_world = self.grid_model.results_grid_world
+            self.binary_mask = self.grid_model.binary_mask
+            self.is_cross_section_grid = self.grid_model.is_cross_section_grid
 
     def change_line_num_points(self):
         """Update the number of grid points along a simple line"""
-        self.number_grid_points_along_line = self.spinboxLineNumPoints.value()
+        value = self.spinboxLineNumPoints.value()
+        self.grid_controller.set_line_num_points(value)
+        self.number_grid_points_along_line = value  # Keep for backwards compatibility
 
     def change_xs_line_num_points(self):
         """Update the number of grid points along a defined cross-section line"""
-        self.number_grid_points_along_xs_line = self.spinbocXsLineNumPoints.value()
+        value = self.spinbocXsLineNumPoints.value()
+        self.grid_controller.set_xs_line_num_points(value)
+        self.number_grid_points_along_xs_line = value  # Keep for backwards compatibility
 
     def change_horz_grid_size(self):
         """Update the horizontal grid size"""
-        self.horz_grid_size = self.spinboxHorizGridSpacing.value()
+        value = self.spinboxHorizGridSpacing.value()
+        self.grid_controller.set_horizontal_spacing(value)
+        self.horz_grid_size = value  # Keep for backwards compatibility
 
     def change_vert_grid_size(self):
         """Update the vertical grid size"""
-        self.vert_grid_size = self.spinboxVertGridSpacing.value()
+        value = self.spinboxVertGridSpacing.value()
+        self.grid_controller.set_vertical_spacing(value)
+        self.vert_grid_size = value  # Keep for backwards compatibility
 
     @staticmethod
     def get_table_as_dict(table: QtWidgets.QTableWidget):
@@ -5537,19 +5435,23 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gridpreparation = GridPreparationTab(self)
         self.layoutGridGeneration.addWidget(self.gridpreparation.imageBrowser)
 
-        self.is_cross_section_grid = False
-        self.results_grid = None
-        self.results_grid_world = None
-        self.horz_grid_size = 50
-        self.vert_grid_size = 50
-        self.number_grid_points_along_line = 25
-        self.number_grid_points_along_xs_line = 25
-        self.line_mode = "line"
-        self.region_of_interest_pixels = None
-        self.spinboxHorizGridSpacing.setValue(self.horz_grid_size)
-        self.spinboxVertGridSpacing.setValue(self.vert_grid_size)
-        self.spinboxLineNumPoints.setValue(self.number_grid_points_along_line)
-        self.spinbocXsLineNumPoints.setValue(self.number_grid_points_along_xs_line)
+        # Initialize backwards compatibility attributes from grid model
+        self.is_cross_section_grid = self.grid_model.is_cross_section_grid
+        self.results_grid = self.grid_model.results_grid
+        self.results_grid_world = self.grid_model.results_grid_world
+        self.horz_grid_size = self.grid_model.horz_grid_size
+        self.vert_grid_size = self.grid_model.vert_grid_size
+        self.number_grid_points_along_line = self.grid_model.number_grid_points_along_line
+        self.number_grid_points_along_xs_line = self.grid_model.number_grid_points_along_xs_line
+        self.line_mode = self.grid_model.line_mode
+        self.region_of_interest_pixels = self.grid_model.region_of_interest_pixels
+
+        # Set UI spinbox values from model
+        self.spinboxHorizGridSpacing.setValue(self.grid_model.horz_grid_size)
+        self.spinboxVertGridSpacing.setValue(self.grid_model.vert_grid_size)
+        self.spinboxLineNumPoints.setValue(self.grid_model.number_grid_points_along_line)
+        self.spinbocXsLineNumPoints.setValue(self.grid_model.number_grid_points_along_xs_line)
+
         self.gridgenerator = GridGenerator(self)
         self.toolboxGridCreation.setCurrentIndex(0)  # Set to "Point" page
 
@@ -5615,9 +5517,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.project_service = ProjectService()
         self.ortho_service = OrthorectificationService()
         self.image_stack_service = ImageStackService()
+        self.grid_service = GridService()
         self.video_model = VideoModel()
         self.project_model = ProjectModel()
         self.ortho_model = OrthoModel()
+        self.grid_model = GridModel()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
@@ -5657,6 +5561,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self,
             self.ortho_model,
             self.ortho_service
+        )
+        self.grid_controller = GridController(
+            self,
+            self.grid_model,
+            self.grid_service
         )
 
         # Threading
