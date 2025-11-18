@@ -22,7 +22,11 @@ from image_velocimetry_tools.gui.controllers.base_controller import BaseControll
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
 from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
 from image_velocimetry_tools.graphics import Instructions
-from image_velocimetry_tools.common_functions import find_matches_between_two_lists, units_conversion
+from image_velocimetry_tools.common_functions import (
+    find_matches_between_two_lists,
+    units_conversion,
+    string_to_boolean,
+)
 
 
 class OrthoController(BaseController):
@@ -866,11 +870,14 @@ class OrthoController(BaseController):
         if use_column not in df.columns:
             return None
 
-        # Filter points based on flag
+        # Filter points based on flag using string_to_boolean
         try:
-            mask = df[use_column].astype(str).str.upper() == "TRUE"
-            filtered_df = df[mask]
-        except Exception as e:
+            # Convert string values to boolean (handles "y", "yes", "true", "1", etc.)
+            bool_values = df[use_column].fillna("").astype(str).map(
+                lambda x: string_to_boolean(x) if x else False
+            )
+            filtered_df = df[bool_values]
+        except (ValueError, TypeError) as e:
             logging.warning(f"Error filtering points: {e}")
             return None
 
