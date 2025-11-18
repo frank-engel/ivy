@@ -483,7 +483,11 @@ class DischargeTab:
 
         # AC3 will always process SI units, so we have to ensure the wse fed
         # to it is in SI
-        wse = self.ivy_framework.rectification_parameters["water_surface_elev"]
+        # Use .get() with fallback for backwards compatibility with older projects
+        wse = self.ivy_framework.rectification_parameters.get(
+            "water_surface_elev",
+            self.ivy_framework.ortho_rectified_wse_m
+        )
         # if self.ivy_framework.display_units == "English":
         #     wse /= self.ivy_framework.survey_units["L"]
 
