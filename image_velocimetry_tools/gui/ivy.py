@@ -102,6 +102,7 @@ from image_velocimetry_tools.gui.filesystem import (
 from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.services.project_service import ProjectService
 from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
+from image_velocimetry_tools.services.image_stack_service import ImageStackService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
@@ -2952,7 +2953,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 os.path.join(self.swap_image_directory, "t*.jpg")
             )
 
-            # Don't try t oprocess if there are not any images
+            # Don't try to process if there are not any images
             if processed_frames:
 
                 def progress_callback(progress):
@@ -2960,18 +2961,25 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.progressBar.setValue(progress)
                     # logging.debug(f"IMAGE STACK WORKER: Progress: {progress}%")
 
-                # Create an instance of the ImageStackTask
+                # Use ImageStackService to create the image stack
                 with self.wait_cursor():
                     map_file_size_thres = 9e8
-                    image_stack = create_grayscale_image_stack(
-                        image_paths=processed_frames,
-                        progress_callback=progress_callback,
-                        map_file_path=map_file_path,
-                        map_file_size_thres=map_file_size_thres,
-                    )
-
-                self.image_stack_process_finished(image_stack)
-                self.set_button_color("pushbuttonCreateRefreshImageStackSTIV", "good")
+                    try:
+                        image_stack = self.image_stack_service.create_image_stack(
+                            image_paths=processed_frames,
+                            progress_callback=progress_callback,
+                            map_file_path=map_file_path,
+                            map_file_size_thres=map_file_size_thres,
+                        )
+                        self.image_stack_process_finished(image_stack)
+                        self.set_button_color("pushbuttonCreateRefreshImageStackSTIV", "good")
+                    except ValueError as e:
+                        self.warning_dialog(
+                            "Image Stack Creation Failed",
+                            f"Failed to create image stack: {str(e)}",
+                            style="ok",
+                        )
+                        logging.error(f"Image stack creation failed: {e}")
             else:
                 self.warning_dialog(
                     "Cannot Create Image Stack: No Rectified Frames",
@@ -3018,19 +3026,49 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Starts the image preprocessor image"""
         # Prepare the inputs to the image preprocessor
         image_paths = glob.glob(os.path.join(self.swap_image_directory, "f*.jpg"))
-        clahe_parameters = (2.0, 8, 8)  # Defaults
-        auto_contrast_percent = None
+
+        # Get preprocessing parameters from UI
         do_clahe = False
+        clahe_clip = 2.0
+        clahe_horz_tiles = 8
+        clahe_vert_tiles = 8
         do_auto_contrast = False
+        auto_contrast_percent = None
+
         if self.checkboxApplyClahe.isChecked():
             do_clahe = True
-            clip = float(self.lineeditClaheClipLimit.text())
-            horz_tile_size = int(self.lineeditClaheHorzTileSize.text())
-            vert_tile_size = int(self.lineeditClaheVertTileSize.text())
-            clahe_parameters = (clip, horz_tile_size, vert_tile_size)
+            clahe_clip = float(self.lineeditClaheClipLimit.text())
+            clahe_horz_tiles = int(self.lineeditClaheHorzTileSize.text())
+            clahe_vert_tiles = int(self.lineeditClaheVertTileSize.text())
         if self.checkboxAutoContrast.isChecked():
             do_auto_contrast = True
             auto_contrast_percent = int(self.lineeditAutoContrastPercentClip.text())
+
+        # Validate preprocessing parameters using service
+        validation_errors = self.image_stack_service.validate_preprocessing_parameters(
+            clahe_clip=clahe_clip,
+            clahe_horz_tiles=clahe_horz_tiles,
+            clahe_vert_tiles=clahe_vert_tiles,
+            auto_contrast_percent=auto_contrast_percent,
+        )
+        if validation_errors:
+            self.warning_dialog(
+                "Invalid Preprocessing Parameters",
+                "The following preprocessing parameters are invalid:\n" + "\n".join(validation_errors),
+                style="ok",
+            )
+            return
+
+        # Use service to get properly formatted parameters
+        preprocessing_params = self.image_stack_service.get_preprocessing_parameters(
+            do_clahe=do_clahe,
+            clahe_clip=clahe_clip,
+            clahe_horz_tiles=clahe_horz_tiles,
+            clahe_vert_tiles=clahe_vert_tiles,
+            do_auto_contrast=do_auto_contrast,
+            auto_contrast_percent=auto_contrast_percent,
+        )
+        clahe_parameters = preprocessing_params["clahe_parameters"]
 
         # Create an instance of the ImageProcessor
         self.image_processor = ImageProcessor(
@@ -6554,6 +6592,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_service = VideoService()
         self.project_service = ProjectService()
         self.ortho_service = OrthorectificationService()
+        self.image_stack_service = ImageStackService()
         self.video_model = VideoModel()
 
         # Global init related
