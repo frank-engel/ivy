@@ -99,6 +99,8 @@ from image_velocimetry_tools.gui.filesystem import (
     Worker,
 )
 from image_velocimetry_tools.services.video_service import VideoService
+from image_velocimetry_tools.gui.models.video_model import VideoModel
+from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -2184,34 +2186,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.new_project()
 
     def open_video(self):
-        """Open and play a video"""
-        try:
-            ss = self.sticky_settings.get("last_video_file_name")
-            self.video_file_name = ss
-        except KeyError:
-            self.video_file_name = QDir.homePath()
-
-        """Prompts user to browse to a video file, then plays video."""
-        filter_spec = "Videos (*.mp4 *.mov *.wmv *.avi *.mkv);;All files (*.*)"
-        video_file_name, _ = QtWidgets.QFileDialog.getOpenFileName(
-            None,
-            "Open Video File",
-            self.video_file_name,
-            # path
-            filter_spec,
-        )
-        if video_file_name:
-            self.video_file_name = video_file_name
-            try:
-                self.sticky_settings.set("last_video_file_name", video_file_name)
-            except KeyError:  # key didn't exist, create it
-                self.sticky_settings.new("last_video_file_name", video_file_name)
-            logging.info(f"Video loaded: {video_file_name}")
-            self.setWindowTitle(
-                f"{self.__program_name__} v{self.__version__} -- " f"{video_file_name}"
-            )
-            with self.wait_cursor():
-                self.parse_video()
+        """Open and play a video - delegates to video controller."""
+        self.video_controller.open_video_dialog()
 
     def set_video_metadata(self, video_metadata):
         """Sets video metadata and updates related UI elements.
@@ -6622,8 +6598,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
     def init_class_attributes(self):
         """Initialize IVy's class attributes to default values and settings."""
 
-        # Initialize services
+        # Initialize services and models
         self.video_service = VideoService()
+        self.video_model = VideoModel()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
@@ -6647,6 +6624,13 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Video tab
         self.init_video_tab_attributes()
+
+        # Initialize video controller (after video_player is created)
+        self.video_controller = VideoController(
+            self,
+            self.video_model,
+            self.video_service
+        )
 
         # Threading
         self.init_threading_attributes()
@@ -6728,16 +6712,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toolButtonOpenSettings.clicked.connect(self.open_settings_dialog)
         self.toolButtonOpenHelp.clicked.connect(self.launch_documentation_browser)
 
-        # Video Tab
-        self.buttonPlay.clicked.connect(self.play_video)
-        self.sliderVideoPlayHead.sliderMoved.connect(self.video_set_position)
-        self.video_player.stateChanged.connect(self.media_state_changed)
-        self.video_player.positionChanged.connect(self.video_position_changed)
-        self.video_player.durationChanged.connect(self.video_duration_changed)
+        # Video Tab - signals are connected by video_controller
+        # Note: VideoController connects signals in its _connect_signals() method
+        # These connections are retained for backwards compatibility:
         self.video_player.error.connect(self.video_error_handling)
-        self.buttonClipStart.clicked.connect(self.set_clip_start_time)
-        self.buttonClipEnd.clicked.connect(self.set_clip_end_time)
-        self.buttonClearClip.clicked.connect(self.clear_clip_start_end_times)
         self.buttonCreateVideoClip.clicked.connect(self.create_video_clip)
         self.actionExit.triggered.connect(self.exit_application)
         self.lineeditFrameStepValue.editingFinished.connect(self.frame_step_changed)
