@@ -3890,88 +3890,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.orthotable_populate_table(orthotable_dataframe)
 
     def ortho_original_refresh_plot(self, event):
-        """Refresh the original image pane view"""
-        if event:
-            # Update the orthotable_dataframe
-            # with the X, Y pixel info from the gui table
-            if self.orthotable_dataframe is None:
-                ortho_dict = self.get_table_as_dict(self.orthoPointsTable)
-                self.orthotable_dataframe = pd.DataFrame.from_dict(ortho_dict)
+        """Refresh the original image pane view - delegates to OrthoController."""
+        self.ortho_controller.refresh_original_image_plot(event)
 
-            with self.wait_cursor():
-                current_table_data = self.get_table_as_dict(self.orthoPointsTable)
-                keys = list(current_table_data.keys())
-                if len(keys) >= 11:
-                    xpixel_key = keys[4]
-                    ypixel_key = keys[5]
-                    rectification_key = "Use in Rectification"
-                    validation_key = "Use in Validation"
-
-                    # Check if any values are not empty for the xpixel_key
-                    non_empty_values_xpixel = [
-                        (index, value)
-                        for index, value in enumerate(current_table_data[xpixel_key])
-                        if value != ""
-                    ]
-
-                    # Check if any values are not empty for the ypixel_key
-                    non_empty_values_ypixel = [
-                        (index, value)
-                        for index, value in enumerate(current_table_data[ypixel_key])
-                        if value != ""
-                    ]
-
-                    # Check if any values are not empty for the rectification_key
-                    try:
-                        non_empty_values_rectification = [
-                            (index, value)
-                            for index, value in enumerate(
-                                current_table_data[rectification_key]
-                            )
-                            if value != ""
-                        ]
-                    except KeyError:
-                        non_empty_values_rectification = None
-                    try:
-                        non_empty_values_validation = [
-                            (index, value)
-                            for index, value in enumerate(
-                                current_table_data[validation_key]
-                            )
-                            if value != ""
-                        ]
-                    except KeyError:
-                        non_empty_values_validation = None
-
-                    if non_empty_values_xpixel and non_empty_values_ypixel:
-                        for index_x, value_x in non_empty_values_xpixel:
-                            self.orthotable_dataframe.iloc[
-                                index_x,
-                                self.orthotable_dataframe.columns.get_loc("X (pixel)"),
-                            ] = value_x
-                        for index_y, value_y in non_empty_values_ypixel:
-                            self.orthotable_dataframe.iloc[
-                                index_y,
-                                self.orthotable_dataframe.columns.get_loc("Y (pixel)"),
-                            ] = value_y
-                        if non_empty_values_rectification is not None:
-                            for index_r, value_r in non_empty_values_rectification:
-                                self.orthotable_dataframe.iloc[
-                                    index_r,
-                                    self.orthotable_dataframe.columns.get_loc(
-                                        rectification_key
-                                    ),
-                                ] = value_r
-                        if non_empty_values_validation is not None:
-                            for index_v, value_v in non_empty_values_validation:
-                                self.orthotable_dataframe.iloc[
-                                    index_v,
-                                    self.orthotable_dataframe.columns.get_loc(
-                                        validation_key
-                                    ),
-                                ] = value_v
-
-            self.ortho_original_plot_points()
+        # Update self for backwards compatibility
+        self.orthotable_dataframe = self.ortho_model.orthotable_dataframe
 
     def ortho_original_plot_points(self):
         """Plot GCP points on original image - delegates to OrthoController."""
