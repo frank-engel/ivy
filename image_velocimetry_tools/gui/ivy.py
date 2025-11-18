@@ -98,6 +98,7 @@ from image_velocimetry_tools.gui.filesystem import (
     TableWidgetDragRows,
     Worker,
 )
+from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -2462,8 +2463,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_ffmpeg_parameters(self):
         """Update the ffmpeg parameters to match the current gui settings"""
+        # Set default end time if not specified
         if self.video_clip_end_time == 0 or self.video_clip_end_time is None:
             self.video_clip_end_time = self.video_duration
+
+        # Get current settings from UI
         self.video_rotation = int(self.comboboxFfmpegRotation.currentText())
         self.video_flip = self.comboboxFfmpegFlipVideo.currentText()
         self.video_strip_audio = self.checkboxStripAudio.isChecked()
@@ -2471,71 +2475,48 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_curve_preset = self.comboboxFfmpegCurvePresets.currentText()
         self.video_ffmpeg_stabilize = self.checkboxFfmpeg2PassStabilization.isChecked()
 
-        file_meta = []
-        file_meta.append(
-            f"s{self.video_clip_start_time / 1000:05.3f}s_e{self.video_clip_end_time / 1000:05.3f}s"
-        )
-        if self.video_rotation > 0 and self.video_rotation is not None:
-            file_meta.append(f"rot{self.video_rotation}")
-        if self.video_flip is not None:
-            file_meta.append(f"{self.video_flip}")
-        if self.video_normalize_luma:
-            file_meta.append(f"normluma")
-        if self.video_curve_preset is not None:
-            file_meta.append(f"{self.video_curve_preset}")
-        if self.video_ffmpeg_stabilize:
-            file_meta.append(f"stab")
-        file_str_middle = "_".join(map(str, file_meta))
-        # Handle case where video_file_name is None
-        default_video_name = "no_video_loaded.mp4"
-        basename = os.path.basename(
-            self.video_file_name) if self.video_file_name else default_video_name
-
-        # Ensure basename has a valid file extension
-        if "." in basename:
-            name, ext = basename.rsplit(".", 1)
-        else:
-            name, ext = basename, "mp4"  # Default to .mp4 if no extension exists
-
-        trimmed_video_name = format_windows_path(
-            f"{self.swap_directory}{os.sep}"
-            f"{name}_{file_str_middle}.{ext}"
-        )
-
-        trimmed_video_name_base = os.path.basename(trimmed_video_name)
+        # Use VideoService to generate output filename
+        # Determine output directory
         if self.video_clip_filename:
             output_video = self.video_clip_filename
         else:
             video_dir = os.path.dirname(
                 self.video_file_name) if self.video_file_name else self.swap_directory
-            output_video = f"{video_dir}{os.sep}{trimmed_video_name_base}"
+            output_video = self.video_service.generate_clip_filename(
+                input_video_path=self.video_file_name or "no_video_loaded.mp4",
+                start_time_ms=self.video_clip_start_time,
+                end_time_ms=self.video_clip_end_time,
+                output_dir=video_dir,
+                rotation=self.video_rotation,
+                flip=self.video_flip,
+                normalize_luma=self.video_normalize_luma,
+                curve_preset=self.video_curve_preset,
+                stabilize=self.video_ffmpeg_stabilize
+            )
 
-        # Ensure ffmpeg params are all correct
-        self.ffmpeg_parameters = {
-            "input_video": self.video_file_name,
-            "output_video": output_video,
-            "start_time": seconds_to_hhmmss(
-                self.video_clip_start_time / 1000, precision="high"
-            ),
-            "end_time": seconds_to_hhmmss(
-                self.video_clip_end_time / 1000, precision="high"
-            ),
-            "video_rotation": self.video_rotation,
-            "video_flip": self.video_flip,
-            "strip_audio": self.video_strip_audio,
-            "normalize_luma": self.video_normalize_luma,
-            "curve_preset": self.video_curve_preset,
-            "stabilize": self.video_ffmpeg_stabilize,
-            "extract_frames": False,
-            "extract_frame_step": self.extraction_frame_step,
-            "extracted_frames_folder": self.extracted_frames_folder,
-            "extract_frame_pattern": "f%05d.jpg",
-            "calibrate_radial": self.checkboxCorrectRadialDistortion.isChecked(),
-            "cx": self.lens_characteristics.cx_dim,
-            "cy": self.lens_characteristics.cy_dim,
-            "k1": self.lens_characteristics.k1,
-            "k2": self.lens_characteristics.k2,
-        }
+        # Use VideoService to build FFmpeg parameters
+        self.ffmpeg_parameters = self.video_service.build_ffmpeg_parameters(
+            input_video=self.video_file_name,
+            output_video=output_video,
+            start_time_ms=self.video_clip_start_time,
+            end_time_ms=self.video_clip_end_time,
+            rotation=self.video_rotation,
+            flip=self.video_flip,
+            strip_audio=self.video_strip_audio,
+            normalize_luma=self.video_normalize_luma,
+            curve_preset=self.video_curve_preset,
+            stabilize=self.video_ffmpeg_stabilize,
+            extract_frames=False,
+            extract_frame_step=self.extraction_frame_step,
+            extracted_frames_folder=self.extracted_frames_folder,
+            extract_frame_pattern="f%05d.jpg",
+            calibrate_radial=self.checkboxCorrectRadialDistortion.isChecked(),
+            cx=self.lens_characteristics.cx_dim,
+            cy=self.lens_characteristics.cy_dim,
+            k1=self.lens_characteristics.k1,
+            k2=self.lens_characteristics.k2,
+        )
+
         logging.debug("FFMPEG parameters changed. New parameters:")
         logging.debug(json.dumps(self.ffmpeg_parameters, indent=4))
 
@@ -6640,6 +6621,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def init_class_attributes(self):
         """Initialize IVy's class attributes to default values and settings."""
+
+        # Initialize services
+        self.video_service = VideoService()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
