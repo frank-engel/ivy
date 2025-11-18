@@ -108,10 +108,12 @@ from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
 from image_velocimetry_tools.gui.models.grid_model import GridModel
+from image_velocimetry_tools.gui.models.settings_model import SettingsModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
 from image_velocimetry_tools.gui.controllers.ortho_controller import OrthoController
 from image_velocimetry_tools.gui.controllers.grid_controller import GridController
+from image_velocimetry_tools.gui.controllers.settings_controller import SettingsController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -565,143 +567,20 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 return
 
     def open_settings_dialog(self):
-        """
-        Open the settings dialog.
+        """Open the settings dialog - delegates to SettingsController."""
+        self.settings_controller.open_settings_dialog()
 
-        Description:
-            This function opens the settings dialog, allowing the user to change the display units
-            for the survey or enable/disable under-ice mode. It initializes the dialog with the
-            current display units and the icon path, waits for the dialog to be closed, and then
-            retrieves the selected units. If the units have changed, it updates the display units,
-            changes the plot settings accordingly, and converts any relevant data to the new units.
-
-        Returns:
-            None
-
-        """
-
-        # If the user had a previous display units, use it
-        try:
-            ss = self.sticky_settings.get("last_display_units")
-            self.display_units = ss
-        except KeyError:
-            self.sticky_settings.new("last_display_units", self.display_units)
-        display_units = self.display_units
-
-        dialog = Settings_Dialog(
-            units=display_units,
-            icon_path=resource_path(
-                resource_path(self.__icon_path__ + os.sep + "IVy_Logo.ico"),
-            ),
-            parent=self,
-        )
-        dialog.exec_()
-
-        if dialog.units is not None:
-            if dialog.units != self.display_units:
-                self.display_units = dialog.units
-
-                # Change plot settings
-                self.units_label = dialog.units
-
-                # Update file menu
-                self.actionUnits.setText(f"Units: {self.units_label}")
-                # if self.units_label == "English":
-                #     self.comboBoxPlotOptions.setCurrentIndex(1)
-                # if self.units_label == "Metric":
-                #     self.comboBoxPlotOptions.setCurrentIndex(2)
-                # self.update_plot_options()
-
-                # Update the user's settings
-                self.sticky_settings.set("last_display_units", self.display_units)
-
-            # Convert any data
-            self.survey_units = units_conversion(self.display_units)
-            self.change_units(self.display_units)
-            logging.debug(f"NEW display units: {self.display_units}")
+        # Update self attributes for backwards compatibility
+        self.display_units = self.settings_model.display_units
+        self.units_label = self.settings_model.units_label
+        self.survey_units = self.settings_model.survey_units
 
     def change_units(self, units="English"):
-        """
-        Apply units conversions and labels globally to all loaded data and elements.
+        """Apply units conversions and labels - delegates to SettingsController."""
+        self.settings_controller.change_units(units)
 
-        Args:
-            units (str, optional): The units to be applied. Defaults to "English".
-
-        Description:
-            This function applies units conversions and labels to all loaded data and elements in the GUI.
-            It updates the labels for the Known Values and Discharge Calculator sections based on the specified units.
-            The function also triggers the update of the tables and recalculates the discharge if applicable.
-
-        Returns:
-            None
-
-        """
-
-        # gui Labels
-        self.labelWaterSurfaceElevation.setText(
-            f"Water Surface Elevation {self.survey_units['label_L']}:"
-        )
-        self.labelPixelGSD.setText(f"Pixel GSD {self.survey_units['label_L']}:")
-        self.labelStivMaxVelThreshold.setText(
-            f"Max Vel. Threshold {self.survey_units['label_V']}:"
-        )
-        self.labelStivOptMaxVelThreshold.setText(
-            f"Max Vel. Threshold {self.survey_units['label_V']}:"
-        )
-        self.labelCrossSectionMeasurementStage.setText(
-            f"Measurement Stage {self.survey_units['label_L']}:"
-        )
-        self.stationStationLabel.setText(
-            f"Starting Station {self.survey_units['label_L']}:"
-        )
-        self.gageHeightLabel.setText(f"Stage {self.survey_units['label_L']}:")
-
-        # Orthorectification Points Table
-        if self.is_ortho_table_loaded:
-            self.orthotable_populate_table(self.orthotable_dataframe)
-            self.orthotable_change_units()
-        old = self.doubleSpinBoxRectificationWaterSurfaceElevation.value()
-        self.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(old * units_conversion(self.display_units)['L'])
-        if self.pixel_ground_scale_distance_m is not None:
-            old = float(self.lineeditPixelGSD.text())
-            self.lineeditPixelGSD.setText(
-                f"{old * units_conversion(self.display_units)['L']:.3f}"
-            )
-
-        # Cross-section Geometry Tab (AC3)
-        if self.bathymetry_ac3_filename is not None:
-            # Reloading will change units
-            self.xs_survey.load_areacomp(self.bathymetry_ac3_filename)
-
-            # Then delete the old subsurvey
-            survey = self.xs_survey.xs_survey.surveys[-1].file_id
-            self.xs_survey.xs_survey.remove_survey(survey)
-            self.xs_survey.update_backend()
-
-            # Update the AC3 gui elements and backend
-            old = self.char_stage_sb.value()
-            self.char_stage_sb.setValue(old * units_conversion(self.display_units)["L"])
-            old = float(self.start_station_lineEdit.text())
-            self.start_station_lineEdit.setText(
-                f"{old * units_conversion(self.display_units)['L']:.2f}"
-            )
-            old = float(self.stage_lineEdit.text())
-            self.stage_lineEdit.setText(
-                f"{old * units_conversion(self.display_units)['L']:.2f}"
-            )
-            self.xs_survey.change = {
-                "bathymetry": True,
-                "plot": True,
-                "sub-survey": True,
-                "char": True,
-            }
-            self.xs_survey.update_ui()
-
-        # Discharge Measurements Table
-        pass
-
-        # Discharge Results Table
-        pass
+        # Update self attributes for backwards compatibility
+        self.survey_units = self.settings_model.survey_units
 
     def set_qwidget_state_by_name(self, widget_names, state: bool) -> None:
         """
@@ -5526,20 +5405,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.project_model = ProjectModel()
         self.ortho_model = OrthoModel()
         self.grid_model = GridModel()
+        self.settings_model = SettingsModel()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
         self.sticky_settings = Settings(self.ivy_settings_file)
         self.units = "English"  # TODO: remove this and use the units_label
-        try:
-            ss = self.sticky_settings.get("last_display_units")
-            self.units_label = ss
-            self.display_units = ss
-        except KeyError:
-            self.units_label = "English"
-            self.display_units = "English"
-            self.sticky_settings.new("last_display_units", self.display_units)
-        self.survey_units = units_conversion(units_id=self.display_units)
         self.project_filename = f"{QDir.homePath()}{os.sep}New_IVy_Project.ivy"
         self.status_message = (
             "Open a video to begin | Drag and Drop -OR- File-->Open Video (Ctrl+O)"
@@ -5571,6 +5442,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.grid_model,
             self.grid_service
         )
+        self.settings_controller = SettingsController(
+            self,
+            self.settings_model,
+            self.sticky_settings
+        )
+
+        # Initialize display units from sticky settings
+        loaded_units = self.settings_controller.initialize_units_from_settings()
+        self.units_label = loaded_units
+        self.display_units = loaded_units
+        self.survey_units = self.settings_model.survey_units
 
         # Threading
         self.init_threading_attributes()
