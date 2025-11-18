@@ -3,5 +3,6 @@
 from .base_model import BaseModel
 from .video_model import VideoModel
 from .project_model import ProjectModel
+from .ortho_model import OrthoModel
 
-__all__ = ['BaseModel', 'VideoModel', 'ProjectModel']
+__all__ = ['BaseModel', 'VideoModel', 'ProjectModel', 'OrthoModel']

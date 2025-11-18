@@ -105,8 +105,10 @@ from image_velocimetry_tools.services.orthorectification_service import Orthorec
 from image_velocimetry_tools.services.image_stack_service import ImageStackService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
+from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
 from image_velocimetry_tools.gui.controllers.video_controller import VideoController
 from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
+from image_velocimetry_tools.gui.controllers.ortho_controller import OrthoController
 from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
     GridGenerator
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
@@ -4311,73 +4313,44 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         table.resizeRowsToContents()
 
     def ortho_original_load_gcp_image(self, image_filename=None):
-        """
-        Load the GCP image for orthorectification and save a copy as '!calibration_image.jpg'.
+        """Load the GCP image for orthorectification.
 
         Parameters
         ----------
         image_filename : str, optional
-            The file path of the GCP image to load. If not provided, defaults to
-            the directory of the last loaded GCP image path.
+            The file path of the GCP image to load. If not provided, opens file dialog.
 
         Notes
         -----
-        This function loads the specified GCP image, updates the application state,
-        and saves a copy of the image as '!calibration_image.jpg' in the
-        `self.swap_orthorectification` directory.
+        Delegates to OrthoController.load_gcp_image() which handles:
+        - File dialog (if no filename provided)
+        - Image loading
+        - Saving calibration image copy
+        - UI state updates
+        - Sticky settings management
         """
-        try:
-            ss = self.sticky_settings.get("last_ortho_gcp_image_path")
-            if ss is not None:
-                self.last_ortho_gcp_image_path = ss
-            else:
-                self.last_ortho_gcp_image_path = QDir.homePath()
-        except KeyError:
-            self.last_ortho_gcp_image_path = QDir.homePath()
-
-        if image_filename is not None:
-            self.ortho_original_image.open(image_filename)
-        else:
-            self.ortho_original_image.open(
-                os.path.dirname(self.last_ortho_gcp_image_path)
-            )
-        # Save a copy of the GCP image as '!calibration_image.jpg'
-        try:
-            destination_path = os.path.join(
-                self.swap_orthorectification_directory, "!calibration_image.jpg"
-            )
-            shutil.copy(self.ortho_original_image.image_file_path, destination_path)
-        except Exception as e:
-            self.update_statusbar(f"Failed to save calibration image: {e}")
-
-        self.set_qwidget_state_by_name(
-            [
-                # "ortho_original_image",
-                "groupboxOrthoOrigImageTools",
-                "toolbuttonOrthoOrigImageDigitizePoint",
-            ],
-            True,
-        )
-        self.ortho_original_image.setEnabled(True)
-        message = (
-            f"GCP Image Loaded. Drag a box or use scroll wheel to zoom, right-click to reset. A GCP table "
-            f"must be loaded to continue."
-        )
-        self.update_statusbar(message)
-        try:
-            self.sticky_settings.set(
-                "last_ortho_gcp_image_path", self.ortho_original_image.image_file_path
-            )
-        except KeyError:
-            self.sticky_settings.new(
-                "last_ortho_gcp_image_path", self.ortho_original_image.image_file_path
-            )
+        # Delegate to ortho controller
+        self.ortho_controller.load_gcp_image(image_filename)
 
     def ortho_flip_x_changed(self):
-        self.is_ortho_flip_x = self.checkBoxOrthoFlipX.isChecked()
+        """Handle horizontal flip checkbox change."""
+        enabled = self.checkBoxOrthoFlipX.isChecked()
+
+        # Delegate to ortho controller
+        self.ortho_controller.set_flip_x(enabled)
+
+        # Update self for backwards compatibility
+        self.is_ortho_flip_x = enabled
 
     def ortho_flip_y_changed(self):
-        self.is_ortho_flip_y = self.checkBoxOrthoFlipY.isChecked()
+        """Handle vertical flip checkbox change."""
+        enabled = self.checkBoxOrthoFlipY.isChecked()
+
+        # Delegate to ortho controller
+        self.ortho_controller.set_flip_y(enabled)
+
+        # Update self for backwards compatibility
+        self.is_ortho_flip_y = enabled
 
     def homography_distance_conversion_tool(self):
         """Opens the Homogrpahy Distance Conversion tool"""
@@ -6532,6 +6505,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.image_stack_service = ImageStackService()
         self.video_model = VideoModel()
         self.project_model = ProjectModel()
+        self.ortho_model = OrthoModel()
 
         # Global init related
         self.ivy_settings_file = "IVy_Settings"
@@ -6566,6 +6540,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self,
             self.project_model,
             self.project_service
+        )
+        self.ortho_controller = OrthoController(
+            self,
+            self.ortho_model,
+            self.ortho_service
         )
 
         # Threading
