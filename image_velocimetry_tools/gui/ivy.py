@@ -3051,40 +3051,39 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(0)
 
     def ortho_original_image_zoom_image(self, zoom_value):
-        """Zoom in and zoom out."""
+        """Zoom in and zoom out - delegates to OrthoController."""
+        self.ortho_controller.set_original_image_zoom(zoom_value)
+
+        # Update self for backwards compatibility
         self.ortho_original_image_zoom_factor = zoom_value
-        self.ortho_original_image.zoomEvent(self.ortho_original_image_zoom_factor)
-        # self.toolbuttonOrthoOrigImageZoomIn.setEnabled(self.ortho_original_image_zoom_factor < 4.0)
-        # self.toolbuttonOrthoOrigImageZoomOut.setEnabled(self.ortho_original_image_zoom_factor > 0.333)
 
     def ortho_rectified_image_zoom_image(self, zoom_value):
-        """Zoom in and zoom out."""
+        """Zoom in and zoom out - delegates to OrthoController."""
+        self.ortho_controller.set_rectified_image_zoom(zoom_value)
+
+        # Update self for backwards compatibility
         self.ortho_rectified_image_zoom_factor = zoom_value
-        self.ortho_rectified_image.zoomEvent(self.ortho_rectified_image_zoom_factor)
-        # self.toolbuttonOrthoOrigImageZoomIn.setEnabled(self.ortho_original_image_zoom_factor < 4.0)
-        # self.toolbuttonOrthoOrigImageZoomOut.setEnabled(self.ortho_original_image_zoom_factor > 0.333)
 
     def ortho_original_image_normal_size(self):
-        """View image with its normal dimensions."""
-        self.ortho_original_image.clearZoom()
+        """View image with its normal dimensions - delegates to OrthoController."""
+        self.ortho_controller.reset_original_image_zoom()
+
+        # Update self for backwards compatibility
         self.ortho_original_image_zoom_factor = 1.0
 
     def ortho_rectified_image_normal_size(self):
-        """View image with its normal dimensions."""
-        self.ortho_rectified_image.clearZoom()
+        """View image with its normal dimensions - delegates to OrthoController."""
+        self.ortho_controller.reset_rectified_image_zoom()
+
+        # Update self for backwards compatibility
         self.ortho_rectified_image_zoom_factor = 1.0
 
     def ortho_rectified_water_surface_elevation(self):
-        """Logs changes in the specified WSE for rectification."""
-        item = self.doubleSpinBoxRectificationWaterSurfaceElevation.value()
-        if self.display_units == "Metric":
-            self.ortho_rectified_wse_m = float(item)
-        if self.display_units == "English":
-            self.ortho_rectified_wse_m = float(item) * 1 / self.survey_units["L"]
+        """Update water surface elevation - delegates to OrthoController."""
+        self.ortho_controller.update_water_surface_elevation()
 
-        # If AC3 file is loaded, attempt to update AC3 backend
-        self.signal_wse_changed.emit(self.ortho_rectified_wse_m)
-        # self.xs_survey.update_backend()
+        # Update self for backwards compatibility
+        self.ortho_rectified_wse_m = self.ortho_model.ortho_rectified_wse_m
 
     @staticmethod
     def load_ndarray_into_qtablewidget(
@@ -3125,624 +3124,23 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         return df
 
     def ortho_original_image_digitize_point(self):
-        """Connect point digitizer to the GCP image pane."""
-        pixmap = QtGui.QPixmap(self.__icon_path__ + os.sep + "crosshairs-solid.svg")
-        pixmap = pixmap.scaledToWidth(32)
-        cursor = QtGui.QCursor(pixmap, hotX=16, hotY=16)
-        print(f"cursor hotspot: {cursor.hotSpot()}")
-        if self.toolbuttonOrthoOrigImageDigitizePoint.isChecked():
-            # self.imagebrowser_button_state_checker("eyedropper")
-            self.ortho_original_image.setCursor(cursor)
-
-            # Create the mouse event
-            self.ortho_original_image.leftMouseButtonReleased.connect(
-                self.ortho_original_image_get_pixel
-            )
-        else:
-            self.ortho_original_image.setCursor(Qt.ArrowCursor)
+        """Toggle point digitization mode - delegates to OrthoController."""
+        self.ortho_controller.toggle_digitize_mode()
 
     def ortho_original_image_get_pixel(self, x, y):
-        """Extract the pixel information."""
-        row = int(y)
-        column = int(x)
-        logging.debug(
-            "Clicked on image pixel (row=" + str(row) + ", column=" + str(column) + ")"
-        )
-        # x = event.pos().x() / self.ortho_original_image_zoom_factor
-        # y = event.pos().y() / self.ortho_original_image_zoom_factor
-        # c = self.ortho_original_image.image.pixel(x, y)
+        """Handle digitized point - delegates to OrthoController."""
+        self.ortho_controller.handle_digitized_point(x, y)
+
+        # Update self for backwards compatibility
         self.ortho_original_image_current_pixel = [x, y]
-        logging.debug(
-            f"##### Pixel Info: x: {self.ortho_original_image_current_pixel[0]}, "
-            f"y: {self.ortho_original_image_current_pixel[1]}."
-        )
-        logging.debug(
-            f"Current selected GCP table row: {self.orthoPointsTable.currentRow()}"
-        )
-        if self.toolbuttonOrthoOrigImageDigitizePoint.isChecked():
-            self.orthoPointsTable.setItem(
-                self.orthoPointsTable.currentRow(),
-                4,
-                QtWidgets.QTableWidgetItem(f"{x:.3f}"),
-            )
-            self.orthoPointsTable.setItem(
-                self.orthoPointsTable.currentRow(),
-                5,
-                QtWidgets.QTableWidgetItem(f"{y:.3f}"),
-            )
-
-            # Grab the current points from the table
-            what_to_plot = self.get_orthotable_points_to_plot()
-            self.signal_ortho_original_digitized_point.emit(what_to_plot)
-
-            self.ortho_original_image.clearPoints()
-            # self.ortho_original_image.addLabeledPoint(what_to_plot)
-            # self.ortho_original_image.paintEvent(what_to_plot)
-            self.ortho_original_image.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=what_to_plot["points"],
-                labels=what_to_plot["labels"],
-            )
 
     def rectify_single_frame(self):
-        """Executes when user presses 'Rectify Current Image' button."""
+        """Calculate rectification parameters and rectify current frame - delegates to OrthoController."""
+        self.ortho_controller.rectify_single_frame()
 
-        # Setup
-        # gcp_table = self.get_table_as_dict(self.orthoPointsTable)
-        if self.orthotable_dataframe.empty:
-            return
-        gcp_table = self.orthotable_dataframe.to_dict()  # always meters
-        labels = list(gcp_table["# ID"].values())
-        world_coords = tuple(
-            zip(
-                [float(item) for item in gcp_table["X"].values()],  # X
-                [float(item) for item in gcp_table["Y"].values()],  # Y
-                [float(item) for item in gcp_table["Z"].values()],  # Z
-            )
-        )
-        transformed_image = np.array([])
-        rect_params = self.rectification_parameters
-        rect_params["extent"] = np.array(None)
-        rect_params["homography_matrix"] = np.array(rect_params["homography_matrix"])
-        rect_params["camera_matrix"] = np.array(rect_params["camera_matrix"])
-        rect_params["pixel_coords"] = np.array(rect_params["pixel_coords"])
-        rect_params["world_coords"] = np.array(rect_params["world_coords"])
-        rect_params["extent"] = np.array(rect_params["extent"])
-
-        # Grab only the points user specified for rectification
-        # These are the points user wants rectified, but only their pixel coords, so we have to compare
-        # that to the entire table of points
-        points_dict = self.get_orthotable_points_to_plot(which_points="rectification")
-        matched_point_labels = find_matches_between_two_lists(
-            points_dict["labels"], labels
-        )
-        self.rectification_parameters["pixel_coords"] = np.array(points_dict["points"])
-        self.rectification_parameters["world_coords"] = np.array(
-            [world_coords[index[0]] for index in matched_point_labels]
-        )  # always meters
-        num_points = self.rectification_parameters["pixel_coords"].shape[0]
-        self.rectification_parameters["water_surface_elev"] = self.ortho_rectified_wse_m
-
-        # Don't let the WSE be exactly 0.0
-        if self.rectification_parameters["water_surface_elev"] == 0.0:
-            self.rectification_parameters["water_surface_elev"] = 1.0e-5
-
-            # Save a copy of the table in the project structure
-        try:
-            destination_path = os.path.join(
-                self.swap_orthorectification_directory, "ground_control_points.csv"
-            )
-            dict = self.get_table_as_dict(self.orthoPointsTable)
-            pd.DataFrame(dict).fillna("").to_csv(destination_path, index=False)
-        except Exception as e:
-            self.update_statusbar(
-                f"Failed to save GCP table to project " f"structure: {e}"
-            )
-
-        # Validate GCP configuration
-        validation_errors = self.ortho_service.validate_gcp_configuration(
-            self.rectification_parameters["pixel_coords"],
-            self.rectification_parameters["world_coords"]
-        )
-        if validation_errors:
-            error_msg = "GCP validation errors:\n" + "\n".join(validation_errors)
-            logging.error(error_msg)
-            self.warning_dialog(
-                "Invalid GCP Configuration",
-                error_msg,
-                style="ok",
-                icon=self.__icon_path__ + os.sep + "IVy_logo.ico"
-            )
-            return
-
-        # Determine rectification method using service
-        self.rectification_method = self.ortho_service.determine_rectification_method(
-            num_points,
-            self.rectification_parameters["world_coords"]
-        )
-
-        logging.debug(
-            f"ORTHORECTIFICATION: Found {num_points} to rectify. Are all points on the same Z-plane? "
-            f"[{np.all(self.rectification_parameters['world_coords'][:, -1] == self.rectification_parameters['world_coords'][0, -1])}]"
-        )
-        logging.info(f"Attempting rectification method: {self.rectification_method}")
-
-        if self.rectification_method == "scale":
-            # Use service to calculate scale parameters
-            image = self.ortho_original_image.scene.ndarray()
-            scale_params = self.ortho_service.calculate_scale_parameters(
-                self.rectification_parameters["pixel_coords"],
-                self.rectification_parameters["world_coords"][:, 0:2],
-                image.shape
-            )
-
-            # Update rectification parameters
-            self.rectification_parameters["homography_matrix"] = scale_params["homography_matrix"]
-            self.rectification_parameters["extent"] = scale_params["extent"]
-            self.rectification_parameters["pad_x"] = scale_params["pad_x"]
-            self.rectification_parameters["pad_y"] = scale_params["pad_y"]
-
-            # Update state
-            pixel_gsd = scale_params["pixel_gsd"]
-            self.pixel_ground_scale_distance_m = pixel_gsd
-            self.is_homography_matrix = True
-            self.scene_averaged_pixel_gsd_m = pixel_gsd
-
-            # Calculate quality metrics using service
-            quality_metrics = self.ortho_service.calculate_quality_metrics(
-                "scale",
-                pixel_gsd,
-                pixel_distance=scale_params["pixel_distance"],
-                ground_distance=scale_params["ground_distance"]
-            )
-            self.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
-            self.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
-
-            # For scale method, image is not transformed (nadir assumption)
-            transformed_image = image
-
-            # For scale method, transformed points are the same as pixel coords
-            transformed_points = self.rectification_parameters["pixel_coords"]
-
-            # Update UI
-            self.load_ndarray_into_qtablewidget(
-                self.rectification_parameters["homography_matrix"],
-                self.tablewidgetProjectiveMatrix,
-            )
-            self.lineeditPixelGSD.setText(
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']:.3f}"
-            )
-            logging.info(
-                f"Pixel GSD: "
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']} "
-                f"{units_conversion(self.display_units)['label_L']}"
-            )
-
-        if self.rectification_method == "homography":
-            # Set padding parameters
-            pad_x, pad_y = 200, 200
-            logging.info(
-                f"ORTHORECTIFICATION: Rectifying image: Padding ({pad_x}, {pad_y}). "
-                f"Output image will be scaled so that all pixels are positive with specified padding."
-            )
-
-            # Check to see if we have a homography matrix already
-            existing_homography = None
-            if self.is_homography_matrix:
-                existing_homography = self.rectification_parameters.get("homography_matrix")
-
-            # Use service to calculate homography parameters
-            image = self.ortho_original_image.scene.ndarray()
-            homography_params = self.ortho_service.calculate_homography_parameters(
-                image,
-                self.rectification_parameters["pixel_coords"],
-                self.rectification_parameters["world_coords"],
-                homography_matrix=existing_homography,
-                pad_x=pad_x,
-                pad_y=pad_y
-            )
-
-            # Update rectification parameters
-            transformed_image = homography_params["transformed_image"]
-            self.rectification_parameters["homography_matrix"] = homography_params["homography_matrix"]
-            self.rectification_parameters["extent"] = homography_params["extent"]
-            self.rectification_parameters["pad_x"] = homography_params["pad_x"]
-            self.rectification_parameters["pad_y"] = homography_params["pad_y"]
-
-            # Update state
-            pixel_gsd = homography_params["pixel_gsd"]
-            self.pixel_ground_scale_distance_m = pixel_gsd
-            self.is_homography_matrix = True
-            self.scene_averaged_pixel_gsd_m = pixel_gsd
-
-            # Calculate quality metrics using service
-            quality_metrics = self.ortho_service.calculate_quality_metrics(
-                "homography",
-                pixel_gsd,
-                homography_matrix=self.rectification_parameters["homography_matrix"]
-            )
-            if "estimated_view_angle" in quality_metrics:
-                self.rectification_parameters["estimated_view_angle"] = quality_metrics["estimated_view_angle"]
-                logging.info(f"Rectify Single Frame: estimated view angle: "
-                           f"{self.rectification_parameters['estimated_view_angle']:.2f}°")
-            self.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
-            self.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
-
-            # Update UI
-            self.load_ndarray_into_qtablewidget(
-                self.rectification_parameters["homography_matrix"],
-                self.tablewidgetProjectiveMatrix,
-            )
-            self.lineeditPixelGSD.setText(
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']:.3f}"
-            )
-            logging.info(
-                f"Pixel GSD: "
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']} "
-                f"{units_conversion(self.display_units)['label_L']}"
-            )
-
-            logging.info(
-                f"Homography matrix (perspective --> ortho): \n"
-                f"{np.array2string(np.linalg.inv(self.rectification_parameters['homography_matrix']), precision=4, floatmode='fixed')}"
-            )
-            logging.info(
-                f"Homography matrix (ortho --> perspective): \n"
-                f"{np.array2string(self.rectification_parameters['homography_matrix'], precision=4, floatmode='fixed')}"
-            )
-
-            # Plot the Points table onto the rectified image
-            H = self.rectification_parameters["homography_matrix"]
-            points = self.ortho_original_image.points_ndarray()
-            transformed_points = transform_points_with_homography(points, H)
-
-        if self.rectification_method == "camera matrix":
-            # Check to see if we have a camera matrix
-            existing_camera_matrix = None
-            if self.is_camera_matrix:
-                existing_camera_matrix = self.rectification_parameters.get("camera_matrix")
-
-            # Use service to calculate camera matrix parameters
-            image = self.ortho_original_image.scene.ndarray()
-            camera_params = self.ortho_service.calculate_camera_matrix_parameters(
-                image,
-                self.rectification_parameters["pixel_coords"],
-                self.rectification_parameters["world_coords"],
-                self.rectification_parameters["water_surface_elev"],
-                camera_matrix=existing_camera_matrix,
-                padding_percent=0.03
-            )
-
-            # Update rectification parameters
-            transformed_image = camera_params["transformed_image"]
-            self.rectification_parameters["camera_matrix"] = camera_params["camera_matrix"]
-            self.rectification_parameters["extent"] = camera_params["extent"]
-
-            # Update state
-            self.camera_position = camera_params["camera_position"]
-            pixel_gsd = camera_params["pixel_gsd"]
-            self.pixel_ground_scale_distance_m = pixel_gsd
-
-            # Log camera matrix info
-            logging.info(f"Camera matrix:\n{camera_params['camera_matrix']}")
-            if camera_params["projection_rms_error"] is not None:
-                logging.info(f"Projection RMS error: {camera_params['projection_rms_error']:.4f}")
-
-            # Update UI
-            self.load_ndarray_into_qtablewidget(
-                self.rectification_parameters["camera_matrix"],
-                self.tablewidgetProjectiveMatrix,
-            )
-            self.lineeditPixelGSD.setText(
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']:.3f}"
-            )
-            logging.info(
-                f"Pixel GSD: "
-                f"{self.pixel_ground_scale_distance_m * units_conversion(self.display_units)['L']} "
-                f"{units_conversion(self.display_units)['label_L']}"
-            )
-            logging.info(
-                f"Camera position in world coordinates: "
-                f"{self.camera_position * units_conversion(self.display_units)['L']} "
-                f"{units_conversion(self.display_units)['label_L']}"
-            )
-            scaled_world_coordinates = world_coords
-
-        # Flip the image if requested
-        transformed_image = flip_image_array(
-            image=transformed_image,
-            flip_x=self.is_ortho_flip_x,
-            flip_y=self.is_ortho_flip_y
-        )
-
-        self.ortho_rectified_image.scene.setImage(transformed_image)
-        self.ortho_rectified_image.setEnabled(True)
-        self.groupboxExportOrthoFrames.setEnabled(True)
-
-        # Plot the reprojected points on the original image
-        what_to_plot = self.get_orthotable_points_to_plot()
-        if self.rectification_method == "homography":
-            what_to_plot["points"] = self.rectification_parameters["world_coords"][
-                :, 0:2
-            ]
-        if self.rectification_method == "camera matrix":
-            original_points_to_plot = self.get_orthotable_points_to_plot()
-            K = self.rectification_parameters["camera_matrix"]
-            transformed_points = (
-                K
-                @ get_homographic_coordinates_3D(
-                    np.array(original_points_to_plot["coordinates"])
-                ).T
-            )
-            reprojected_points = transformed_points / transformed_points[2, :]
-            reprojected_points = reprojected_points[:2, :].T
-
-            # self.ortho_original_image.updateViewer()
-            original_points = original_points_to_plot["points"]
-            self.reprojection_error_gcp_pixel_xy = reprojected_points - original_points
-            a_min_b = reprojected_points.T - original_points.T
-            self.reprojection_error_gcp_pixel_total = np.sqrt(
-                np.einsum("ij,ij->j", a_min_b, a_min_b)
-            )
-            self.reprojection_error_pixels = np.sqrt(
-                np.mean((reprojected_points - original_points) ** 2)
-            )
-            logging.info(
-                f"Reprojection error by point (pixels): \n{self.reprojection_error_gcp_pixel_total}"
-            )
-            pixel_gsd = self.pixel_ground_scale_distance_m
-            self.rectification_rmse_m = (self.reprojection_error_pixels *
-                                       pixel_gsd)
-
-            # Plot the Points table onto the rectified image
-            image_shape = self.ortho_rectified_image.scene.ndarray().shape
-            space_gcp_on_wse = original_points_to_plot["coordinates"]
-            space_gcp_on_wse[:, -1] = self.rectification_parameters[
-                "water_surface_elev"
-            ]
-            gcp_projected_on_wse = space_to_image(
-                get_homographic_coordinates_3D(space_gcp_on_wse), K
-            )
-            gcp_rectified_on_wse, _ = image_to_space(
-                gcp_projected_on_wse,
-                K,
-                Z=self.rectification_parameters["water_surface_elev"],
-            )
-
-            # Show the water surface projection in the perspective image
-            for i in range(len(original_points)):
-                self.ortho_original_image.scene.set_current_instruction(
-                    Instructions.ADD_LINE_BY_POINTS,
-                    points=[original_points[i, :], gcp_projected_on_wse[i, :]],
-                )
-                self.ortho_original_image.scene.line_item[-1].setPen(
-                    QtGui.QPen(QtGui.QColor("red"), 2, Qt.DotLine)
-                )
-
-            # Extract the x_min and y_min values from the extent
-            extent = self.rectification_parameters["extent"]
-            x_min, y_min = extent[0], extent[2]
-            normalized_points = (
-                gcp_rectified_on_wse[:, :2] - np.array([x_min, y_min])
-            ) / (extent[1] - extent[0])
-
-            # Convert normalized coordinates to pixel coordinates
-            gcp_pixel_coordinates_rectified = normalized_points * np.array(
-                image_shape[:2][::-1]
-            )
-            # self.ortho_rectified_image.clearPoints()
-            # self.ortho_rectified_image.scene.set_current_instruction(
-            #     Instructions.ADD_POINTS_INSTRUCTION,
-            #     points=gcp_pixel_coordinates_rectified,
-            #     labels=original_points_to_plot["labels"],
-            # )
-
-            # to ensure I get the same results in the instance attribute
-            transformed_points = gcp_pixel_coordinates_rectified
-
-        # Populate the reprojection errors into the Points Table
-        # First, zero out all the errors
-        # ortho_table_dict = self.get_table_as_dict(self.orthoPointsTable)
-        ortho_table_dict = self.orthotable_dataframe.to_dict()
-        for r in range(len(ortho_table_dict["# ID"])):
-            self.orthoPointsTable.setItem(r, 6, QtWidgets.QTableWidgetItem(f"0"))
-            self.orthoPointsTable.setItem(r, 7, QtWidgets.QTableWidgetItem(f"0"))
-            self.orthoPointsTable.setItem(r, 8, QtWidgets.QTableWidgetItem(f"0"))
-
-        errors = what_to_plot
-        errors["reprojection_error_gcp_pixel_xy"] = self.reprojection_error_gcp_pixel_xy
-        errors["reprojection_error_gcp_pixel_total"] = (
-            self.reprojection_error_gcp_pixel_total
-        )
-
-        b_dict = {}
-        for i, b in enumerate(list(ortho_table_dict["# ID"].values())):
-            b_dict[b] = i
-
-        ind = [
-            i
-            for i, value in enumerate(ortho_table_dict["Use in Rectification"].values())
-            if string_to_boolean(value)
-        ]
-        if self.reprojection_error_gcp_pixel_total is not None:
-            r = 0
-            for i in ind:
-                self.orthoPointsTable.setItem(
-                    i,
-                    8,
-                    QtWidgets.QTableWidgetItem(
-                        f"{self.reprojection_error_gcp_pixel_total[r]:.3f}"
-                    ),
-                )
-                r += 1
-        if self.reprojection_error_gcp_pixel_xy is not None:
-            r = 0
-            for i in ind:
-                self.orthoPointsTable.setItem(
-                    i,
-                    6,
-                    QtWidgets.QTableWidgetItem(
-                        f"{self.reprojection_error_gcp_pixel_xy[r, 0]:.3f}"
-                    ),
-                )
-                self.orthoPointsTable.setItem(
-                    i,
-                    7,
-                    QtWidgets.QTableWidgetItem(
-                        f"{self.reprojection_error_gcp_pixel_xy[r, 1]:.3f}"
-                    ),
-                )
-                r += 1
-
-        # Ensure the current frame is in the Grid Preparation Tab
-        # Show result in the Grid Preparation tab
-        self.gridpreparation.imageBrowser.scene.setImage(
-            self.ortho_rectified_image.scene.ndarray()
-        )
-        self.gridpreparation.imageBrowser.setEnabled(True)
-        self.set_qwidget_state_by_name(
-            [
-                "PointPage",
-                "SimpleLinePage",
-                # "CrossSectionPage",
-                "RegularGridPage",
-                "MaskingPage",
-            ],
-            True,
-        )
-
-        # self.groupBoxMasking.setEnabled(True)
-        # self.groupboxGridGeneration.setEnabled(True)
-
-        # Ensure RMSE error is loaded
-        self.lineeditPixelRMSE.setText(f"{self.reprojection_error_pixels:.3f}")
-        logging.info(
-            f"Total reprojection RMSE is {self.reprojection_error_pixels:.3f} pixels"
-        )
-
-        # Ensure the current frame is in the STIV Tab
-        # Show result in the Grid Preparation tab
-        self.stiv.imageBrowser.scene.setImage(
-            self.ortho_rectified_image.scene.ndarray()
-        )
-        # self.stiv.imageBrowser.setEnabled(True) # Debug : don't enable yet
-
-        # Ensure the current frame is in the STIV Opt Tab
-        # Show result in the Grid Preparation tab
-        self.stiv_opt.imageBrowser.scene.setImage(
-            self.ortho_rectified_image.scene.ndarray()
-        )
-        self.stiv_opt.imageBrowser.setEnabled(True)
-
-        # Put a copy of the results into the Cross-section Geometry
-        # AnnotationViews
-        self.perspective_xs_image.scene.setImage(
-            self.ortho_original_image.scene.ndarray()
-        )
-        self.rectified_xs_image.scene.setImage(
-            self.ortho_rectified_image.scene.ndarray()
-        )
-        self.perspective_xs_image.setEnabled(True)
-        self.rectified_xs_image.setEnabled(True)
-
-        # Enable the Cross-section tab, and ability to import Bathymetry
-        self.set_qwidget_state_by_name("tabCrossSectionGeometry", True)
-        self.actionImport_Bathymetry.setEnabled(True)
-
-        # Write the homography or camera matrix to the project structure
-        try:
-            if "homography_matrix" in self.rectification_parameters:
-                with open(
-                    os.path.join(
-                        self.swap_orthorectification_directory, "homography_matrix.csv"
-                    ),
-                    "w",
-                    newline="",
-                ) as csvfile:
-                    csv_writer = csv.writer(csvfile)
-                    csv_writer.writerows(
-                        self.rectification_parameters["homography_matrix"]
-                    )
-            if "camera_matrix" in self.rectification_parameters:
-                # Check if this is the default camera matrix, ignore if so
-                first_3_columns = self.rectification_parameters["camera_matrix"][:, :3]
-                expected_identity = np.eye(3)  # Create a 3x3 identity matrix
-                is_identity = np.array_equal(first_3_columns, np.eye(3))
-                if not is_identity:
-                    with open(
-                        os.path.join(
-                            self.swap_orthorectification_directory, "camera_matrix.csv"
-                        ),
-                        "w",
-                        newline="",
-                    ) as csvfile:
-                        csv_writer = csv.writer(csvfile)
-                        csv_writer.writerows(
-                            self.rectification_parameters["camera_matrix"]
-                        )
-
-            # Write out the current Points Table
-            # TODO: Units may not be right here
-            dict = self.get_table_as_dict(self.orthoPointsTable)
-            file_name = os.path.join(
-                self.swap_orthorectification_directory, "rectification_points_table.csv"
-            )
-            pd.DataFrame(dict).fillna("").to_csv(file_name, index=False)
-
-            with open(
-                os.path.join(self.swap_orthorectification_directory, "pixel_gsd.csv"),
-                "w",
-                newline="",
-            ) as csvfile:
-                csv_writer = csv.writer(csvfile)
-                csv_writer.writerow([self.pixel_ground_scale_distance_m])
-            with open(
-                os.path.join(
-                    self.swap_orthorectification_directory,
-                    "water_surface_elevation.csv",
-                ),
-                "w",
-                newline="",
-            ) as csvfile:
-                csv_writer = csv.writer(csvfile)
-                csv_writer.writerow(
-                    [self.doubleSpinBoxRectificationWaterSurfaceElevation.value()]
-                )
-            if self.reprojection_error_gcp_pixel_total is None:
-                rmse = -9999.0
-            else:
-                rmse = self.reprojection_error_gcp_pixel_total
-            with open(
-                os.path.join(self.swap_orthorectification_directory, "pixel_rmse.csv"),
-                "w",
-                newline="",
-            ) as csvfile:
-                csv_writer = csv.writer(csvfile)
-                csv_writer.writerow([rmse])
-        except:
-            pass
-
-        # Update the status bar
-        if self.reprojection_error_pixels is not None:
-            message = (
-                f"ORTHORECTIFICATION: Perspective image rectified using ground control. "
-                f"Total reprojection RMSE is {self.reprojection_error_pixels:.3f} pixels. "
-                f"Check image results for accuracy."
-            )
-        else:
-            message = (
-                f"ORTHORECTIFICATION: Perspective image rectified using ground control. "
-                f"Check image results for accuracy."
-            )
-        self.update_statusbar(message)
-
-        # Serialize rectification parameters
-        self.rectification_parameters = rect_params
-
-        # Save the rectified transformed point
-        self.rectified_transformed_gcp_points = serialize_numpy_array(
-            transformed_points
-        )
+        # Update self attributes for backwards compatibility
+        self.orthotable_dataframe = self.ortho_model.orthotable_dataframe
+        self.ortho_rectified_wse_m = self.ortho_model.ortho_rectified_wse_m
 
         # Note the process step
         self.process_step = "Rectify Single Frame"
@@ -4374,299 +3772,106 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         res = self.estimate_stiv_frame_step_tool.exec_()
 
     def orthotable_change_selection(self):
-        """Executes upon a change to the GCP Points table"""
-        self.orthoPointsTable.setSelectionMode(
-            QtWidgets.QAbstractItemView.ExtendedSelection
-        )
+        """Change GCP table selection mode - delegates to OrthoController."""
+        self.ortho_controller.change_table_selection_mode()
 
     def orthotable_update_cell(self):
-        """Update the GCP Points Table cell"""
-        if self.orthoPointsTable.selectionModel().hasSelection():
-            row = self.orthotable_selected_row()
-            column = self.orthotable_selected_column()
-            newtext = QtWidgets.QTableWidgetItem(self.editLine.text())
-            self.orthoPointsTable.setItem(row, column, newtext)
+        """Update GCP table cell - delegates to OrthoController."""
+        self.ortho_controller.update_table_cell()
 
     def orthotable_get_item(self):
-        """Get the selected item from the GCP Points Table"""
-        item = self.orthoPointsTable.selectedItems()[0]
-        row = self.orthotable_selected_row()
-        column = self.orthotable_selected_column()
-        if not item == None:
-            name = item.text()
-        else:
-            name = ""
-        # self.msg("'" + name + "' on Row " + str(row + 1) + " Column " + str(column + 1))
-        self.orthoPointsTableLineEdit.setText(name)
+        """Get selected item from GCP table - delegates to OrthoController."""
+        self.ortho_controller.get_selected_item()
 
     def orthotable_selected_row(self):
-        """Return the current row of the GCP Points Table
-
-        Returns:
-            int: the current row
-        """
-        if self.orthoPointsTable.selectionModel().hasSelection():
-            row = self.orthoPointsTable.selectionModel().selectedIndexes()[0].row()
-            return int(row)
+        """Get current row of GCP table - delegates to OrthoController."""
+        return self.ortho_controller.get_selected_row()
 
     def orthotable_selected_column(self):
-        """Return the current columns of the GCP Points Table
-
-        Returns:
-            int: the current column
-        """
-        column = self.orthoPointsTable.selectionModel().selectedIndexes()[0].column()
-        return int(column)
+        """Get current column of GCP table - delegates to OrthoController."""
+        return self.ortho_controller.get_selected_column()
 
     def orthotable_finished_edit(self):
-        """Update the main instance class attributes when the editing of the GCP table is complete"""
-        self.orthotable_is_changed = True
-        self.signal_orthotable_changed.emit(True)
+        """Mark GCP table as changed - delegates to OrthoController."""
+        self.ortho_controller.mark_table_changed()
+
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_remove_row(self):
-        """Remove the selected row"""
-        if self.orthoPointsTable.rowCount() > 0:
-            remove = QtWidgets.QMessageBox()
-            remove.setText(
-                "This will remove the selected row, and cannot be undone. Are you sure?"
-            )
-            remove.setStandardButtons(
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel
-            )
-            remove = remove.exec()
+        """Remove selected row - delegates to OrthoController."""
+        self.ortho_controller.remove_row()
 
-            if remove == QtWidgets.QMessageBox.Yes:
-                row = self.orthotable_selected_row()
-                self.orthoPointsTable.removeRow(row)
-                self.orthotable_is_changed = True
-                self.signal_orthotable_changed.emit(True)
-            else:
-                pass
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_add_row(self):
-        """Add a new row to the bottom of the table"""
-        if self.orthoPointsTable.rowCount() > 0:
-            if self.orthoPointsTable.selectionModel().hasSelection():
-                row = self.orthotable_selected_row()
-                item = QtWidgets.QTableWidgetItem("")
-                self.orthoPointsTable.insertRow(row)
-            else:
-                row = 0
-                item = QtWidgets.QTableWidgetItem("")
-                self.orthoPointsTable.insertRow(row)
-                self.orthoPointsTable.selectRow(0)
-        else:
-            self.orthoPointsTable.setRowCount(1)
-        if self.orthoPointsTable.columnCount() == 0:
-            self.orthotable_add_column()
-            self.orthoPointsTable.selectRow(0)
-        self.orthotable_is_changed = True
-        self.signal_orthotable_changed.emit(True)
+        """Add row to table - delegates to OrthoController."""
+        self.ortho_controller.add_row()
+
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_clear_list(self):
-        """Clear all selected items in the table"""
-        self.orthoPointsTable.clear()
-        self.orthotable_is_changed = True
-        self.signal_orthotable_changed.emit(True)
+        """Clear table - delegates to OrthoController."""
+        self.ortho_controller.clear_table()
+
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_remove_column(self):
-        """Remove the selected column from the table"""
-        self.orthoPointsTable.removeColumn(self.orthotable_selected_column())
-        self.orthotable_is_changed = True
-        self.signal_orthotable_changed.emit(True)
+        """Remove column - delegates to OrthoController."""
+        self.ortho_controller.remove_column()
+
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_add_column(self):
-        """Add a new column to the end of the table"""
-        count = self.orthoPointsTable.columnCount()
-        self.orthoPointsTable.setColumnCount(count + 1)
-        self.orthoPointsTable.resizeColumnsToContents()
-        self.orthotable_is_changed = True
-        self.signal_orthotable_changed.emit(True)
-        if self.orthoPointsTable.rowCount() == 0:
-            self.orthotable_add_row()
-            self.orthoPointsTable.selectRow(0)
+        """Add column - delegates to OrthoController."""
+        self.ortho_controller.add_column()
+
+        # Update self for backwards compatibility
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
 
     def orthotable_make_all_white(self):
-        """Set the background of all table cells to white"""
-        if self.orthotable_cell_colored:
-            for row in range(self.orthoPointsTable.rowCount()):
-                for column in range(self.orthoPointsTable.columnCount()):
-                    item = self.orthoPointsTable.item(row, column)
-                    if item is not None:
-                        item.setForeground(Qt.black)
-                        item.setBackground(QtGui.QColor("#e1e1e1"))
-        self.orthotable_cell_colored = False
+        """Reset cell colors - delegates to OrthoController."""
+        self.ortho_controller.make_all_cells_white()
+
+        # Update self for backwards compatibility
+        self.orthotable_cell_colored = self.ortho_model._orthotable_cell_colored
 
     def orthotable_load_csv_on_open(self, file_name):
-        """Load the GCP CSV File into the application and UI."""
-        if not file_name:
-            return
+        """Load GCP CSV file (used by project loading) - delegates to OrthoController."""
+        success = self.ortho_controller.load_gcp_table_from_file(file_name)
 
-        try:
-            def prompt_units():
-                choices = ("English", "Metric")
-                idx = self.custom_dialog_index(
-                    title="Ground Control Points Unit Selection",
-                    message="Units not detected in GCP file.\nPlease select units used in the survey:",
-                    choices=choices,
-                )
-                return choices[idx]
+        # Update self for backwards compatibility
+        if success:
+            self.orthotable_dataframe = self.ortho_model.orthotable_dataframe
+            self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
+            self.is_ortho_table_loaded = self.ortho_model.is_ortho_table_loaded
+            self.orthotable_file_survey_units = self.ortho_model.orthotable_file_survey_units
 
-            from image_velocimetry_tools.file_management import load_and_parse_gcp_csv
-
-            df, units = load_and_parse_gcp_csv(
-                file_name=file_name,
-                swap_ortho_path=self.swap_orthorectification_directory,
-                unit_prompt_callback=prompt_units,
-            )
-            self.orthotable_file_survey_units = units
-
-        except ValueError as e:
-            QtWidgets.QErrorMessage().showMessage(str(e)).exec_()
-            return
-        except Exception as e:
-            self.update_statusbar(f"Failed to load GCP CSV: {e}")
-            return
-
-        # Clear existing state
-        self.ortho_original_image.clearPoints()
-        self.ortho_original_image.clearPolygons()
-
-        # Save DataFrame
-        self.orthotable_dataframe = df.copy(deep=True)
-        self.orthotable_populate_table(df)
-
-        self.orthoPointsTable.setSelectionBehavior(
-            QtWidgets.QAbstractItemView.SelectRows)
-        self.orthotable_is_changed = False
-        self.orthotable_set_current_file(file_name)
-        self.orthoPointsTable.resizeColumnsToContents()
-        self.orthoPointsTable.resizeRowsToContents()
-        self.orthoPointsTable.selectRow(0)
-
-        # Enable controls
-        self.toolbuttonOrthoOrigImageDigitizePoint.setEnabled(True)
-        self.groupboxExportOrthoFrames.setEnabled(True)
-        self.is_ortho_table_loaded = True
-        self.signal_orthotable_check_units.emit()
-
-        # Save to project
-        try:
-            dest = os.path.join(self.swap_orthorectification_directory,
-                                "ground_control_points.csv")
-            shutil.copy(file_name, dest)
-        except Exception as e:
-            self.update_statusbar(
-                f"Failed to save GCP table to project: {e}")
-
-            # self.orthotable_dataframe = df.copy(deep=True)
-            #
-            # # Put the data into the gui Table, respecting display units
-            # self.orthotable_populate_table(self.orthotable_dataframe)
-            #
-            # # Clean up
-            # self.orthoPointsTable.setSelectionBehavior(
-            #     QtWidgets.QAbstractItemView.SelectRows
-            # )
-            # self.orthotable_is_changed = False
-            # self.ortho_original_image.clearPoints()
-            # self.ortho_original_image.clearPolygons()
-            # self.orthotable_set_current_file(file_name)
-            # self.orthoPointsTable.resizeColumnsToContents()
-            # self.orthoPointsTable.resizeRowsToContents()
-            # self.orthoPointsTable.selectRow(0)
-            # self.toolbuttonOrthoOrigImageDigitizePoint.setEnabled(True)
-            # # self.doubleSpinBoxRectificationWaterSurfaceElevation.setEnabled(True)
-            # self.groupboxExportOrthoFrames.setEnabled(True)
-            # self.is_ortho_table_loaded = True
-            # self.signal_orthotable_check_units.emit()
-            #
-            # # Save a copy of the table in the project structure
-            # try:
-            #     destination_path = os.path.join(
-            #         self.swap_orthorectification_directory, "ground_control_points.csv"
-            #     )
-            #     shutil.copy(file_name, destination_path)
-            # except Exception as e:
-            #     self.update_statusbar(
-            #         f"Failed to save GCP table to project " f"structure: {e}"
-            #     )
+        return success
 
     def orthotable_populate_table(self, dataframe):
-        """Populate the GCP Table"""
-        # Now we can populate the table
-        self.orthoPointsTable.setColumnCount(len(dataframe.columns))
-        self.orthoPointsTable.setRowCount(len(dataframe.index))
+        """Populate GCP table - delegates to OrthoController."""
+        self.ortho_controller.populate_table_widget(dataframe)
 
-        # The GCP table in should always be meters in the IvyTools Instance
-        header_list = dataframe.columns.tolist()
-        for i in range(len(dataframe.index)):
-            for j in range(len(dataframe.columns)):
-                if j >= 1 and j <= 3:
-                    item = dataframe.iat[i, j] * self.survey_units["L"]
-                else:
-                    item = dataframe.iat[i, j]
-                self.orthoPointsTable.setItem(
-                    i, j, QtWidgets.QTableWidgetItem(str(item))
-                )
-        for j in range(len(dataframe.columns)):
-            m = QtWidgets.QTableWidgetItem(header_list[j])
-            self.orthoPointsTable.setHorizontalHeaderItem(j, m)
-        self.orthotable_has_headers = True
-        self.orthoPointsTable.setHorizontalHeaderLabels(header_list)
-
-        # Make sure the table headers and units are correct
-        # self.orthotable_change_units()
-        self.orthotable_update_table_headers()
-        is_points_to_plot = True
-        if is_points_to_plot:
-            self.ortho_original_plot_points()
+        # Update self for backwards compatibility
+        self.orthotable_has_headers = self.ortho_model._orthotable_has_headers
 
     def orthotable_init(self):
-        """Executes at startup, sets up the GCP ortho table."""
-        headers = [
-            "# ID",
-            f"X {self.survey_units['label_L']}",
-            f"Y {self.survey_units['label_L']}",
-            f"Z {self.survey_units['label_L']}",
-            "X (pixel)",
-            "Y (pixel)",
-            "Error X (pixel)",
-            "Error Y (pixel)",
-            "Tot. Error (pixel)",
-            "Use in Rectification",
-            "Use in Validation",
-        ]
-        self.orthoPointsTable.setColumnCount(len(headers))
-        self.orthotable_has_headers = True
-        self.orthoPointsTable.setHorizontalHeaderLabels(headers)
-        self.orthoPointsTable.setSelectionBehavior(
-            QtWidgets.QAbstractItemView.SelectRows
-        )
-        self.orthotable_is_changed = False
-        self.orthoPointsTable.resizeColumnsToContents()
-        self.orthoPointsTable.resizeRowsToContents()
-        self.orthoPointsTable.selectRow(0)
-        self.is_ortho_table_loaded = False
+        """Initialize GCP table - delegates to OrthoController."""
+        self.ortho_controller.init_table()
+
+        # Update self for backwards compatibility
+        self.orthotable_has_headers = self.ortho_model._orthotable_has_headers
+        self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
+        self.is_ortho_table_loaded = self.ortho_model.is_ortho_table_loaded
 
     def orthotable_update_table_headers(self):
-        """Update table headers based on survey units."""
-        headers = [
-            "# ID",
-            f"X {self.survey_units['label_L']}",
-            f"Y {self.survey_units['label_L']}",
-            f"Z {self.survey_units['label_L']}",
-            "X (pixel)",
-            "Y (pixel)",
-            "Error X (pixel)",
-            "Error Y (pixel)",
-            "Tot. Error (pixel)",
-            "Use in Rectification",
-            "Use in Validation",
-        ]
-        self.orthoPointsTable.setHorizontalHeaderLabels(headers)
-        self.orthoPointsTable.resizeColumnsToContents()
-        self.orthoPointsTable.resizeRowsToContents()
+        """Update table headers - delegates to OrthoController."""
+        self.ortho_controller.update_table_headers()
 
     def orthotable_change_units(self):
         """Apply unit conversions to data displayed in the table"""
@@ -4769,24 +3974,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ortho_original_plot_points()
 
     def ortho_original_plot_points(self):
-        """Plot the current GCP points on the original image"""
-        # Grab the current points from the table
-        self.ortho_original_image.clearPoints()
-        self.ortho_original_image.clearPolygons()
-        rectification_points = self.get_orthotable_points_to_plot(
-            which_points="rectification"
-        )
-        validation_points = self.get_orthotable_points_to_plot(
-            which_points="validation"
-        )
-        # self.ortho_original_image.addLabeledPoint(rectification_points)
-        # self.ortho_original_image.addLabeledPoint(validation_points)
-        if rectification_points is not None:
-            self.ortho_original_image.scene.set_current_instruction(
-                Instructions.ADD_POINTS_INSTRUCTION,
-                points=rectification_points["points"],
-                labels=rectification_points["labels"],
-            )
+        """Plot GCP points on original image - delegates to OrthoController."""
+        self.ortho_controller.plot_gcp_points_on_original_image()
 
     def get_orthotable_points_to_plot(self, which_points="rectification"):
         """Get the points to plot from the GCP Points Table.
