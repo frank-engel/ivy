@@ -1098,6 +1098,15 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     temp_dict, str(project_dict["video_curve_preset"])
                 )
                 self.comboboxFfmpegCurvePresets.setCurrentIndex(ind)
+
+                # CRITICAL: Also update VideoModel with loaded processing settings
+                # This ensures the model stays in sync with UI and ivy.py properties
+                self.video_model.video_rotation = self.video_rotation
+                self.video_model.video_flip = self.video_flip
+                self.video_model.video_strip_audio = self.video_strip_audio
+                self.video_model.video_normalize_luma = self.video_normalize_luma
+                self.video_model.video_curve_preset = self.video_curve_preset
+                self.video_model.video_ffmpeg_stabilize = self.video_ffmpeg_stabilize
             except:
                 msg = f"OPEN PROJECT: Unable to load video metadata"
                 logging.error(msg)
@@ -1153,6 +1162,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
                 self.frame_step_changed()
                 self.update_ffmpeg_parameters()
+                # CRITICAL: Update extraction UI with restored values
+                # This ensures the "New Frame Rate", "New Timestep", and "New Num Frames"
+                # labels are updated even if clip times haven't changed from defaults
+                self.video_controller._show_clip_information()
             except:
                 msg = (f"OPEN PROJECT: Unable to set frame extraction "
                        f"information")
