@@ -21,7 +21,7 @@ from PyQt5 import QtWidgets, QtGui
 from image_velocimetry_tools.gui.controllers.base_controller import BaseController
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
 from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
-from image_velocimetry_tools.gui.annotation_scene import Instructions
+from image_velocimetry_tools.graphics import Instructions
 from image_velocimetry_tools.common_functions import find_matches_between_two_lists, units_conversion
 
 
