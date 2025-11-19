@@ -17,6 +17,9 @@ import os
 import json
 import zipfile
 import logging
+import tempfile
+import shutil
+from pathlib import Path
 from typing import Dict, Any, Callable, Optional, List
 
 
@@ -237,3 +240,178 @@ class ProjectService:
             errors.append("Project data must be a dictionary")
 
         return errors
+
+    def load_scaffold_configuration(
+        self,
+        scaffold_ivy_path: str,
+        temp_dir: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Load configuration from a scaffold .ivy project file.
+
+        This method extracts all necessary parameters from a scaffold project
+        for batch processing. The scaffold should contain camera calibration,
+        GCPs, cross-section data, and STIV processing parameters.
+
+        Args:
+            scaffold_ivy_path: Path to scaffold .ivy project file
+            temp_dir: Optional temporary directory for extraction
+                     (if None, creates a temporary directory)
+
+        Returns:
+            Dictionary containing scaffold configuration:
+                - project_dict: Complete project dictionary from JSON
+                - swap_directory: Path to extracted swap directory
+                - rectification_method: Rectification method used
+                - rectification_params: Parameters for rectification
+                - stiv_params: STIV processing parameters
+                - cross_section_data: Cross-section geometry data
+                - display_units: Display units (English/Metric)
+                - temp_cleanup_required: Whether temp_dir needs cleanup
+
+        Raises:
+            FileNotFoundError: If scaffold file doesn't exist
+            ValueError: If scaffold is missing required data
+            IOError: If extraction fails
+
+        Notes:
+            - Caller is responsible for cleaning up temp_dir if
+              temp_cleanup_required is True
+            - The swap_directory contains all project files (images, data, etc.)
+        """
+        # Validate scaffold exists
+        if not os.path.exists(scaffold_ivy_path):
+            raise FileNotFoundError(f"Scaffold file not found: {scaffold_ivy_path}")
+
+        # Create or use provided temp directory
+        cleanup_required = False
+        if temp_dir is None:
+            temp_dir = tempfile.mkdtemp(prefix="ivy_scaffold_")
+            cleanup_required = True
+        else:
+            os.makedirs(temp_dir, exist_ok=True)
+
+        self.logger.info(f"Loading scaffold from: {scaffold_ivy_path}")
+
+        try:
+            # Extract the .ivy archive
+            swap_dir = os.path.join(temp_dir, "swap")
+            self.extract_project_archive(scaffold_ivy_path, swap_dir)
+
+            # Load project JSON
+            json_path = os.path.join(swap_dir, "project_data.json")
+            project_dict = self.load_project_from_json(json_path)
+
+            # Validate required fields
+            validation_errors = []
+
+            # Check for rectification data
+            if "rectification_method" not in project_dict:
+                validation_errors.append("Missing rectification_method")
+
+            # Check for cross-section data
+            if "cross_section_line" not in project_dict:
+                validation_errors.append("Missing cross_section_line")
+
+            # Check for STIV parameters
+            stiv_required = [
+                "stiv_search_line_length_m",
+                "stiv_phi_origin",
+                "stiv_phi_range",
+                "stiv_dphi",
+                "stiv_num_pixels"
+            ]
+            for param in stiv_required:
+                if param not in project_dict:
+                    validation_errors.append(f"Missing STIV parameter: {param}")
+
+            if validation_errors:
+                raise ValueError(
+                    f"Scaffold validation failed:\n" + "\n".join(validation_errors)
+                )
+
+            # Extract scaffold configuration
+            scaffold_config = {
+                "project_dict": project_dict,
+                "swap_directory": swap_dir,
+                "temp_cleanup_required": cleanup_required,
+
+                # Rectification
+                "rectification_method": project_dict["rectification_method"],
+                "rectification_params": self._extract_rectification_params(project_dict),
+
+                # STIV parameters
+                "stiv_params": {
+                    "phi_origin": project_dict["stiv_phi_origin"],
+                    "phi_range": project_dict["stiv_phi_range"],
+                    "dphi": project_dict["stiv_dphi"],
+                    "num_pixels": project_dict["stiv_num_pixels"],
+                    "gaussian_blur_sigma": project_dict.get("stiv_gaussian_blur_sigma", 0.0),
+                    "max_vel_threshold_mps": project_dict.get("stiv_max_vel_threshold_mps", 10.0),
+                },
+
+                # Cross-section
+                "cross_section_data": {
+                    "line": project_dict.get("cross_section_line"),
+                    "bathymetry_filename": project_dict.get("bathymetry_ac3_filename"),
+                    "start_bank": project_dict.get("cross_section_start_bank", "left"),
+                },
+
+                # Grid parameters
+                "grid_params": {
+                    "num_points": project_dict.get("number_grid_points_along_xs_line", 25),
+                },
+
+                # Units
+                "display_units": project_dict.get("display_units", "English"),
+            }
+
+            self.logger.info("Scaffold configuration loaded successfully")
+            self.logger.debug(
+                f"Rectification method: {scaffold_config['rectification_method']}, "
+                f"STIV params: {len(scaffold_config['stiv_params'])} parameters, "
+                f"Grid points: {scaffold_config['grid_params']['num_points']}"
+            )
+
+            return scaffold_config
+
+        except Exception as e:
+            # Cleanup temp directory if we created it and there was an error
+            if cleanup_required and os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+            raise
+
+    def _extract_rectification_params(self, project_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract rectification parameters from project dict.
+
+        Args:
+            project_dict: Project dictionary
+
+        Returns:
+            Dictionary of rectification parameters appropriate for the method
+        """
+        method = project_dict.get("rectification_method")
+
+        if method == "homography":
+            return {
+                "homography_matrix": project_dict.get("homography_matrix"),
+                "world_coords": project_dict.get("orthotable_world_coordinates"),
+                "pixel_coords": project_dict.get("orthotable_pixel_coordinates"),
+                "pad_x": project_dict.get("ortho_pad_x", 0),
+                "pad_y": project_dict.get("ortho_pad_y", 0),
+            }
+
+        elif method == "camera matrix":
+            return {
+                "camera_matrix": project_dict.get("camera_matrix"),
+                "water_surface_elevation": project_dict.get("water_surface_elevation_m"),
+                "extent": project_dict.get("ortho_extent"),
+            }
+
+        elif method == "scale":
+            return {
+                "world_coords": project_dict.get("orthotable_world_coordinates"),
+                "pixel_coords": project_dict.get("orthotable_pixel_coordinates"),
+            }
+
+        else:
+            return {}
