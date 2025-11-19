@@ -342,6 +342,9 @@ def process_batch_csv(
     if not os.path.exists(batch_csv_path):
         raise FileNotFoundError(f"Batch CSV not found: {batch_csv_path}")
 
+    # Get CSV directory for resolving relative video paths
+    csv_dir = os.path.dirname(os.path.abspath(batch_csv_path))
+
     # Parse CSV into video configs
     video_configs = []
 
@@ -354,6 +357,12 @@ def process_batch_csv(
                 raise ValueError(
                     "CSV must have 'video_path' and 'water_surface_elevation' columns"
                 )
+
+            # Resolve video path relative to CSV directory if not absolute
+            video_path = row["video_path"]
+            if not os.path.isabs(video_path):
+                # Try relative to CSV directory first
+                video_path = os.path.join(csv_dir, video_path)
 
             # Parse optional time fields (support both float and HH:MM:SS format)
             start_time = None
@@ -375,7 +384,7 @@ def process_batch_csv(
 
             # Build config dict
             config = {
-                "video_path": row["video_path"],
+                "video_path": video_path,
                 "water_surface_elevation": float(row["water_surface_elevation"]),
                 "measurement_date": row.get("measurement_date", ""),
                 "alpha": float(row.get("alpha", 0.85)),

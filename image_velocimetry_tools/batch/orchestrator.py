@@ -183,11 +183,21 @@ class BatchOrchestrator(BaseService):
                     progress_callback(25 + int(pct * 0.25), f"{video_name}: {msg}")
 
             try:
+                # Prepare rectification parameters
+                # For camera matrix method, override WSE with video-specific value
+                rectification_params = config.scaffold.rectification_params.copy()
+                if config.scaffold.rectification_method == "camera matrix":
+                    rectification_params["water_surface_elevation"] = config.video.water_surface_elevation
+                    self.logger.debug(
+                        f"Using video-specific WSE for camera matrix: "
+                        f"{config.video.water_surface_elevation}m"
+                    )
+
                 rectified_files = self.ortho_service.rectify_frames_batch(
                     frame_paths=frame_files,
                     output_directory=rectified_dir,
                     method=config.scaffold.rectification_method,
-                    rectification_params=config.scaffold.rectification_params,
+                    rectification_params=rectification_params,
                     progress_callback=rectify_progress,
                 )
 
