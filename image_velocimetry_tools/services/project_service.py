@@ -385,28 +385,40 @@ class ProjectService:
         1. In nested rectification_parameters dict (GUI standard)
         2. At top level of project_dict (legacy/alternate format)
 
+        Note: GUI saves arrays as lists for JSON serialization,
+        so we convert them back to numpy arrays.
+
         Args:
             project_dict: Project dictionary
 
         Returns:
             Dictionary of rectification parameters appropriate for the method
         """
+        import numpy as np
+
         method = project_dict.get("rectification_method")
 
         # Check for nested rectification_parameters dict first (GUI standard)
         rectification_params = project_dict.get("rectification_parameters", {})
 
+        # Helper to convert list to numpy array if needed
+        def to_array(value):
+            """Convert value to numpy array if it's a list."""
+            if isinstance(value, list):
+                return np.array(value)
+            return value
+
         if method == "homography":
             return {
-                "homography_matrix": (
+                "homography_matrix": to_array(
                     rectification_params.get("homography_matrix") or
                     project_dict.get("homography_matrix")
                 ),
-                "world_coords": (
+                "world_coords": to_array(
                     rectification_params.get("world_coords") or
                     project_dict.get("orthotable_world_coordinates")
                 ),
-                "pixel_coords": (
+                "pixel_coords": to_array(
                     rectification_params.get("pixel_coords") or
                     project_dict.get("orthotable_pixel_coordinates")
                 ),
@@ -422,7 +434,7 @@ class ProjectService:
 
         elif method == "camera matrix":
             return {
-                "camera_matrix": (
+                "camera_matrix": to_array(
                     rectification_params.get("camera_matrix") or
                     project_dict.get("camera_matrix")
                 ),
@@ -430,7 +442,7 @@ class ProjectService:
                     rectification_params.get("water_surface_elevation") or
                     project_dict.get("water_surface_elevation_m")
                 ),
-                "extent": (
+                "extent": to_array(
                     rectification_params.get("extent") or
                     project_dict.get("ortho_extent")
                 ),
@@ -438,11 +450,11 @@ class ProjectService:
 
         elif method == "scale":
             return {
-                "world_coords": (
+                "world_coords": to_array(
                     rectification_params.get("world_coords") or
                     project_dict.get("orthotable_world_coordinates")
                 ),
-                "pixel_coords": (
+                "pixel_coords": to_array(
                     rectification_params.get("pixel_coords") or
                     project_dict.get("orthotable_pixel_coordinates")
                 ),
