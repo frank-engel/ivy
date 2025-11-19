@@ -165,9 +165,22 @@ class TestBatchOrchestrator:
         assert "line" in scaffold_config.cross_section_data
         assert scaffold_config.cross_section_data["line"] is not None
 
+        # Validate grid params (grid points should be auto-generated)
+        assert "grid_points" in scaffold_config.grid_params
+        assert "num_points" in scaffold_config.grid_params
+        assert "pixel_gsd" in scaffold_config.grid_params
+
+        # Grid points should be generated from cross-section line
+        grid_points = scaffold_config.grid_params["grid_points"]
+        if grid_points is not None:
+            assert len(grid_points) > 0
+            assert grid_points.shape[1] == 2  # Nx2 array (x, y)
+            print(f"\n✓ Grid points auto-generated: {len(grid_points)} points")
+
         print(f"\nScaffold config validated:")
         print(f"  Method: {scaffold_config.rectification_method}")
         print(f"  STIV params: {scaffold_config.stiv_params}")
+        print(f"  Grid points: {scaffold_config.grid_params['num_points']}")
 
     def test_video_config_dataclass(self, batch_video_configs):
         """Test that VideoConfig dataclass validates correctly."""
@@ -188,7 +201,6 @@ class TestBatchOrchestrator:
         print(f"  Alpha: {config.alpha}")
 
     @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
-    @pytest.mark.skip(reason="Requires complete implementation - grid points not yet stored in scaffold")
     def test_process_single_video(
         self,
         orchestrator,
@@ -198,9 +210,10 @@ class TestBatchOrchestrator:
     ):
         """Test processing a single video through complete workflow.
 
-        Note: This test is skipped until grid points are properly stored in scaffold.
-        Currently the orchestrator expects grid_points in grid_params but they're
-        not saved in the scaffold .ivy file yet.
+        This test validates the complete 8-stage batch processing workflow:
+        - Frame extraction, rectification, STIV, discharge calculation
+        - Grid points are auto-generated from cross-section line
+        - Results saved to CSV and .ivy project file
         """
         if not batch_video_configs:
             pytest.skip("No video configs available")
@@ -269,7 +282,6 @@ class TestBatchOrchestrator:
         print(f"\n=== Validation complete ===")
 
     @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
-    @pytest.mark.skip(reason="Requires complete implementation - grid points not yet stored in scaffold")
     def test_process_batch(
         self,
         orchestrator,
@@ -279,7 +291,8 @@ class TestBatchOrchestrator:
     ):
         """Test processing multiple videos in batch mode.
 
-        Note: This test is skipped until grid points are properly stored in scaffold.
+        This test validates batch processing of multiple videos with shared
+        scaffold configuration. Tests aggregated results and statistics.
         """
         if not batch_video_configs:
             pytest.skip("No video configs available")
