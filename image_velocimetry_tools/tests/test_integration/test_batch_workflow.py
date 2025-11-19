@@ -27,9 +27,15 @@ def get_repo_root():
     return repo_root
 
 
+def check_ffmpeg_available():
+    """Check if ffmpeg and ffprobe are available."""
+    return shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
+
+
 REPO_ROOT = get_repo_root()
 EXAMPLES_DIR = REPO_ROOT / "examples"
 VIDEOS_DIR = EXAMPLES_DIR / "videos"
+FFMPEG_AVAILABLE = check_ffmpeg_available()
 
 
 class TestBatchWorkflow:
@@ -64,6 +70,7 @@ class TestBatchWorkflow:
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_load_scaffold_and_extract_frames(
         self,
         project_service,
@@ -163,6 +170,7 @@ class TestBatchWorkflow:
 
         print("\nScaffold parameters validated - ready for batch processing")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_video_metadata_sufficient_for_stiv(
         self,
         video_service,

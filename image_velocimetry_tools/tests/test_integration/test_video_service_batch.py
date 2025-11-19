@@ -25,9 +25,15 @@ def get_repo_root():
     return repo_root
 
 
+def check_ffmpeg_available():
+    """Check if ffmpeg and ffprobe are available."""
+    return shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
+
+
 REPO_ROOT = get_repo_root()
 EXAMPLES_DIR = REPO_ROOT / "examples"
 VIDEOS_DIR = EXAMPLES_DIR / "videos"
+FFMPEG_AVAILABLE = check_ffmpeg_available()
 
 
 class TestVideoServiceBatch:
@@ -53,6 +59,7 @@ class TestVideoServiceBatch:
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_get_video_metadata(self, video_service, test_video_path):
         """Test getting video metadata with ffprobe."""
         # Skip if test video doesn't exist
@@ -79,11 +86,13 @@ class TestVideoServiceBatch:
         # Log for debugging
         print(f"\nVideo metadata: {metadata}")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_get_video_metadata_nonexistent_file(self, video_service):
         """Test that get_video_metadata raises FileNotFoundError for missing file."""
         with pytest.raises(FileNotFoundError):
             video_service.get_video_metadata("/nonexistent/video.mp4")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_extract_frames_basic(self, video_service, test_video_path, temp_output_dir):
         """Test basic frame extraction."""
         # Skip if test video doesn't exist
@@ -117,6 +126,7 @@ class TestVideoServiceBatch:
         print(f"\nExtracted {len(frames)} frames")
         print(f"Metadata: {metadata}")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_extract_frames_with_time_window(self, video_service, test_video_path, temp_output_dir):
         """Test frame extraction with specific time window."""
         # Skip if test video doesn't exist
@@ -143,6 +153,7 @@ class TestVideoServiceBatch:
 
         print(f"\nExtracted {len(frames)} frames from 15-20s window")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_extract_frames_with_frame_step(self, video_service, test_video_path, temp_output_dir):
         """Test frame extraction with frame stepping."""
         # Skip if test video doesn't exist
@@ -170,6 +181,7 @@ class TestVideoServiceBatch:
 
         print(f"\nExtracted {len(frames)} frames with step=5")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_extract_frames_with_progress_callback(
         self,
         video_service,
@@ -210,6 +222,7 @@ class TestVideoServiceBatch:
 
         print(f"\nReceived {len(progress_updates)} progress updates")
 
+    @pytest.mark.skipif(not FFMPEG_AVAILABLE, reason="ffmpeg/ffprobe not installed")
     def test_extract_frames_invalid_inputs(self, video_service, temp_output_dir):
         """Test that extract_frames validates inputs correctly."""
         # Nonexistent video
