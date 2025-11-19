@@ -12,9 +12,24 @@ import os
 import tempfile
 import shutil
 import pytest
+from pathlib import Path
 
 from image_velocimetry_tools.services.project_service import ProjectService
 from image_velocimetry_tools.services.video_service import VideoService
+
+
+# Find repository root (where examples/ directory is located)
+def get_repo_root():
+    """Find the repository root directory."""
+    current_file = Path(__file__).resolve()
+    # Go up from tests/test_integration/ to repo root
+    repo_root = current_file.parent.parent.parent.parent
+    return repo_root
+
+
+REPO_ROOT = get_repo_root()
+EXAMPLES_DIR = REPO_ROOT / "examples"
+VIDEOS_DIR = EXAMPLES_DIR / "videos"
 
 
 class TestBatchWorkflow:
@@ -33,12 +48,12 @@ class TestBatchWorkflow:
     @pytest.fixture
     def scaffold_path(self):
         """Path to test scaffold project."""
-        return "examples/scaffold_project.ivy"
+        return str(EXAMPLES_DIR / "scaffold_project.ivy")
 
     @pytest.fixture
     def test_video_path(self):
         """Path to test video file."""
-        return "examples/videos/03337000_bullet_20170630-120000.mp4"
+        return str(VIDEOS_DIR / "03337000_bullet_20170630-120000.mp4")
 
     @pytest.fixture
     def temp_dir(self):

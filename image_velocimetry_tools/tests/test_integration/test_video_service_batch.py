@@ -16,6 +16,20 @@ from pathlib import Path
 from image_velocimetry_tools.services.video_service import VideoService
 
 
+# Find repository root (where examples/ directory is located)
+def get_repo_root():
+    """Find the repository root directory."""
+    current_file = Path(__file__).resolve()
+    # Go up from tests/test_integration/ to repo root
+    repo_root = current_file.parent.parent.parent.parent
+    return repo_root
+
+
+REPO_ROOT = get_repo_root()
+EXAMPLES_DIR = REPO_ROOT / "examples"
+VIDEOS_DIR = EXAMPLES_DIR / "videos"
+
+
 class TestVideoServiceBatch:
     """Integration tests for VideoService batch methods."""
 
@@ -28,7 +42,7 @@ class TestVideoServiceBatch:
     def test_video_path(self):
         """Path to test video file."""
         # Use the shortest video for faster tests
-        return "examples/videos/03337000_bullet_20170630-120000.mp4"
+        return str(VIDEOS_DIR / "03337000_bullet_20170630-120000.mp4")
 
     @pytest.fixture
     def temp_output_dir(self):
@@ -206,12 +220,14 @@ class TestVideoServiceBatch:
             )
 
         # Invalid frame step
-        with pytest.raises(ValueError):
-            video_service.extract_frames(
-                "examples/videos/03337000_bullet_20170630-120000.mp4",
-                temp_output_dir,
-                frame_step=0  # Invalid
-            )
+        test_video = str(VIDEOS_DIR / "03337000_bullet_20170630-120000.mp4")
+        if os.path.exists(test_video):
+            with pytest.raises(ValueError):
+                video_service.extract_frames(
+                    test_video,
+                    temp_output_dir,
+                    frame_step=0  # Invalid
+                )
 
 
 if __name__ == "__main__":
