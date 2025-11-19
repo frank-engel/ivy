@@ -8,6 +8,7 @@ from .grid_service import GridService
 from .image_stack_service import ImageStackService
 from .discharge_service import DischargeService
 from .stiv_service import STIVService
+from .cross_section_service import CrossSectionService
 
 __all__ = [
     'BaseService',
@@ -17,5 +18,6 @@ __all__ = [
     'GridService',
     'ImageStackService',
     'DischargeService',
-    'STIVService'
+    'STIVService',
+    'CrossSectionService'
 ]
