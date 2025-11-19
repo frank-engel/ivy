@@ -9,6 +9,8 @@ ground control points (GCPs). It supports three rectification methods:
 """
 
 import logging
+import os
+from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, Callable, List
 import numpy as np
 
@@ -464,3 +466,138 @@ class OrthorectificationService(BaseService):
             errors.append("Duplicate world coordinates detected")
 
         return errors
+
+    def rectify_frames_batch(
+        self,
+        frame_paths: List[str],
+        output_directory: str,
+        method: str,
+        rectification_params: Dict[str, Any],
+        flip_x: bool = False,
+        flip_y: bool = False,
+        output_pattern: str = "t{:05d}.jpg",
+        progress_callback: Optional[Callable[[int, str], None]] = None
+    ) -> List[str]:
+        """Rectify multiple frames for batch processing.
+
+        This method rectifies a sequence of frames (e.g., extracted from video)
+        using the specified rectification method and parameters. Suitable for
+        both GUI (with progress callback) and batch/headless processing.
+
+        Args:
+            frame_paths: List of paths to frames to rectify (sorted in order)
+            output_directory: Directory to save rectified frames
+            method: Rectification method ('scale', 'homography', 'camera matrix')
+            rectification_params: Parameters from calculate_*_parameters methods
+            flip_x: Whether to flip horizontally
+            flip_y: Whether to flip vertically
+            output_pattern: Output filename pattern (default: "t{:05d}.jpg")
+            progress_callback: Optional callback(percent, message) for progress updates
+
+        Returns:
+            List of paths to rectified frame files
+
+        Raises:
+            ValueError: If inputs are invalid
+            RuntimeError: If rectification fails
+
+        Notes:
+            - For camera matrix method, the water_surface_elevation in
+              rectification_params is used for all frames
+            - Output frames are numbered sequentially (t00001.jpg, t00002.jpg, etc.)
+            - Requires PIL/Pillow for image I/O
+        """
+        # Import here to avoid hard dependency if not used
+        try:
+            from skimage.io import imread
+            from PIL import Image
+        except ImportError as e:
+            raise RuntimeError(f"Image processing libraries required: {e}")
+
+        # Validate inputs
+        if len(frame_paths) == 0:
+            raise ValueError("frame_paths cannot be empty")
+
+        if method not in ["scale", "homography", "camera matrix"]:
+            raise ValueError(f"Invalid rectification method: {method}")
+
+        # Create output directory
+        os.makedirs(output_directory, exist_ok=True)
+
+        self.logger.info(
+            f"Rectifying {len(frame_paths)} frames using {method} method"
+        )
+
+        # Report progress
+        if progress_callback:
+            progress_callback(0, "Starting frame rectification...")
+
+        # Initialize camera helper once for camera matrix method (efficiency)
+        camera_helper = None
+        if method == "camera matrix":
+            camera_helper = CameraHelper()
+            camera_helper.set_camera_matrix(rectification_params["camera_matrix"])
+
+        # Rectify each frame
+        rectified_paths = []
+        num_frames = len(frame_paths)
+
+        for i, frame_path in enumerate(frame_paths):
+            try:
+                # Read frame
+                frame = imread(frame_path)
+
+                # Rectify based on method
+                if method == "camera matrix" and camera_helper is not None:
+                    # Use pre-initialized camera helper (more efficient)
+                    rectified = camera_helper.get_top_view_of_image(
+                        frame,
+                        Z=rectification_params["water_surface_elevation"],
+                        extent=rectification_params.get("extent"),
+                        do_plot=False,
+                        skip_size_check=(i > 0),  # Skip size check after first frame
+                    )
+                else:
+                    # Use general rectify_image method
+                    rectified = self.rectify_image(
+                        image=frame,
+                        method=method,
+                        rectification_params=rectification_params,
+                        flip_x=flip_x,
+                        flip_y=flip_y
+                    )
+
+                # Generate output filename
+                output_filename = output_pattern.format(i + 1)
+                output_path = os.path.join(output_directory, output_filename)
+
+                # Save rectified frame
+                img = Image.fromarray(rectified)
+                img.save(output_path)
+                rectified_paths.append(output_path)
+
+                # Report progress
+                percent = int((i + 1) / num_frames * 100)
+                if progress_callback:
+                    progress_callback(
+                        percent,
+                        f"Rectified {i + 1}/{num_frames} frames"
+                    )
+
+                if (i + 1) % 10 == 0 or (i + 1) == num_frames:
+                    self.logger.debug(f"Rectified {i + 1}/{num_frames} frames")
+
+            except Exception as e:
+                error_msg = f"Failed to rectify frame {frame_path}: {e}"
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
+
+        self.logger.info(
+            f"Successfully rectified {len(rectified_paths)} frames to {output_directory}"
+        )
+
+        # Report completion
+        if progress_callback:
+            progress_callback(100, f"Rectified {len(rectified_paths)} frames")
+
+        return rectified_paths
