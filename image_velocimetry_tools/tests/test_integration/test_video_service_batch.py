@@ -26,7 +26,21 @@ def get_repo_root():
 
 
 def check_ffmpeg_available():
-    """Check if ffmpeg and ffprobe are available."""
+    """Check if ffmpeg and ffprobe are available.
+
+    Checks for custom IVyTools environment variables first, then falls back
+    to PATH lookup.
+    """
+    # Check for custom IVyTools environment variables
+    ffmpeg_custom = os.environ.get("FFMPEG-IVyTools")
+    ffprobe_custom = os.environ.get("FFPROBE-IVyTools")
+
+    if ffmpeg_custom and ffprobe_custom:
+        # Check if custom paths exist
+        if os.path.exists(ffmpeg_custom) and os.path.exists(ffprobe_custom):
+            return True
+
+    # Fall back to PATH lookup
     return shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
 
 

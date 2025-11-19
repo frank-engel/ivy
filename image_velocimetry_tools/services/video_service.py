@@ -255,6 +255,12 @@ class VideoService(BaseService):
             FileNotFoundError: If video file doesn't exist
             RuntimeError: If ffprobe execution fails
         """
+        # Check for custom IVyTools ffprobe path
+        if ffprobe_cmd == "ffprobe":
+            custom_ffprobe = os.environ.get("FFPROBE-IVyTools")
+            if custom_ffprobe and os.path.exists(custom_ffprobe):
+                ffprobe_cmd = custom_ffprobe
+
         # Validate video exists
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
@@ -358,6 +364,12 @@ class VideoService(BaseService):
             RuntimeError: If ffmpeg execution fails
             ValueError: If parameters are invalid
         """
+        # Check for custom IVyTools ffmpeg path
+        if ffmpeg_cmd == "ffmpeg":
+            custom_ffmpeg = os.environ.get("FFMPEG-IVyTools")
+            if custom_ffmpeg and os.path.exists(custom_ffmpeg):
+                ffmpeg_cmd = custom_ffmpeg
+
         # Validate inputs
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
