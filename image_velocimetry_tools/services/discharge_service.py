@@ -344,3 +344,126 @@ class DischargeService:
             "average_surface_velocity": average_surface_velocity,
             "max_surface_velocity": max_surface_velocity,
         }
+
+    # ==================== Complete Workflow ====================
+
+    def process_discharge_workflow(
+        self,
+        xs_survey,
+        grid_points: np.ndarray,
+        water_surface_elevation: float,
+        stiv_results: Dict[str, np.ndarray],
+        alpha: float = 0.85,
+        rectification_rmse: Optional[float] = None,
+        scene_width: Optional[float] = None,
+        add_edge_zeros: bool = True
+    ) -> Dict:
+        """
+        Execute complete discharge computation workflow.
+
+        This convenience method orchestrates the full discharge calculation
+        process from cross-section extraction through uncertainty analysis.
+        Suitable for both GUI and batch/headless processing.
+
+        Steps performed:
+        1. Extract station distances and depths from cross-section
+        2. Extract surface velocities from STIV results
+        3. Create discharge dataframe
+        4. Compute total discharge and area
+        5. Compute summary statistics
+        6. Compute uncertainty (if RMSE and scene_width provided)
+
+        Args:
+            xs_survey: CrossSectionGeometry instance with AC3 backend
+            grid_points: Grid points in pixel coordinates (N x 2)
+            water_surface_elevation: Water surface elevation in meters
+            stiv_results: Dict with 'magnitudes_mps', 'directions_deg', etc.
+            alpha: Alpha coefficient for surface-to-average velocity conversion (default 0.85)
+            rectification_rmse: Optional rectification RMSE for uncertainty calc (m)
+            scene_width: Optional scene width for uncertainty calc (m)
+            add_edge_zeros: If True, add zero velocities at channel edges
+
+        Returns:
+            Dictionary containing:
+                - discharge_dataframe: pd.DataFrame with station-by-station results
+                - total_discharge: Total discharge (m^3/s)
+                - total_area: Total cross-sectional area (m^2)
+                - summary_statistics: Dict with mean/max velocities, etc.
+                - uncertainty: Dict with ISO and IVE uncertainty (if inputs provided)
+                - num_stations_used: Number of stations used in calculation
+                - num_stations_total: Total number of stations
+
+        Raises:
+            ValueError: If required inputs are missing or invalid
+        """
+        # Step 1: Get station distances and depths
+        stations, depths = self.get_station_and_depth(
+            xs_survey=xs_survey,
+            grid_points=grid_points,
+            water_surface_elevation=water_surface_elevation
+        )
+
+        # Step 2: Extract surface velocities from STIV results
+        # Create a simple object to hold STIV results (DischargeService.extract_velocity_from_stiv expects an object)
+        class STIVResults:
+            def __init__(self, data):
+                self.magnitudes_mps = data['magnitudes_mps']
+                self.directions = data['directions_deg']
+                self.magnitude_normals_mps = data.get('magnitude_normals_mps', None)
+
+        stiv_obj = STIVResults(stiv_results)
+
+        surface_velocities = self.extract_velocity_from_stiv(
+            stiv_results=stiv_obj,
+            add_edge_zeros=add_edge_zeros
+        )
+
+        # Step 3: Create discharge dataframe
+        discharge_df = self.create_discharge_dataframe(
+            stations=stations,
+            depths=depths,
+            surface_velocities=surface_velocities,
+            alpha=alpha
+        )
+
+        # Step 4: Compute discharge
+        discharge_calc = self.compute_discharge(discharge_df)
+        total_discharge = discharge_calc["total_discharge"]
+        total_area = discharge_calc["total_area"]
+        discharge_results = discharge_calc["discharge_results"]
+
+        # Step 5: Compute summary statistics
+        summary_stats = self.compute_summary_statistics(
+            discharge_results=discharge_results,
+            total_discharge=total_discharge,
+            total_area=total_area
+        )
+
+        # Step 6: Compute uncertainty (optional)
+        uncertainty_results = None
+        if rectification_rmse is not None and scene_width is not None:
+            uncertainty_results = self.compute_uncertainty(
+                discharge_results=discharge_results,
+                total_discharge=total_discharge,
+                rectification_rmse=rectification_rmse,
+                scene_width=scene_width
+            )
+
+        # Count used vs total stations
+        num_stations_used = len(discharge_df[discharge_df["Status"] == "Used"])
+        num_stations_total = len(discharge_df)
+
+        self.logger.info(
+            f"Discharge workflow complete: Q={total_discharge:.3f} m³/s, "
+            f"A={total_area:.2f} m², {num_stations_used}/{num_stations_total} stations used"
+        )
+
+        return {
+            "discharge_dataframe": discharge_df,
+            "total_discharge": total_discharge,
+            "total_area": total_area,
+            "summary_statistics": summary_stats,
+            "uncertainty": uncertainty_results,
+            "num_stations_used": num_stations_used,
+            "num_stations_total": num_stations_total,
+        }
