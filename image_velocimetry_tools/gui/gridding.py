@@ -7,12 +7,7 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QImage
 
 from image_velocimetry_tools.graphics import AnnotationView, Instructions
-from image_velocimetry_tools.image_processing_tools import (
-    generate_grid,
-    create_binary_mask,
-    close_small_gaps,
-    generate_points_along_line,
-)
+from image_velocimetry_tools.services import GridService
 
 global icons_path
 icon_path = "icons"
@@ -152,6 +147,7 @@ class GridGenerator:
             ivy_framework (IVyTools object): The main IVyTools objects
         """
         self.ivy_framework = ivy_framework
+        self.grid_service = GridService()
         self.image = None
         self.height = None
         self.width = None
@@ -177,21 +173,6 @@ class GridGenerator:
         self.image = image
         self.height, self.width, _ = self.image.shape
 
-    def make_mask(self):
-        """Initiate a mask."""
-        self.horz_grid_size = self.ivy_framework.horz_grid_size
-        self.vert_grid_size = self.ivy_framework.vert_grid_size
-        if self.mask_polygons is None:
-            self.mask_polygons = []
-        self.binary_mask = create_binary_mask(
-            self.mask_polygons, self.width, self.height
-        )
-        self.clean_mask()
-
-    def clean_mask(self):
-        """Apply topology clean up of the current mask"""
-        self.binary_mask = close_small_gaps(self.binary_mask)
-
     def make_grid(self, image, mask_polygons):
         """Make the computational grid.
 
@@ -202,16 +183,17 @@ class GridGenerator:
         """
         self.set_image(image)
         self.mask_polygons = mask_polygons
-        self.make_mask()
-        logging.debug(f"Mask updated.")
-        self.grid = generate_grid(
+
+        # Use GridService to generate grid with mask
+        self.grid, self.binary_mask = self.grid_service.generate_regular_grid(
             self.width,
             self.height,
             self.vert_grid_size,
             self.horz_grid_size,
-            self.binary_mask,
+            mask_polygons=mask_polygons,
+            clean_mask=True
         )
-        logging.debug(f"Grid generated")
+        logging.debug(f"Grid generated using GridService")
         self.enable_image_velocimetry_tabs()
         return self.grid
 
@@ -230,13 +212,18 @@ class GridGenerator:
         """
         self.set_image(image)
         self.mask_polygons = mask_polygons
-        self.make_mask()
-        logging.debug(f"Mask updated.")
 
-        line_points = generate_points_along_line(
-            self.width, self.height, line_start, line_end, num_points, self.binary_mask
+        # Use GridService to generate line grid with mask
+        line_points, self.binary_mask = self.grid_service.generate_line_grid(
+            self.width,
+            self.height,
+            line_start,
+            line_end,
+            num_points,
+            mask_polygons=mask_polygons,
+            clean_mask=True
         )
-        logging.debug(f"Line Grid generated")
+        logging.debug(f"Line Grid generated using GridService")
         self.enable_image_velocimetry_tabs()
         self.grid = line_points
         self.ivy_framework.set_tab_icon("tabGridPreparation", "good")

@@ -20,6 +20,7 @@ from areacomp.gui.selectcircuitstouse import SelectCircuits
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 
 from image_velocimetry_tools.common_functions import units_conversion
+from image_velocimetry_tools.services.cross_section_service import CrossSectionService
 
 
 # ToDo Add table to the gui to display grid line data in the bathymetry tab
@@ -36,6 +37,7 @@ class CrossSectionGeometry:
             parent (IVyTools object): the main IVyTools object
         """
         self.parent = parent
+        self.xs_service = CrossSectionService()
 
         # Connect action for loading AreaComp3 files.
         self.parent.actionImport_Bathymetry.triggered.connect(self.load_areacomp)
@@ -926,10 +928,10 @@ class CrossSectionGeometry:
 
         # interpolate elevations for pixel stations
         # Station/Adj Stage follow xs_survey.survey.units
-        elevations = np.interp(
-            pixel_stations,
+        elevations = self.xs_service.interpolate_elevations(
             self.xs_survey.survey["Stations"].to_numpy(),
             self.xs_survey.survey["AdjustedStage"].to_numpy(),
+            pixel_stations,
         )
 
         # Ensure results are in Metric
@@ -974,32 +976,32 @@ class CrossSectionGeometry:
         except:
             pass
 
-    @staticmethod
-    def pixel_2_distance(points):
-        """Compute distance between x/y points
+    def pixel_2_distance(self, points):
+        """Compute distance between x/y points.
+
+        Delegates to CrossSectionService.
 
         Parameters:
             points: nd.array
         """
+        return self.xs_service.compute_pixel_distance(points)
 
-        distance = np.sqrt((np.diff(points[:, 0]) ** 2) + (np.diff(points[:, 1]) ** 2))
+    def pixel_to_rw_conversion(self, pixel_distance, width):
+        """Compute conversion for real world distance to pixel distance.
 
-        return distance
+        Delegates to CrossSectionService.
+        """
+        return self.xs_service.compute_pixel_to_real_world_conversion(
+            pixel_distance, width
+        )
 
-    @staticmethod
-    def pixel_to_rw_conversion(pixel_distance, width):
-        """compute conversion for real world distance to pixel distance."""
-
-        convert = width / pixel_distance
-
-        return convert
-
-    @staticmethod
     def find_station_for_adj_stage(
-        stations, adjusted_stages, target_adj_stage, mode="all", epsilon=1e-1
+        self, stations, adjusted_stages, target_adj_stage, mode="all", epsilon=1e-1
     ):
         """
         Calculate the station values for a specified Adjusted Stage using linear interpolation.
+
+        Delegates to CrossSectionService.
 
         Parameters
         ----------
@@ -1013,53 +1015,16 @@ class CrossSectionGeometry:
             Specifies whether to return all crossings ('all') or just the first and last crossing ('firstLast').
             Default is 'all'.
         epsilon : float, optional
-            A small tolerance value to handle numerical precision issues. Default is 1e-6.
+            A small tolerance value to handle numerical precision issues. Default is 1e-1.
 
         Returns
         -------
         list of float
             A list of station values where the adjusted stage intersects the target adjusted stage.
         """
-        stations = np.array(stations)
-        adjusted_stages = np.array(adjusted_stages)
-
-        # Find the indices where interpolation is needed with a tolerance
-        indices = np.where(
-            (
-                (adjusted_stages[:-1] > target_adj_stage + epsilon)
-                & (adjusted_stages[1:] < target_adj_stage - epsilon)
-            )
-            | (
-                (adjusted_stages[:-1] < target_adj_stage - epsilon)
-                & (adjusted_stages[1:] > target_adj_stage + epsilon)
-            )
-            | (
-                (np.abs(adjusted_stages[:-1] - target_adj_stage) <= epsilon)
-                & (np.abs(adjusted_stages[1:] - target_adj_stage) > epsilon)
-            )
-            | (
-                (np.abs(adjusted_stages[:-1] - target_adj_stage) > epsilon)
-                & (np.abs(adjusted_stages[1:] - target_adj_stage) <= epsilon)
-            )
-        )[0]
-
-        result_stations = []
-        for index in indices:
-            x1, x2 = stations[index], stations[index + 1]
-            y1, y2 = adjusted_stages[index], adjusted_stages[index + 1]
-
-            # Linear interpolation formula
-            interpolated_station = x1 + (target_adj_stage - y1) * (x2 - x1) / (y2 - y1)
-            result_stations.append(interpolated_station)
-
-        if (
-            mode.lower() == "firstlast"
-            and len(result_stations) > 2
-            and len(result_stations) % 2 == 0
-        ):
-            result_stations = [result_stations[0], result_stations[-1]]
-
-        return result_stations
+        return self.xs_service.find_station_crossings(
+            stations, adjusted_stages, target_adj_stage, mode=mode, epsilon=epsilon
+        )
 
     def update_char_stage(self):
         """Updates stage used for Channel Characteristics"""

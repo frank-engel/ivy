@@ -10,6 +10,7 @@ from PyQt5 import QtGui, QtWidgets
 
 from image_velocimetry_tools.gui.dialogs.estimateStivSampleRate_ui import Ui_Dialog
 from image_velocimetry_tools.stiv import optimum_stiv_sample_time
+from image_velocimetry_tools.services.stiv_service import STIVService
 
 
 class StivHelper(QtWidgets.QDialog, Ui_Dialog):
@@ -35,6 +36,7 @@ class StivHelper(QtWidgets.QDialog, Ui_Dialog):
         if icon_path is not None:
             self.setWindowIcon(QtGui.QIcon(icon_path))
 
+        self.stiv_service = STIVService()
         self.vid_frame_rate = frame_rate
         self.vid_ms = 1 / 29.97 * 1000
         self.gsd = gsd
@@ -57,15 +59,20 @@ class StivHelper(QtWidgets.QDialog, Ui_Dialog):
         self.buttonBox.accepted.connect(self.accept)
 
     def compute(self):
-        """Compute the optimized STIV parameters"""
-        self.video_sample_rate()
-        self.sample_time_ms = optimum_stiv_sample_time(self.gsd, self.velocity)
-        self.frame_step = round(self.sample_time_ms / self.vid_ms)
-        self.sample_time_s = self.frame_step * self.vid_ms / 1000
+        """Compute the optimized STIV parameters.
 
-        # Adjust frame step to be at least 1
-        if self.frame_step < 1:
-            self.frame_step = 1
+        Delegates to STIVService for calculations.
+        """
+        self.video_sample_rate()
+        self.sample_time_ms = self.stiv_service.compute_optimum_sample_time(
+            self.gsd, self.velocity
+        )
+        self.frame_step = self.stiv_service.compute_frame_step(
+            self.sample_time_ms, self.vid_frame_rate
+        )
+        self.sample_time_s = self.stiv_service.compute_sample_time_seconds(
+            self.frame_step, self.vid_frame_rate
+        )
 
         self.update_ui()
 
