@@ -211,20 +211,25 @@ class BatchOrchestrator(BaseService):
             self.logger.info("Stage 4: Extracting grid points")
 
             try:
-                # Get grid points from scaffold
+                # Get grid points and GSD from scaffold
+                # Grid points are generated automatically from cross-section line
+                # when scaffold is loaded (see ProjectService._extract_grid_params)
                 grid_data = config.scaffold.grid_params
                 grid_points = grid_data.get("grid_points")
 
                 if grid_points is None:
-                    # Generate grid if not stored
-                    num_points = grid_data.get("num_points", 100)
-                    # TODO: Generate grid from cross-section line
-                    # For now, expect grid_points in scaffold
-                    raise ValueError("Grid points not found in scaffold")
+                    raise ValueError(
+                        "Grid points not found in scaffold. Ensure scaffold has "
+                        "a cross-section line defined."
+                    )
 
                 # Get pixel GSD
                 pixel_gsd = grid_data.get("pixel_gsd", 0.1)
                 result.pixel_gsd = pixel_gsd
+
+                self.logger.debug(
+                    f"Using {len(grid_points)} grid points with GSD={pixel_gsd:.4f} m/px"
+                )
 
             except Exception as e:
                 result.error_stage = "grid"
@@ -327,11 +332,27 @@ class BatchOrchestrator(BaseService):
                 result.discharge_dataframe.to_csv(csv_path, index=False)
                 result.output_csv_path = csv_path
 
-                # TODO: Save complete .ivy project
-                # This requires building a complete project dict and saving
-                # For now, we'll just note the intended path
+                # Build and save .ivy project
                 ivy_filename = f"{video_name}_results.ivy"
                 ivy_path = os.path.join(video_output_dir, ivy_filename)
+
+                project_dict = self._build_project_dict(
+                    scaffold_config=config.scaffold,
+                    video_config=config.video,
+                    video_metadata=result.video_metadata,
+                    stiv_results=stiv_results,
+                    discharge_results=discharge_results,
+                    grid_points=grid_points,
+                    pixel_gsd=pixel_gsd,
+                )
+
+                # Save project using ProjectService
+                self.project_service.save_project(
+                    project_dict=project_dict,
+                    save_path=ivy_path,
+                    swap_directory=config.scaffold.swap_directory
+                )
+
                 result.output_project_path = ivy_path
 
                 self.logger.info(f"Results saved to {video_output_dir}")
@@ -533,3 +554,67 @@ class BatchOrchestrator(BaseService):
 
         batch_result.batch_csv_path = csv_path
         self.logger.info(f"Batch summary saved: {csv_path}")
+
+    def _build_project_dict(
+        self,
+        scaffold_config: "ScaffoldConfig",
+        video_config: "VideoConfig",
+        video_metadata: Dict[str, Any],
+        stiv_results: Dict[str, np.ndarray],
+        discharge_results: Dict,
+        grid_points: np.ndarray,
+        pixel_gsd: float,
+    ) -> Dict[str, Any]:
+        """Build complete project dictionary for .ivy file.
+
+        Combines scaffold template with video-specific results to create
+        a complete project that can be saved and reopened in IVyTools GUI.
+
+        Args:
+            scaffold_config: Scaffold configuration
+            video_config: Video-specific configuration
+            video_metadata: Video metadata from VideoService
+            stiv_results: STIV processing results
+            discharge_results: Discharge calculation results
+            grid_points: Grid points used for analysis
+            pixel_gsd: Ground sample distance in m/px
+
+        Returns:
+            Complete project dictionary ready to save
+        """
+        # Start with scaffold project dict as base
+        project_dict = scaffold_config.project_dict.copy()
+
+        # Update with video-specific information
+        project_dict.update({
+            # Video info
+            "video_path": video_config.video_path,
+            "video_width": video_metadata.get("width", 0),
+            "video_height": video_metadata.get("height", 0),
+            "video_frame_rate": video_metadata.get("avg_frame_rate", 0),
+            "video_duration": video_metadata.get("duration", 0),
+
+            # Measurement parameters
+            "water_surface_elevation_m": video_config.water_surface_elevation,
+            "alpha_coefficient": video_config.alpha,
+            "measurement_date": video_config.measurement_date,
+            "comments": video_config.comments,
+
+            # Grid info
+            "number_grid_points_along_xs_line": len(grid_points),
+            "ortho_pixel_gsd": pixel_gsd,
+
+            # STIV results
+            "stiv_magnitudes": stiv_results.get("magnitudes_mps"),
+            "stiv_directions": stiv_results.get("directions_deg"),
+
+            # Discharge results
+            "total_discharge": discharge_results.get("total_discharge", 0),
+            "total_area": discharge_results.get("total_area", 0),
+            "mean_velocity": discharge_results.get("mean_velocity", 0),
+            "discharge_uncertainty": discharge_results.get("uncertainty", {}),
+        })
+
+        self.logger.debug("Built project dictionary with batch results")
+
+        return project_dict

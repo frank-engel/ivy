@@ -357,9 +357,7 @@ class ProjectService:
                 },
 
                 # Grid parameters
-                "grid_params": {
-                    "num_points": project_dict.get("number_grid_points_along_xs_line", 25),
-                },
+                "grid_params": self._extract_grid_params(project_dict),
 
                 # Units
                 "display_units": project_dict.get("display_units", "English"),
@@ -415,3 +413,55 @@ class ProjectService:
 
         else:
             return {}
+
+    def _extract_grid_params(self, project_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract grid parameters and generate grid points from cross-section line.
+
+        Args:
+            project_dict: Project dictionary
+
+        Returns:
+            Dictionary of grid parameters including:
+                - num_points: Number of grid points
+                - grid_points: Nx2 array of (x, y) grid point coordinates
+                - pixel_gsd: Ground sample distance in meters/pixel
+        """
+        import numpy as np
+        from image_velocimetry_tools.common_functions import deserialize_numpy_array
+
+        # Get number of grid points
+        num_points = project_dict.get("number_grid_points_along_xs_line", 25)
+
+        # Get pixel GSD from rectification parameters
+        pixel_gsd = project_dict.get("ortho_pixel_gsd", 0.1)  # meters/pixel
+
+        # Get cross-section line
+        cross_section_line = project_dict.get("cross_section_line")
+
+        grid_points = None
+        if cross_section_line is not None:
+            # Deserialize and reshape to get start/end points
+            line_array = deserialize_numpy_array(cross_section_line)
+            line_points = line_array.reshape(2, 2)  # [[x1, y1], [x2, y2]]
+
+            # Generate evenly-spaced points along the line
+            x_start, y_start = line_points[0]
+            x_end, y_end = line_points[1]
+
+            # Use numpy linspace to generate points
+            x_coords = np.linspace(x_start, x_end, num_points)
+            y_coords = np.linspace(y_start, y_end, num_points)
+
+            # Combine into Nx2 array
+            grid_points = np.column_stack([x_coords, y_coords])
+
+            self.logger.debug(
+                f"Generated {num_points} grid points from cross-section line: "
+                f"({x_start:.1f}, {y_start:.1f}) to ({x_end:.1f}, {y_end:.1f})"
+            )
+
+        return {
+            "num_points": num_points,
+            "grid_points": grid_points,
+            "pixel_gsd": pixel_gsd,
+        }
