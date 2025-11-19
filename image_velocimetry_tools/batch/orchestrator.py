@@ -294,18 +294,38 @@ class BatchOrchestrator(BaseService):
             self.logger.info("Stage 6: Calculating discharge")
 
             try:
-                # Get cross-section from scaffold
+                # Get cross-section survey from scaffold
                 xs_data = config.scaffold.cross_section_data
-                xs_survey = xs_data.get("line")  # Cross-section line object
+                xs_survey = xs_data.get("survey")  # AreaSurvey object
 
                 if xs_survey is None:
-                    raise ValueError("Cross-section data not found in scaffold")
+                    raise ValueError(
+                        "Cross-section survey not loaded from scaffold. "
+                        "Ensure bathymetry file is included in scaffold."
+                    )
+
+                # Set video-specific water surface elevation on survey
+                # AreaSurvey expects feet for English units
+                display_units = config.scaffold.display_units
+                wse_m = config.video.water_surface_elevation
+                if display_units == "English":
+                    wse_survey = wse_m * 3.281  # Convert m to ft
+                else:
+                    wse_survey = wse_m
+
+                xs_survey.stage = wse_survey
+                xs_survey.max_stage = wse_survey
+
+                self.logger.debug(
+                    f"Set cross-section WSE for discharge: {wse_m}m "
+                    f"({wse_survey:.2f} {display_units})"
+                )
 
                 # Process discharge workflow
                 discharge_results = self.discharge_service.process_discharge_workflow(
                     xs_survey=xs_survey,
                     grid_points=grid_points,
-                    water_surface_elevation=config.video.water_surface_elevation,
+                    water_surface_elevation=wse_m,
                     stiv_results=stiv_results,
                     alpha=config.video.alpha,
                 )

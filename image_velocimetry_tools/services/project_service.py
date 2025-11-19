@@ -22,6 +22,12 @@ import shutil
 from pathlib import Path
 from typing import Dict, Any, Callable, Optional, List
 
+try:
+    from areacomp.gui.areasurvey import AreaSurvey
+    AREACOMP_AVAILABLE = True
+except ImportError:
+    AREACOMP_AVAILABLE = False
+
 
 class ProjectService:
     """Service for project save/load operations."""
@@ -354,6 +360,12 @@ class ProjectService:
                     "line": project_dict.get("cross_section_line"),
                     "bathymetry_filename": project_dict.get("bathymetry_ac3_filename"),
                     "start_bank": project_dict.get("cross_section_start_bank", "left"),
+                    "survey": self._load_cross_section_survey(
+                        swap_directory=swap_dir,
+                        bathymetry_filename=project_dict.get("bathymetry_ac3_filename"),
+                        display_units=project_dict.get("display_units", "English"),
+                        water_surface_elevation=None  # Will be set per-video in orchestrator
+                    ),
                 },
 
                 # Grid parameters
@@ -439,8 +451,10 @@ class ProjectService:
                     project_dict.get("camera_matrix")
                 ),
                 "water_surface_elevation": (
+                    rectification_params.get("water_surface_elev") or  # GUI uses abbreviated form
                     rectification_params.get("water_surface_elevation") or
-                    project_dict.get("water_surface_elevation_m")
+                    project_dict.get("water_surface_elevation_m") or
+                    project_dict.get("water_surface_elevation")
                 ),
                 "extent": to_array(
                     rectification_params.get("extent") or
@@ -514,3 +528,70 @@ class ProjectService:
             "grid_points": grid_points,
             "pixel_gsd": pixel_gsd,
         }
+
+    def _load_cross_section_survey(
+        self,
+        swap_directory: str,
+        bathymetry_filename: Optional[str],
+        display_units: str,
+        water_surface_elevation: Optional[float] = None
+    ) -> Optional[Any]:
+        """Load cross-section survey from bathymetry file.
+
+        Args:
+            swap_directory: Swap directory containing bathymetry file
+            bathymetry_filename: Name of bathymetry .mat file
+            display_units: Display units (English/Metric)
+            water_surface_elevation: Optional WSE to set on survey (meters)
+
+        Returns:
+            AreaSurvey object with loaded bathymetry, or None if not available
+
+        Raises:
+            ImportError: If areacomp library is not available
+            FileNotFoundError: If bathymetry file is not found
+        """
+        if not AREACOMP_AVAILABLE:
+            raise ImportError(
+                "areacomp library is required for discharge calculations. "
+                "Please install it or skip discharge stage."
+            )
+
+        if not bathymetry_filename:
+            self.logger.warning("No bathymetry file specified in scaffold")
+            return None
+
+        # Look for bathymetry file in discharge subdirectory
+        bathy_path = os.path.join(
+            swap_directory,
+            "5-discharge",
+            os.path.basename(bathymetry_filename)
+        )
+
+        if not os.path.exists(bathy_path):
+            self.logger.warning(f"Bathymetry file not found: {bathy_path}")
+            return None
+
+        self.logger.info(f"Loading cross-section survey from: {bathy_path}")
+
+        # Create and load AreaSurvey object
+        xs_survey = AreaSurvey()
+        xs_survey.load_areacomp(bathy_path, units=display_units)
+
+        # Set water surface elevation if provided
+        # AreaSurvey expects feet for English units
+        if water_surface_elevation is not None:
+            if display_units == "English":
+                wse_feet = water_surface_elevation * 3.281  # Convert m to ft
+                xs_survey.stage = wse_feet
+                xs_survey.max_stage = wse_feet
+            else:
+                xs_survey.stage = water_surface_elevation
+                xs_survey.max_stage = water_surface_elevation
+
+            self.logger.debug(
+                f"Set cross-section WSE: {water_surface_elevation}m "
+                f"({xs_survey.stage:.2f} {display_units})"
+            )
+
+        return xs_survey
