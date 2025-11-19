@@ -381,6 +381,10 @@ class ProjectService:
     def _extract_rectification_params(self, project_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Extract rectification parameters from project dict.
 
+        Rectification parameters can be stored either:
+        1. In nested rectification_parameters dict (GUI standard)
+        2. At top level of project_dict (legacy/alternate format)
+
         Args:
             project_dict: Project dictionary
 
@@ -389,26 +393,59 @@ class ProjectService:
         """
         method = project_dict.get("rectification_method")
 
+        # Check for nested rectification_parameters dict first (GUI standard)
+        rectification_params = project_dict.get("rectification_parameters", {})
+
         if method == "homography":
             return {
-                "homography_matrix": project_dict.get("homography_matrix"),
-                "world_coords": project_dict.get("orthotable_world_coordinates"),
-                "pixel_coords": project_dict.get("orthotable_pixel_coordinates"),
-                "pad_x": project_dict.get("ortho_pad_x", 0),
-                "pad_y": project_dict.get("ortho_pad_y", 0),
+                "homography_matrix": (
+                    rectification_params.get("homography_matrix") or
+                    project_dict.get("homography_matrix")
+                ),
+                "world_coords": (
+                    rectification_params.get("world_coords") or
+                    project_dict.get("orthotable_world_coordinates")
+                ),
+                "pixel_coords": (
+                    rectification_params.get("pixel_coords") or
+                    project_dict.get("orthotable_pixel_coordinates")
+                ),
+                "pad_x": (
+                    rectification_params.get("pad_x") or
+                    project_dict.get("ortho_pad_x", 0)
+                ),
+                "pad_y": (
+                    rectification_params.get("pad_y") or
+                    project_dict.get("ortho_pad_y", 0)
+                ),
             }
 
         elif method == "camera matrix":
             return {
-                "camera_matrix": project_dict.get("camera_matrix"),
-                "water_surface_elevation": project_dict.get("water_surface_elevation_m"),
-                "extent": project_dict.get("ortho_extent"),
+                "camera_matrix": (
+                    rectification_params.get("camera_matrix") or
+                    project_dict.get("camera_matrix")
+                ),
+                "water_surface_elevation": (
+                    rectification_params.get("water_surface_elevation") or
+                    project_dict.get("water_surface_elevation_m")
+                ),
+                "extent": (
+                    rectification_params.get("extent") or
+                    project_dict.get("ortho_extent")
+                ),
             }
 
         elif method == "scale":
             return {
-                "world_coords": project_dict.get("orthotable_world_coordinates"),
-                "pixel_coords": project_dict.get("orthotable_pixel_coordinates"),
+                "world_coords": (
+                    rectification_params.get("world_coords") or
+                    project_dict.get("orthotable_world_coordinates")
+                ),
+                "pixel_coords": (
+                    rectification_params.get("pixel_coords") or
+                    project_dict.get("orthotable_pixel_coordinates")
+                ),
             }
 
         else:
