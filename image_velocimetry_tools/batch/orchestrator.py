@@ -12,6 +12,7 @@ import shutil
 from pathlib import Path
 from typing import Optional, Callable, List
 import numpy as np
+from typing import Dict, Any
 
 from image_velocimetry_tools.services.base_service import BaseService
 from image_velocimetry_tools.services.video_service import VideoService

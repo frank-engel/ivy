@@ -427,7 +427,7 @@ class ProjectService:
                 - pixel_gsd: Ground sample distance in meters/pixel
         """
         import numpy as np
-        from image_velocimetry_tools.common_functions import deserialize_numpy_array
+        from image_velocimetry_tools.file_management import deserialize_numpy_array
 
         # Get number of grid points
         num_points = project_dict.get("number_grid_points_along_xs_line", 25)
