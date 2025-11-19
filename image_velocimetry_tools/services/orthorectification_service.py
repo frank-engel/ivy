@@ -535,15 +535,26 @@ class OrthorectificationService(BaseService):
         # Initialize camera helper once for camera matrix method (efficiency)
         camera_helper = None
         if method == "camera matrix":
+            # Validate camera matrix parameters
+            camera_matrix = rectification_params.get("camera_matrix")
+            if camera_matrix is None:
+                raise ValueError("camera_matrix is required for camera matrix rectification method")
+
+            self.logger.debug(f"Camera matrix shape: {camera_matrix.shape if hasattr(camera_matrix, 'shape') else 'N/A'}")
+
             # Read first frame to initialize camera helper with correct image dimensions
             first_frame = imread(frame_paths[0])
 
+            if first_frame is None:
+                raise RuntimeError(f"Failed to read first frame: {frame_paths[0]}")
+
             camera_helper = CameraHelper(image=first_frame)
-            camera_helper.set_camera_matrix(rectification_params["camera_matrix"])
+            camera_helper.set_camera_matrix(camera_matrix)
 
             self.logger.debug(
                 f"Initialized camera helper with image size: "
-                f"{camera_helper.image_width_px}x{camera_helper.image_height_px}"
+                f"{camera_helper.image_width_px}x{camera_helper.image_height_px}, "
+                f"camera_matrix set: {camera_helper.camera_matrix is not None}"
             )
 
         # Rectify each frame
@@ -558,14 +569,27 @@ class OrthorectificationService(BaseService):
                 # Rectify based on method
                 if method == "camera matrix" and camera_helper is not None:
                     # Use pre-initialized camera helper (more efficient)
-                    # No need to skip size check anymore since camera_helper has correct dimensions
+                    # Debug: Check parameters
+                    wse = rectification_params.get("water_surface_elevation")
+                    extent = rectification_params.get("extent")
+                    self.logger.debug(
+                        f"Rectifying frame {i+1}: WSE={wse}, extent={extent}, "
+                        f"frame_shape={frame.shape if frame is not None else 'None'}"
+                    )
+
+                    if wse is None:
+                        raise ValueError("water_surface_elevation is required for camera matrix method")
+
                     rectified = camera_helper.get_top_view_of_image(
                         frame,
-                        Z=rectification_params["water_surface_elevation"],
-                        extent=rectification_params.get("extent"),
+                        Z=wse,
+                        extent=extent,
                         do_plot=False,
                         skip_size_check=False,  # Don't skip - dimensions should match
                     )
+
+                    if rectified is None:
+                        raise RuntimeError("get_top_view_of_image returned None")
                 else:
                     # Use general rectify_image method
                     rectified = self.rectify_image(
