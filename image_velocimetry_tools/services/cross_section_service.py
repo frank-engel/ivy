@@ -139,11 +139,7 @@ class CrossSectionService:
             result_stations.append(interpolated_station)
 
         # Filter to first and last if requested
-        if (
-            mode.lower() == 'firstlast'
-            and len(result_stations) > 2
-            and len(result_stations) % 2 == 0
-        ):
+        if mode.lower() == 'firstlast' and len(result_stations) > 2:
             result_stations = [result_stations[0], result_stations[-1]]
 
         return result_stations
@@ -275,9 +271,9 @@ class CrossSectionService:
         """
         Flip station orientation (reverse bank direction).
 
-        Reverses the station values so that the start becomes the end
-        and vice versa. Useful when switching between left and right
-        bank references.
+        Mirrors the station values so that the start becomes the end
+        and vice versa, then normalizes to start at 0. Useful when
+        switching between left and right bank references.
 
         Parameters
         ----------
@@ -287,19 +283,20 @@ class CrossSectionService:
         Returns
         -------
         np.ndarray
-            Flipped station values
+            Flipped and normalized station values
         """
         stations = np.array(stations)
 
         if len(stations) == 0:
             return stations
 
-        # Reverse: max becomes 0, 0 becomes max
+        # Mirror: max becomes min, min becomes max
         max_station = np.nanmax(stations)
-        flipped = max_station - stations - (0 - np.nanmin(stations))
+        min_station = np.nanmin(stations)
+        flipped = max_station - stations - (0 - min_station)
 
-        # Reverse the order
-        flipped = flipped[::-1]
+        # Normalize to ensure result starts at 0
+        flipped = flipped - np.nanmin(flipped)
 
         return flipped
 
