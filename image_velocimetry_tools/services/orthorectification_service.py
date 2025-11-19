@@ -535,8 +535,16 @@ class OrthorectificationService(BaseService):
         # Initialize camera helper once for camera matrix method (efficiency)
         camera_helper = None
         if method == "camera matrix":
-            camera_helper = CameraHelper()
+            # Read first frame to initialize camera helper with correct image dimensions
+            first_frame = imread(frame_paths[0])
+
+            camera_helper = CameraHelper(image=first_frame)
             camera_helper.set_camera_matrix(rectification_params["camera_matrix"])
+
+            self.logger.debug(
+                f"Initialized camera helper with image size: "
+                f"{camera_helper.image_width_px}x{camera_helper.image_height_px}"
+            )
 
         # Rectify each frame
         rectified_paths = []
@@ -550,12 +558,13 @@ class OrthorectificationService(BaseService):
                 # Rectify based on method
                 if method == "camera matrix" and camera_helper is not None:
                     # Use pre-initialized camera helper (more efficient)
+                    # No need to skip size check anymore since camera_helper has correct dimensions
                     rectified = camera_helper.get_top_view_of_image(
                         frame,
                         Z=rectification_params["water_surface_elevation"],
                         extent=rectification_params.get("extent"),
                         do_plot=False,
-                        skip_size_check=(i > 0),  # Skip size check after first frame
+                        skip_size_check=False,  # Don't skip - dimensions should match
                     )
                 else:
                     # Use general rectify_image method
