@@ -209,6 +209,20 @@ class BatchOrchestrator(BaseService):
 
                 self.logger.info(f"Rectified {len(rectified_files)} frames")
 
+                # Copy a few sample rectified images to output for inspection
+                sample_dir = os.path.join(video_output_dir, "rectified_samples")
+                os.makedirs(sample_dir, exist_ok=True)
+
+                # Copy first, middle, and last frames
+                sample_indices = [0, len(rectified_files) // 2, len(rectified_files) - 1]
+                for idx in sample_indices:
+                    if idx < len(rectified_files):
+                        src = rectified_files[idx]
+                        dst = os.path.join(sample_dir, os.path.basename(src))
+                        shutil.copy2(src, dst)
+
+                self.logger.info(f"Copied {len(sample_indices)} sample rectified images to {sample_dir}")
+
             except Exception as e:
                 result.error_stage = "rectify"
                 result.error_message = str(e)

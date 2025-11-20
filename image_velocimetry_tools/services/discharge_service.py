@@ -48,10 +48,24 @@ class DischargeService:
         stations, elevations = xs_survey.get_pixel_xs(grid_points)
 
         # AreaComp returns elevations (stage), convert to depths
+        # Depth = WSE - bed elevation
         depths = water_surface_elevation - elevations
 
+        self.logger.info(
+            f"Cross-section extraction: {len(stations)} stations, "
+            f"WSE={water_surface_elevation:.2f} m"
+        )
         self.logger.debug(
-            f"Extracted {len(stations)} stations with depths from cross-section"
+            f"  Stations: [{stations.min():.2f}, {stations.max():.2f}] m"
+        )
+        self.logger.debug(
+            f"  Bed elevations: [{elevations.min():.2f}, {elevations.max():.2f}] m"
+        )
+        self.logger.debug(
+            f"  Depths: [{depths.min():.2f}, {depths.max():.2f}] m"
+        )
+        self.logger.debug(
+            f"  Negative depths: {(depths < 0).sum()} of {len(depths)}"
         )
 
         return stations, depths
@@ -236,6 +250,21 @@ class DischargeService:
 
         vertical_depths = used_df["Depth"].astype(float).values
 
+        self.logger.debug(
+            f"Mid-section input: {len(cumulative_distances)} stations"
+        )
+        self.logger.debug(
+            f"  Stations: [{cumulative_distances.min():.2f}, {cumulative_distances.max():.2f}] m"
+        )
+        self.logger.debug(
+            f"  Depths: [{vertical_depths.min():.2f}, {vertical_depths.max():.2f}] m, "
+            f"mean={vertical_depths.mean():.2f} m"
+        )
+        self.logger.debug(
+            f"  Average velocities: [{average_velocities.min():.2f}, {average_velocities.max():.2f}] m/s, "
+            f"mean={average_velocities.mean():.2f} m/s"
+        )
+
         # Compute discharge and area using mid-section method
         total_discharge, total_area = compute_discharge_midsection(
             cumulative_distances, average_velocities, vertical_depths
@@ -243,7 +272,8 @@ class DischargeService:
 
         self.logger.info(
             f"Computed total discharge: {total_discharge:.3f} m^3/s, "
-            f"total area: {total_area:.2f} m^2"
+            f"total area: {total_area:.2f} m^2 "
+            f"({len(used_df)} stations used)"
         )
 
         return {

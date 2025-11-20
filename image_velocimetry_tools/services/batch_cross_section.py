@@ -108,6 +108,13 @@ class BatchCrossSectionWrapper:
 
             point_extents = self.cross_section_line[[0, -1], :]  # First and last points
 
+            self.logger.debug(
+                f"Cross-section line extents: "
+                f"({point_extents[0,0]:.2f}, {point_extents[0,1]:.2f}) to "
+                f"({point_extents[1,0]:.2f}, {point_extents[1,1]:.2f})"
+            )
+            self.logger.debug(f"Processing {len(points)} grid points")
+
             # Combine extents with grid points, then compute projections
             new_arr = np.insert(point_extents, 1, points, axis=0)
             df = pd.DataFrame(new_arr, columns=["x", "y"])
@@ -121,15 +128,29 @@ class BatchCrossSectionWrapper:
             proj = ProjectData()
             proj.compute_data(df, rtn=True)
 
+            self.logger.debug(f"ProjectData stations range: [{proj.stations.min():.2f}, {proj.stations.max():.2f}]")
+
             # Compute pixel-to-distance conversion factor
             pixel_dist = self._compute_pixel_distance(point_extents)
+            self.logger.debug(f"Pixel distance (line length): {pixel_dist:.2f} pixels")
 
             # Get wetted width from cross-section
             wetted_width, station_offset = self._compute_wetted_width()
+            self.logger.debug(
+                f"Wetted width: {wetted_width:.2f} {self.display_units}, "
+                f"station offset: {station_offset:.2f}"
+            )
 
             # Convert pixel distances to real-world stations
             p_conversion = pixel_dist / wetted_width if wetted_width > 0 else 1.0
+            self.logger.debug(f"Pixel conversion factor: {p_conversion:.4f}")
+
             pixel_stations = proj.stations * p_conversion + station_offset
+
+            self.logger.debug(
+                f"Pixel stations range before flipping: "
+                f"[{pixel_stations.min():.2f}, {pixel_stations.max():.2f}]"
+            )
 
             # Handle right-bank start (flip stations)
             if self.start_bank == "right":
@@ -138,17 +159,25 @@ class BatchCrossSectionWrapper:
                     - pixel_stations
                     - (0 - np.nanmin(pixel_stations))
                 )
+                self.logger.debug("Flipped stations for right-bank start")
 
             # Interpolate elevations from bathymetry
             elevations = self._interpolate_elevations(pixel_stations)
 
             # Convert to metric if needed
             if self.display_units == "English":
+                elevations_ft = elevations.copy()
                 elevations = elevations * 0.3048  # Convert feet to meters
+                self.logger.debug(
+                    f"Converted elevations from feet to meters: "
+                    f"range [{elevations_ft.min():.2f}, {elevations_ft.max():.2f}] ft -> "
+                    f"[{elevations.min():.2f}, {elevations.max():.2f}] m"
+                )
 
-            self.logger.debug(
-                f"Computed {len(pixel_stations)} stations: "
-                f"range [{np.min(pixel_stations):.2f}, {np.max(pixel_stations):.2f}]"
+            self.logger.info(
+                f"Computed cross-section: "
+                f"{len(pixel_stations)} stations from {pixel_stations.min():.2f} to {pixel_stations.max():.2f} m, "
+                f"elevations from {elevations.min():.2f} to {elevations.max():.2f} m"
             )
 
             return pixel_stations, elevations
@@ -192,12 +221,24 @@ class BatchCrossSectionWrapper:
             stations = self.xs_survey.survey["Stations"].to_numpy()
             adjusted_stage = self.xs_survey.survey["AdjustedStage"].to_numpy()
 
+            self.logger.debug(
+                f"Computing wetted width: WSE={stage:.2f} {self.display_units}, "
+                f"{len(stations)} survey points from {stations.min():.2f} to {stations.max():.2f}"
+            )
+            self.logger.debug(
+                f"Survey elevations: range [{adjusted_stage.min():.2f}, {adjusted_stage.max():.2f}] {self.display_units}"
+            )
+
             # Find first and last crossing of water surface
             crossings = self._find_station_crossings(
                 stations, adjusted_stage, stage
             )
 
             if len(crossings) < 2:
+                self.logger.error(
+                    f"Only found {len(crossings)} water surface crossings (need 2). "
+                    f"WSE={stage:.2f}, survey elevation range=[{adjusted_stage.min():.2f}, {adjusted_stage.max():.2f}]"
+                )
                 raise ValueError(
                     f"Cannot compute wetted width: found {len(crossings)} crossings, need at least 2"
                 )
@@ -206,7 +247,8 @@ class BatchCrossSectionWrapper:
             station_offset = crossings[0]
 
             self.logger.debug(
-                f"Wetted width: {wetted_width:.2f}, offset: {station_offset:.2f}"
+                f"Found {len(crossings)} crossings: {crossings}, "
+                f"wetted width: {wetted_width:.2f}, offset: {station_offset:.2f}"
             )
 
             return wetted_width, station_offset
