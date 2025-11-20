@@ -375,6 +375,15 @@ class ProjectService:
                 "display_units": project_dict.get("display_units", "English"),
             }
 
+            # Debug logging for cross-section data
+            xs_data = scaffold_config["cross_section_data"]
+            self.logger.debug(
+                f"Cross-section data loaded: "
+                f"line={'present' if xs_data['line'] else 'missing'}, "
+                f"survey={'loaded' if xs_data['survey'] else 'not loaded'}, "
+                f"start_bank={xs_data['start_bank']}"
+            )
+
             self.logger.info("Scaffold configuration loaded successfully")
             self.logger.debug(
                 f"Rectification method: {scaffold_config['rectification_method']}, "
