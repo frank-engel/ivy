@@ -111,15 +111,20 @@ def example_2_process_single_video():
             last_percent = percent
 
     try:
+        # Note: batch_boneyard.csv has WSE in FEET (318.211 ft for this video)
+        # API expects WSE in METERS, so convert: 318.211 / 3.28084 = 97.01 m
+        wse_feet = 318.211  # From batch_boneyard.csv
+        wse_meters = wse_feet / 3.28084
+
         result = process_video(
             scaffold_path=str(scaffold_path),
             video_path=str(video_path),
-            water_surface_elevation=318.50,  # meters (from batch CSV)
+            water_surface_elevation=wse_meters,  # METERS (converted from CSV feet)
             output_directory=str(output_dir),
             measurement_date="2017-06-30",
-            alpha=0.85,
-            start_time=None,  # Process entire video
-            end_time=None,
+            alpha=0.88,  # From batch_boneyard.csv
+            start_time=15.0,  # 15 seconds (from CSV: 00:00:15)
+            end_time=20.0,    # 20 seconds (from CSV: 00:00:20)
             frame_step=1,
             max_frames=50,  # Limit to 50 frames for faster testing
             progress_callback=progress_callback,
@@ -193,14 +198,15 @@ def example_3_process_batch_csv():
             last_percent = percent
 
     try:
-        # Note: This will process all videos in the CSV
-        # You may want to limit max_frames for faster testing
+        # Note: batch_boneyard.csv has WSE values in FEET (English units)
+        # The csv_wse_units parameter tells the API to convert to meters
         batch_result = process_batch_csv(
             scaffold_path=str(scaffold_path),
             batch_csv_path=str(batch_csv_path),
             output_directory=str(output_dir),
             progress_callback=progress_callback,
             cleanup_temp_files=False,  # Keep files for inspection
+            csv_wse_units="feet",  # WSE values in CSV are in feet
         )
 
         print("\n" + "=" * 70)

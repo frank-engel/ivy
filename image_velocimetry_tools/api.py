@@ -300,13 +300,14 @@ def process_batch_csv(
     output_directory: str,
     progress_callback: Optional[Callable[[int, str], None]] = None,
     cleanup_temp_files: bool = True,
+    csv_wse_units: str = "meters",
 ) -> BatchResult:
     """Process batch from CSV configuration file.
 
     This is a convenience function for processing videos defined in a CSV file.
     The CSV should have the following columns:
     - video_path: Path to video file (required)
-    - water_surface_elevation: WSE in meters (required)
+    - water_surface_elevation: WSE value (required)
     - measurement_date: Date string (optional)
     - alpha: Alpha coefficient (optional, default: 0.85)
     - start_time: Start time in seconds (optional)
@@ -321,13 +322,15 @@ def process_batch_csv(
         output_directory: Root output directory for batch
         progress_callback: Optional callback(percent, message) for progress updates
         cleanup_temp_files: Whether to delete temporary files (default: True)
+        csv_wse_units: Units of WSE in CSV ("meters" or "feet", default: "meters")
+                      If "feet", WSE values will be converted to meters
 
     Returns:
         BatchResult with aggregated results and statistics
 
     Raises:
         FileNotFoundError: If scaffold or CSV file doesn't exist
-        ValueError: If CSV format is invalid
+        ValueError: If CSV format is invalid or csv_wse_units is invalid
 
     Example:
         >>> batch_result = process_batch_csv(
@@ -341,6 +344,10 @@ def process_batch_csv(
     """
     if not os.path.exists(batch_csv_path):
         raise FileNotFoundError(f"Batch CSV not found: {batch_csv_path}")
+
+    # Validate units parameter
+    if csv_wse_units not in ["meters", "feet"]:
+        raise ValueError(f"csv_wse_units must be 'meters' or 'feet', got: {csv_wse_units}")
 
     # Get CSV directory for resolving relative video paths
     csv_dir = os.path.dirname(os.path.abspath(batch_csv_path))
@@ -382,10 +389,15 @@ def process_batch_csv(
                     # TODO: Parse HH:MM:SS format
                     end_time = None
 
+            # Parse WSE and convert units if needed
+            wse_value = float(row["water_surface_elevation"])
+            if csv_wse_units == "feet":
+                wse_value = wse_value / 3.28084  # Convert feet to meters
+
             # Build config dict
             config = {
                 "video_path": video_path,
-                "water_surface_elevation": float(row["water_surface_elevation"]),
+                "water_surface_elevation": wse_value,  # Always in meters
                 "measurement_date": row.get("measurement_date", ""),
                 "alpha": float(row.get("alpha", 0.85)),
                 "start_time": start_time,

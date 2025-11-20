@@ -316,6 +316,17 @@ class BatchOrchestrator(BaseService):
                 if isinstance(cross_section_line, str):
                     cross_section_line = deserialize_numpy_array(cross_section_line)
 
+                # Reshape cross-section line to 2D array [[x1, y1], [x2, y2]]
+                # The serialized format is [[[x1, y1], [x2, y2]]] (3D)
+                if cross_section_line.ndim == 3:
+                    cross_section_line = cross_section_line.reshape(2, 2)
+
+                self.logger.debug(
+                    f"Cross-section line shape after reshape: {cross_section_line.shape}, "
+                    f"points: ({cross_section_line[0,0]:.1f}, {cross_section_line[0,1]:.1f}) to "
+                    f"({cross_section_line[1,0]:.1f}, {cross_section_line[1,1]:.1f})"
+                )
+
                 # Get water surface elevation
                 wse_m = config.video.water_surface_elevation
 
