@@ -265,6 +265,15 @@ class BatchCrossSectionWrapper:
     ) -> np.ndarray:
         """Find station positions where elevation crosses target elevation.
 
+        For a typical river channel cross-section:
+        - Left bank: high elevation (dry, above water)
+        - Channel: low elevation (wet, below water)
+        - Right bank: high elevation (dry, above water)
+
+        We need to find where elevation crosses WSE going from:
+        - Left crossing: dry→wet (above→below water surface)
+        - Right crossing: wet→dry (below→above water surface)
+
         Args:
             stations: Station distances
             elevations: Elevations at each station
@@ -273,26 +282,30 @@ class BatchCrossSectionWrapper:
         Returns:
             Array of station positions where elevation crosses target
         """
-        # Find where elevation crosses target (below to above or above to below)
+        # Find where elevation is above water (dry)
         above = elevations >= target_elevation
         crossings = []
 
-        # Find first crossing (left edge)
+        # Find LEFT crossing (dry to wet: above→below water)
+        # This is where we ENTER the water from the left bank
         for i in range(len(above) - 1):
-            if not above[i] and above[i + 1]:
+            if above[i] and not above[i + 1]:  # above→below (DRY to WET)
                 # Linear interpolation to find exact crossing
                 t = (target_elevation - elevations[i]) / (elevations[i + 1] - elevations[i])
                 crossing = stations[i] + t * (stations[i + 1] - stations[i])
                 crossings.append(crossing)
+                self.logger.debug(f"Found left crossing (dry→wet) at station {crossing:.2f}")
                 break
 
-        # Find last crossing (right edge)
+        # Find RIGHT crossing (wet to dry: below→above water)
+        # This is where we EXIT the water to the right bank
         for i in range(len(above) - 1, 0, -1):
-            if above[i - 1] and not above[i]:
+            if not above[i - 1] and above[i]:  # below→above (WET to DRY)
                 # Linear interpolation
                 t = (target_elevation - elevations[i - 1]) / (elevations[i] - elevations[i - 1])
                 crossing = stations[i - 1] + t * (stations[i] - stations[i - 1])
                 crossings.append(crossing)
+                self.logger.debug(f"Found right crossing (wet→dry) at station {crossing:.2f}")
                 break
 
         return np.array(crossings)
