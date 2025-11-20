@@ -20,6 +20,8 @@ from image_velocimetry_tools.services.orthorectification_service import Orthorec
 from image_velocimetry_tools.services.stiv_service import STIVService
 from image_velocimetry_tools.services.discharge_service import DischargeService
 from image_velocimetry_tools.services.project_service import ProjectService
+from image_velocimetry_tools.services.batch_cross_section import BatchCrossSectionWrapper
+from image_velocimetry_tools.file_management import deserialize_numpy_array
 from image_velocimetry_tools.batch.config import (
     BatchVideoConfig,
     ProcessingResult,
@@ -294,36 +296,47 @@ class BatchOrchestrator(BaseService):
             self.logger.info("Stage 6: Calculating discharge")
 
             try:
-                # Get cross-section survey from scaffold
+                # Get cross-section data from scaffold
                 xs_data = config.scaffold.cross_section_data
-                xs_survey = xs_data.get("survey")  # AreaSurvey object
+                xs_survey_obj = xs_data.get("survey")  # AreaSurvey object loaded from AC3
+                cross_section_line = xs_data.get("line")  # Cross-section line geometry
+                start_bank = xs_data.get("start_bank", "left")
 
-                if xs_survey is None:
+                if xs_survey_obj is None:
                     raise ValueError(
-                        "Cross-section survey not loaded from scaffold. "
-                        "Ensure bathymetry file is included in scaffold."
+                        "Cross-section bathymetry (AreaComp AC3) not loaded from scaffold. "
+                        "Ensure the scaffold .ivy file includes the cross_section_ac3.mat file "
+                        "in the 5-discharge folder."
                     )
 
-                # Set video-specific water surface elevation on survey
-                # AreaSurvey expects feet for English units
-                display_units = config.scaffold.display_units
-                wse_m = config.video.water_surface_elevation
-                if display_units == "English":
-                    wse_survey = wse_m * 3.281  # Convert m to ft
-                else:
-                    wse_survey = wse_m
+                if cross_section_line is None:
+                    raise ValueError("Cross-section line not found in scaffold")
 
-                xs_survey.stage = wse_survey
-                xs_survey.max_stage = wse_survey
+                # Deserialize cross-section line if needed
+                if isinstance(cross_section_line, str):
+                    cross_section_line = deserialize_numpy_array(cross_section_line)
+
+                # Get water surface elevation
+                wse_m = config.video.water_surface_elevation
+
+                # Create batch cross-section wrapper for discharge calculations
+                # This wrapper provides the get_pixel_xs() interface needed by DischargeService
+                xs_wrapper = BatchCrossSectionWrapper(
+                    xs_survey=xs_survey_obj,
+                    cross_section_line=cross_section_line,
+                    start_bank=start_bank,
+                    display_units=config.scaffold.display_units,
+                    water_surface_elevation_m=wse_m
+                )
 
                 self.logger.debug(
-                    f"Set cross-section WSE for discharge: {wse_m}m "
-                    f"({wse_survey:.2f} {display_units})"
+                    f"Created cross-section wrapper for discharge: "
+                    f"WSE={wse_m}m, start_bank={start_bank}, units={config.scaffold.display_units}"
                 )
 
                 # Process discharge workflow
                 discharge_results = self.discharge_service.process_discharge_workflow(
-                    xs_survey=xs_survey,
+                    xs_survey=xs_wrapper,
                     grid_points=grid_points,
                     water_surface_elevation=wse_m,
                     stiv_results=stiv_results,
