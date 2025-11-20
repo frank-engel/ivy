@@ -557,20 +557,45 @@ class ProjectService:
                 "Please install it or skip discharge stage."
             )
 
-        if not bathymetry_filename:
-            self.logger.warning("No bathymetry file specified in scaffold")
+        # Look for bathymetry file in discharge subdirectory
+        # Try standard name first, then fallback to bathymetry_filename from project
+        discharge_dir = os.path.join(swap_directory, "5-discharge")
+
+        # Debug: List contents of discharge directory
+        if os.path.exists(discharge_dir):
+            discharge_files = os.listdir(discharge_dir)
+            self.logger.debug(f"Files in {discharge_dir}: {discharge_files}")
+        else:
+            self.logger.warning(f"Discharge directory does not exist: {discharge_dir}")
             return None
 
-        # Look for bathymetry file in discharge subdirectory
-        bathy_path = os.path.join(
-            swap_directory,
-            "5-discharge",
-            os.path.basename(bathymetry_filename)
-        )
+        # Attempt 1: Standard naming convention (cross_section_ac3.mat)
+        bathy_path = os.path.join(discharge_dir, "cross_section_ac3.mat")
+        self.logger.debug(f"Checking for AC3 file at: {bathy_path}")
 
         if not os.path.exists(bathy_path):
-            self.logger.warning(f"Bathymetry file not found: {bathy_path}")
-            return None
+            # Attempt 2: Use bathymetry_filename from project dict
+            if bathymetry_filename:
+                bathy_path = os.path.join(
+                    discharge_dir,
+                    os.path.basename(bathymetry_filename)
+                )
+                self.logger.debug(f"Standard name not found, trying: {bathy_path}")
+
+                if not os.path.exists(bathy_path):
+                    self.logger.warning(
+                        f"Bathymetry file not found. Tried:\n"
+                        f"  - {os.path.join(discharge_dir, 'cross_section_ac3.mat')}\n"
+                        f"  - {bathy_path}\n"
+                        f"Files in discharge directory: {discharge_files if os.path.exists(discharge_dir) else 'directory not found'}"
+                    )
+                    return None
+            else:
+                self.logger.warning(
+                    f"Bathymetry file not found: {bathy_path} "
+                    f"(and no bathymetry_filename in project dict)"
+                )
+                return None
 
         self.logger.info(f"Loading cross-section survey from: {bathy_path}")
 
