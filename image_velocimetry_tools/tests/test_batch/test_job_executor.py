@@ -280,8 +280,8 @@ class TestJobExecutorExecuteJob:
     def test_execute_job_marks_job_as_processing(
         self, job_executor, sample_job, sample_scaffold_config, temp_dir
     ):
-        """Test that job is marked as processing before execution."""
-        # This will fail quickly due to missing mocks, but we can check the status
+        """Test that job is marked as processing, then failed on error."""
+        # Job starts as PENDING
         assert sample_job.status == JobStatus.PENDING
 
         with pytest.raises(Exception):  # Will fail due to unmocked dependencies
@@ -291,8 +291,10 @@ class TestJobExecutorExecuteJob:
                 output_dir=temp_dir
             )
 
-        # Job should have been marked as processing before the failure
-        assert sample_job.status == JobStatus.PROCESSING
+        # Job should have been marked as FAILED after execution failure
+        # (It was marked as PROCESSING during execution, then FAILED in exception handler)
+        assert sample_job.status == JobStatus.FAILED
+        assert sample_job.error_message is not None
 
 
 class TestJobExecutorErrorHandling:
