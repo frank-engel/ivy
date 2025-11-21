@@ -1,0 +1,4 @@
+video_path,water_surface_elevation,measurement_date,measurement_number,gage_height,start_time,end_time,comments
+/path/to/video1.mp4,2.20,2025-04-04,1,2.15,00:00:00,00:00:10,High flow event after storm
+/path/to/video2.mp4,1.85,2025-04-05,2,1.80,,,Recession flow
+/path/to/video3.mp4,1.50,2025-04-06,3,1.45,5.0,15.0,Base flow conditions

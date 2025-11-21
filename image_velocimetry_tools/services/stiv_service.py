@@ -7,7 +7,7 @@ processing, data loading, and STIV optimization calculations.
 """
 
 import numpy as np
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Tuple, Optional, Union, Callable
 import logging
 
 from image_velocimetry_tools.common_functions import (
@@ -15,7 +15,8 @@ from image_velocimetry_tools.common_functions import (
     component_in_direction,
     geographic_to_arithmetic,
 )
-from image_velocimetry_tools.stiv import optimum_stiv_sample_time
+from image_velocimetry_tools.stiv import optimum_stiv_sample_time, two_dimensional_stiv_exhaustive
+from image_velocimetry_tools.image_processing_tools import create_grayscale_image_stack
 
 
 class STIVService:
@@ -371,3 +372,192 @@ class STIVService:
         sample_time_s = frame_step * video_frame_interval_ms / 1000.0
 
         return sample_time_s
+
+    @staticmethod
+    def process_stiv(
+        frame_files: List[str],
+        grid_points: np.ndarray,
+        phi_origin: float,
+        phi_range: float,
+        dphi: float,
+        num_pixels: int,
+        pixel_gsd: float,
+        timestep_seconds: float,
+        gaussian_blur_sigma: float = 0.0,
+        max_vel_threshold_mps: float = 10.0,
+        progress_callback: Optional[Callable[[int, str], None]] = None
+    ) -> Dict[str, np.ndarray]:
+        """Process STIV velocimetry on a set of frames.
+
+        This method performs the complete STIV workflow:
+        1. Creates grayscale image stack from frame files
+        2. Runs exhaustive STIV search at each grid point
+        3. Returns velocity magnitudes, directions, and STI images
+
+        Suitable for both GUI (with progress callback) and batch/headless
+        processing.
+
+        Parameters
+        ----------
+        frame_files : List[str]
+            List of frame file paths (sorted in temporal order)
+        grid_points : np.ndarray
+            Grid points in pixel coordinates, shape (N, 2) where N is
+            number of grid points. Each row is [x, y].
+        phi_origin : float
+            Search origin angle in degrees (geographic convention)
+        phi_range : float
+            Search range in degrees (+/- from origin)
+        dphi : float
+            Search angle step in degrees
+        num_pixels : int
+            Number of pixels along search line
+        pixel_gsd : float
+            Pixel ground scale distance (pixel size) in meters
+        timestep_seconds : float
+            Time step between frames in seconds
+        gaussian_blur_sigma : float, optional
+            Gaussian blur sigma for STI preprocessing (default: 0.0 = no blur)
+        max_vel_threshold_mps : float, optional
+            Maximum velocity threshold in m/s (default: 10.0)
+        progress_callback : Optional[Callable[[int, str], None]], optional
+            Optional callback(percent, message) for progress updates
+
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            Dictionary containing STIV results:
+            - 'magnitudes_mps': Velocity magnitudes in m/s, shape (N,)
+            - 'directions_deg': Flow directions in degrees (geographic), shape (N,)
+            - 'st_images': Space-time images, shape (N, num_pixels, num_frames)
+            - 'theta_angles': STI streak angles in degrees, shape (N,)
+
+        Raises
+        ------
+        ValueError
+            If inputs are invalid (empty frame list, invalid grid, etc.)
+        RuntimeError
+            If STIV processing fails
+
+        Notes
+        -----
+        This method uses the exhaustive STIV search algorithm which evaluates
+        all angles in the search range. For large datasets, consider using
+        parallel processing or optimized algorithms.
+
+        The progress_callback signature is: callback(percent: int, message: str)
+        where percent is 0-100.
+        """
+        logger = logging.getLogger(__name__)
+
+        # Validate inputs
+        if len(frame_files) == 0:
+            raise ValueError("frame_files cannot be empty")
+
+        if grid_points.shape[0] == 0:
+            raise ValueError("grid_points cannot be empty")
+
+        if grid_points.shape[1] != 2:
+            raise ValueError("grid_points must have shape (N, 2)")
+
+        if num_pixels < 1:
+            raise ValueError("num_pixels must be >= 1")
+
+        if pixel_gsd <= 0:
+            raise ValueError("pixel_gsd must be positive")
+
+        if timestep_seconds <= 0:
+            raise ValueError("timestep_seconds must be positive")
+
+        logger.info(
+            f"Running STIV on {len(frame_files)} frames with "
+            f"{len(grid_points)} grid points"
+        )
+
+        # Report progress
+        if progress_callback:
+            progress_callback(5, "Creating grayscale image stack...")
+
+        # Create grayscale image stack
+        try:
+            logger.debug("Creating grayscale image stack...")
+            image_stack = create_grayscale_image_stack(frame_files)
+            logger.debug(f"Image stack shape: {image_stack.shape}")
+        except Exception as e:
+            raise RuntimeError(f"Failed to create image stack: {e}")
+
+        # Report progress
+        if progress_callback:
+            progress_callback(15, f"Processing {len(grid_points)} grid points...")
+
+        # Create simple progress wrapper for core STIV function
+        # The core STIV function expects an object with an emit() method
+        class ProgressWrapper:
+            def __init__(self, callback):
+                self.callback = callback
+                self.logger = logging.getLogger(__name__)
+
+            def emit(self, value):
+                # Map STIV progress (0-100) to overall progress (15-95)
+                overall_percent = int(15 + (value * 0.8))
+                if self.callback:
+                    self.callback(overall_percent, f"STIV processing... {value}%")
+                if value % 20 == 0:
+                    self.logger.debug(f"STIV progress: {value}%")
+
+        progress_wrapper = ProgressWrapper(progress_callback)
+
+        # Run STIV exhaustive search
+        logger.debug(f"Running STIV exhaustive search...")
+        logger.debug(f"  Grid points: {len(grid_points)}")
+        logger.debug(
+            f"  Phi origin: {phi_origin}°, range: {phi_range}°, dphi: {dphi}°"
+        )
+        logger.debug(f"  Search line pixels: {num_pixels}")
+        logger.debug(f"  Pixel GSD: {pixel_gsd} m")
+        logger.debug(f"  Timestep: {timestep_seconds} s")
+
+        try:
+            magnitudes_mps, directions_deg, st_images, theta_angles = \
+                two_dimensional_stiv_exhaustive(
+                    x_origin=grid_points[:, 0].astype(float),
+                    y_origin=grid_points[:, 1].astype(float),
+                    image_stack=image_stack,
+                    num_pixels=num_pixels,
+                    phi_origin=phi_origin,
+                    d_phi=dphi,
+                    phi_range=phi_range,
+                    pixel_gsd=pixel_gsd,
+                    d_t=timestep_seconds,
+                    sigma=gaussian_blur_sigma,
+                    max_vel_threshold=max_vel_threshold_mps,
+                    progress_signal=progress_wrapper,
+                )
+        except Exception as e:
+            raise RuntimeError(f"STIV processing failed: {e}")
+
+        # Report statistics
+        mean_vel = np.nanmean(magnitudes_mps)
+        max_vel = np.nanmax(magnitudes_mps)
+        num_valid = np.sum(~np.isnan(magnitudes_mps))
+
+        logger.info(
+            f"STIV complete. Mean velocity: {mean_vel:.3f} m/s, "
+            f"Max velocity: {max_vel:.3f} m/s, "
+            f"Valid points: {num_valid}/{len(magnitudes_mps)}"
+        )
+
+        # Report completion
+        if progress_callback:
+            progress_callback(
+                100,
+                f"STIV complete: {num_valid} valid velocities"
+            )
+
+        # Return structured results
+        return {
+            'magnitudes_mps': magnitudes_mps,
+            'directions_deg': directions_deg,
+            'st_images': st_images,
+            'theta_angles': theta_angles,
+        }

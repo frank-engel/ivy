@@ -27,7 +27,14 @@ with open('requirements.txt', encoding='utf-16') as f:
 setup(
     name='image_velocimetry_tools',
     version='1.0.0.2',
-    packages=['image_velocimetry_tools', 'image_velocimetry_tools.gui'],
+    packages=[
+        'image_velocimetry_tools',
+        'image_velocimetry_tools.gui',
+        'image_velocimetry_tools.services',
+        'image_velocimetry_tools.batch',
+        'image_velocimetry_tools.tests',
+        'image_velocimetry_tools.tests.test_integration',
+    ],
     py_modules=['image_velocimetry_tools'],
     url='https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy',
     license='GNU General Public License v3.0',
@@ -38,7 +45,9 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=requirements,
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'ivytools-batch=image_velocimetry_tools.cli:main',
+        ],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
