@@ -348,7 +348,7 @@ class JobExecutor(BaseService):
             world_points=gcps,
             image_points=icps
         )
-        projection_matrix = camera_helper.get_projection_matrix()
+        projection_matrix = camera_helper.get_camera_matrix()
 
         # Prepare batch config for rectify_many_camera
         batch_config = [
