@@ -243,7 +243,7 @@ class JobExecutor(BaseService):
         str
             Path to directory containing extracted frames
         """
-        from image_velocimetry_tools.ffmpeg_tools import create_ffmpeg_command
+        from image_velocimetry_tools.ffmpeg_tools import ffmpeg_cmd
         import subprocess
 
         frames_dir = os.path.join(job_dir, "1-images")
@@ -267,9 +267,9 @@ class JobExecutor(BaseService):
         # Build output pattern
         output_pattern = os.path.join(frames_dir, "f%04d.jpg")
 
-        # Build FFmpeg command
+        # Build FFmpeg command using the discovered ffmpeg binary
         cmd = [
-            "ffmpeg",
+            ffmpeg_cmd,
             "-i", job.video_path,
         ]
 
