@@ -156,6 +156,12 @@ class JobExecutor(BaseService):
             # Calculate processing time
             processing_time = time.time() - start_time
 
+            # Mark job as completed
+            job.mark_completed(
+                discharge_value=discharge_result['total_discharge'],
+                processing_time=processing_time
+            )
+
             # Save results
             self._save_job_results(
                 job_dir, job, discharge_result, processing_time
@@ -179,6 +185,12 @@ class JobExecutor(BaseService):
             processing_time = time.time() - start_time
             error_msg = f"Job execution failed: {str(e)}"
             self.logger.error(f"[{job.job_id}] {error_msg}")
+
+            # Mark job as failed
+            job.mark_failed(
+                error_message=error_msg,
+                processing_time=processing_time
+            )
 
             raise JobExecutionError(error_msg) from e
 
