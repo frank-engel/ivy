@@ -236,19 +236,22 @@ class TestJobExecutorExecuteJob:
 
         mock_glob.side_effect = glob_side_effect
 
-        # Mock STIV results
+        # Mock STIV results (must match num_points in grid_parameters)
+        # Grid has 50 points, so STIV returns 50 velocity values
+        num_grid_points = 50
         mock_stiv.return_value = (
-            np.array([1.5, 2.0, 1.8]),  # magnitudes
-            np.array([45, 90, 135]),     # directions
-            np.array([[[1, 2]]]),        # stis
-            np.array([30, 60, 90])       # thetas
+            np.linspace(1.0, 2.5, num_grid_points),  # magnitudes (m/s)
+            np.full(num_grid_points, 90.0),          # directions (degrees)
+            np.random.rand(100, 100, num_grid_points),  # stis (dummy 3D array)
+            np.linspace(30, 150, num_grid_points)    # thetas (degrees)
         )
 
-        # Mock cross-section geometry
+        # Mock cross-section geometry (must match num_points)
+        # Returns station distances and elevations for each grid point
         mock_xs = Mock()
         mock_xs.get_pixel_xs.return_value = (
-            np.array([0, 10, 20]),      # stations
-            np.array([315, 316, 315])   # elevations
+            np.linspace(0, 40, num_grid_points),     # stations (m)
+            np.full(num_grid_points, 315.0)          # elevations (m)
         )
         mock_xs_geometry.return_value = mock_xs
 
