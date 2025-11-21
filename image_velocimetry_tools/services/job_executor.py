@@ -126,7 +126,7 @@ class JobExecutor(BaseService):
             # Step 2: Orthorectify images
             self.logger.info(f"[{job.job_id}] Step 2/6: Orthorectifying images")
             rectified_frames = self._orthorectify_frames(
-                frames_dir, job_dir, project_data
+                job, frames_dir, job_dir, project_data
             )
 
             # Step 3: Generate grid
@@ -311,6 +311,7 @@ class JobExecutor(BaseService):
 
     def _orthorectify_frames(
         self,
+        job: BatchJob,
         frames_dir: str,
         job_dir: str,
         project_data: Dict
@@ -319,6 +320,8 @@ class JobExecutor(BaseService):
 
         Parameters
         ----------
+        job : BatchJob
+            Job specification with water_surface_elevation
         frames_dir : str
             Directory containing extracted frames
         job_dir : str
@@ -335,6 +338,7 @@ class JobExecutor(BaseService):
             rectify_many_camera,
             CameraHelper
         )
+        from image_velocimetry_tools.common_functions import units_conversion
 
         # Get frames to process
         frames = sorted(glob.glob(os.path.join(frames_dir, "f*.jpg")))
@@ -349,10 +353,18 @@ class JobExecutor(BaseService):
         gcps = np.array(rect_params["world_coords"])  # N x 3
         icps = np.array(rect_params["pixel_coords"])  # N x 2
 
-        # Get water surface elevation (Z plane for rectification)
-        # For camera matrix, we need to specify the rectification plane elevation
-        # Use the mean Z of GCPs as default, but this will be overridden if needed
-        z_plane = np.mean(gcps[:, 2])
+        # Get water surface elevation (Z plane for rectification) from job
+        # Convert from display units to SI (meters)
+        display_units = project_data.get("display_units", "Metric")
+        conversion_factor = units_conversion(display_units)['L']
+
+        # WSE in batch CSV is in display units, convert to meters for rectification
+        z_plane = job.water_surface_elevation / conversion_factor
+
+        self.logger.info(
+            f"Using water surface elevation: {job.water_surface_elevation} "
+            f"{display_units} = {z_plane:.3f} m for rectification"
+        )
 
         # Create camera helper to get projection matrix
         camera_helper = CameraHelper()
