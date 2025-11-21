@@ -177,6 +177,7 @@ class TestJobExecutorExecuteJob:
     @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
     @patch('subprocess.run')
     @patch('glob.glob')
+    @patch('image_velocimetry_tools.orthorectification.CameraHelper')
     @patch('image_velocimetry_tools.orthorectification.rectify_many_camera')
     @patch('image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive')
     @patch('image_velocimetry_tools.gui.xsgeometry.CrossSectionGeometry')
@@ -185,6 +186,7 @@ class TestJobExecutorExecuteJob:
         mock_xs_geometry,
         mock_stiv,
         mock_rectify,
+        mock_camera_helper_class,
         mock_glob,
         mock_subprocess,
         mock_opencv,
@@ -203,6 +205,17 @@ class TestJobExecutorExecuteJob:
 
         # Mock subprocess (FFmpeg)
         mock_subprocess.return_value = Mock(returncode=0)
+
+        # Mock CameraHelper to return a valid dummy projection matrix
+        mock_camera_helper = Mock()
+        # Return a dummy 3x4 projection matrix and RMSE
+        dummy_projection_matrix = np.array([
+            [1000, 0, 500, 0],
+            [0, 1000, 500, 0],
+            [0, 0, 1, 0]
+        ], dtype=float)
+        mock_camera_helper.get_camera_matrix.return_value = (dummy_projection_matrix, 0.5)
+        mock_camera_helper_class.return_value = mock_camera_helper
 
         # Mock glob to return frame files
         frames_dir = Path(temp_dir) / "job_test_001" / "1-images"
