@@ -17,6 +17,21 @@ from image_velocimetry_tools.image_processing_tools import (
     automatic_brightness_and_contrast_adjustment,
     convert_opencv_image_to_qt_pixmap,
     ImageProcessor,
+    apply_unsharp_mask,
+    apply_edge_enhancement,
+    apply_difference_of_gaussians,
+    apply_bilateral_filter_exposed,
+    apply_local_std_dev,
+    compute_temporal_variance,
+    extract_water_roi_from_variance,
+    extract_water_roi_by_color,
+    combine_roi_masks,
+    detect_blur,
+    analyze_exposure,
+    create_motion_heatmap,
+    create_texture_visualization,
+    overlay_roi_on_image,
+    refine_roi_mask,
 )
 
 global icons_path
@@ -50,6 +65,10 @@ class ImageBrowserWidget(QLabel):
         # self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         # self.setScaledContents(True)
 
+        
+        # Connect the image enhancement buttons to their handlers
+        # self.setup_image_processing_connections()
+
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignCenter)
@@ -57,6 +76,7 @@ class ImageBrowserWidget(QLabel):
         # Connect to the previous/next image signals
         parent.signal_previous_image.connect(self.loadPreviousImage)
         parent.signal_next_image.connect(self.loadNextImage)
+
 
     def openImage(self, image=None):
         """Load a new image into the"""
@@ -233,6 +253,122 @@ class ImageBrowserTab:
         self.current_pixel = []
         self.selected_color_hex = ""
 
+        # Initialize cache for ROI processing
+        self._cached_variance_map = None
+        self._cached_roi_mask = None
+
+    
+    def compute_and_cache_variance(self):
+        """Compute temporal variance and cache for reuse."""
+        try:
+            sample_rate = int(self.ivy_framework.lineeditSampleRate.text())
+            self._cached_variance_map = self.compute_water_roi_temporal_variance(
+                sample_rate=sample_rate
+            )
+            logging.info(f"Ran the variance")
+        except ValueError:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Sample rate must be an integer.",
+                QtWidgets.QMessageBox.Ok
+            )
+
+
+    def extract_roi(self):
+        """Extract water ROI using current settings."""
+        import numpy as np
+
+        try:
+            threshold = float(self.ivy_framework.lineeditROIThreshold.text())
+
+            # Use cached variance if available, otherwise compute it
+            if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
+                self.compute_and_cache_variance()
+
+            if self._cached_variance_map is not None:
+                result = self.extract_water_roi_auto(
+                    variance_map=self._cached_variance_map,
+                    threshold_percentile=threshold,
+                    min_area_percent=5.0
+                )
+
+                # Validate result before applying refinements
+                if result is not None and isinstance(result, np.ndarray):
+                    # Apply refinement options based on checkbox states
+                    invert = self.ivy_framework.checkboxInvertROI.isChecked()
+                    fill_holes = self.ivy_framework.checkboxFillHoles.isChecked()
+                    convex_hull = self.ivy_framework.checkboxConvexHull.isChecked()
+                    largest_only = self.ivy_framework.checkboxLargestOnly.isChecked()
+
+                    # Apply refinements if any are selected
+                    if invert or fill_holes or convex_hull or largest_only:
+                        result = refine_roi_mask(
+                            result,
+                            invert=invert,
+                            fill_holes=fill_holes,
+                            convex_hull=convex_hull,
+                            largest_only=largest_only
+                        )
+
+                    self._cached_roi_mask = result
+                    message = f"IMAGE BROWSER: ROI extracted successfully, mask shape: {self._cached_roi_mask.shape}"
+                    self.ivy_framework.update_statusbar(message)
+                else:
+                    logging.error(f"extract_water_roi_auto returned {type(result)} instead of numpy array")
+                    self._cached_roi_mask = None
+                    QtWidgets.QMessageBox.warning(
+                        self.ivy_framework,
+                        "Extraction Failed",
+                        f"ROI extraction failed. Please check the variance map and parameters.",
+                        QtWidgets.QMessageBox.Ok
+                    )
+        except ValueError:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "Invalid Input",
+                "Threshold must be a number between 0 and 100.",
+                QtWidgets.QMessageBox.Ok
+            )
+
+
+    def show_motion_heatmap_wrapper(self):
+        """Show motion heatmap using cached or computed variance (wrapper for button)."""
+        if not hasattr(self, '_cached_variance_map') or self._cached_variance_map is None:
+            self.compute_and_cache_variance()
+
+        if self._cached_variance_map is not None:
+            # Call the actual implementation method defined later in the class
+            self.show_motion_heatmap_impl(self._cached_variance_map)
+
+
+    def show_texture_dialog(self):
+        """Show dialog to choose texture visualization method."""
+        # Simple implementation - you can make this fancier with a dialog
+        methods = ['local_std', 'dog', 'edges']
+
+        method, ok = QtWidgets.QInputDialog.getItem(
+            self.ivy_framework,
+            "Texture Visualization",
+            "Select visualization method:",
+            methods,
+            0,
+            False
+        )
+
+        if ok:
+            self.show_texture_visualization(method=method)
+
+
+    def reset_image_view(self):
+        """Reset image view to original frame."""
+        # Reload current image
+        if self.sequence and self.sequence_index < len(self.sequence):
+            current_path = self.sequence[self.sequence_index]
+            self.image = QtGui.QImage(current_path)
+            self.imageBrowser.scene.setImage(self.image)
+            self.ivy_framework.update_statusbar("IMAGE BROWSER: View reset to original image")
+
     def open_image_folder(self):
         """Open a folder of images for the image browser"""
         logging.debug(
@@ -314,106 +450,135 @@ class ImageBrowserTab:
         self.glob_pattern = self.ivy_framework.lineeditFrameFiltering.text()
 
     def apply_to_this_frame(self):
-        """Applies the CLAHE and/or auto-contrast filtering to the current frame."""
-        if self.sequence:
-            current_image = self.sequence[self.sequence_index]
-            if (
-                self.ivy_framework.checkboxApplyClahe.isChecked()
-                or self.ivy_framework.checkboxAutoContrast.isChecked()
-            ):
-                cv_image = image_file_to_opencv_image(current_image)
-                height, width, _ = cv_image.shape
-                if self.ivy_framework.checkboxApplyClahe.isChecked():
-                    clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
-                    horz_tile_size = int(
-                        self.ivy_framework.lineeditClaheHorzTileSize.text()
-                    )
-                    vert_tile_size = int(
-                        self.ivy_framework.lineeditClaheVertTileSize.text()
-                    )
-                    cv_image = apply_clahe_to_image(
-                        cv_image,
-                        clip_size=clip,
-                        horz_tile_size=horz_tile_size,
-                        vert_tile_size=vert_tile_size,
-                    )
-                if self.ivy_framework.checkboxAutoContrast.isChecked():
-                    percent = float(
-                        self.ivy_framework.lineeditAutoContrastPercentClip.text()
-                    )
-                    cv_image, alpha, beta = (
-                        automatic_brightness_and_contrast_adjustment(
-                            cv_image, clip_histogram_percentage=percent
-                        )
-                    )
+        """Applies selected processing to the current frame for preview."""
 
-                pixmap = convert_opencv_image_to_qt_pixmap(
-                    cv_image, display_width=width, display_height=height
-                )
-                self.imageBrowser.scene.setImage(pixmap)
+        if not self.sequence:
+            return
 
-            else:
-                # Reset values when opening an image
-                self.zoom_factor = 1
-                self.imageBrowser.setEnabled(True)
+        current_image = self.sequence[self.sequence_index]
+        cv_image = image_file_to_opencv_image(current_image)
+        height, width = cv_image.shape[:2] if len(cv_image.shape) == 2 else cv_image.shape[:2]
 
-                # Get image format
-                current_QImage = QtGui.QImage(self.image_path)
-                self.original_image = self.image.copy()
+        # Apply existing enhancements (CLAHE, Auto Contrast)
+        if self.ivy_framework.checkboxApplyClahe.isChecked():
+            clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
+            horz = int(self.ivy_framework.lineeditClaheHorzTileSize.text())
+            vert = int(self.ivy_framework.lineeditClaheVertTileSize.text())
+            cv_image = apply_clahe_to_image(cv_image, clip_size=clip,
+                                            horz_tile_size=horz, vert_tile_size=vert)
 
-                # Set the image
-                self.imageBrowser.scene.setImage(current_QImage)
-                message = f"IMAGE BROWSER: Current image: {current_image}"
-                self.ivy_framework.update_statusbar(message)
+        if self.ivy_framework.checkboxAutoContrast.isChecked():
+            percent = float(self.ivy_framework.lineeditAutoContrastPercentClip.text())
+            cv_image, alpha, beta = automatic_brightness_and_contrast_adjustment(
+                cv_image, clip_histogram_percentage=percent
+            )
+
+        # NEW: Apply enhancement filters
+        if self.ivy_framework.checkboxUnsharpMask.isChecked():
+            try:
+                kernel = int(self.ivy_framework.lineeditUnsharpKernel.text())
+                sigma = float(self.ivy_framework.lineeditUnsharpSigma.text())
+                amount = float(self.ivy_framework.lineeditUnsharpAmount.text())
+                cv_image = apply_unsharp_mask(cv_image, kernel_size=kernel,
+                                            sigma=sigma, amount=amount)
+            except ValueError:
+                pass
+
+        if self.ivy_framework.checkboxEdgeEnhancement.isChecked():
+            cv_image = apply_edge_enhancement(cv_image, alpha=1.5)
+
+        if self.ivy_framework.checkboxDoG.isChecked():
+            cv_image = apply_difference_of_gaussians(cv_image, sigma1=1.0, sigma2=2.0)
+
+        if self.ivy_framework.checkboxBilateral.isChecked():
+            cv_image = apply_bilateral_filter_exposed(cv_image, d=9,
+                                                    sigma_color=75, sigma_space=75)
+
+        if self.ivy_framework.checkboxLocalStd.isChecked():
+            cv_image = apply_local_std_dev(cv_image, kernel_size=15)
+
+        # Display result
+        pixmap = convert_opencv_image_to_qt_pixmap(cv_image,
+                                                    display_width=width, display_height=height)
+        self.imageBrowser.scene.setImage(pixmap)
+
+        message = f"IMAGE BROWSER: Applied processing to current frame"
+        self.ivy_framework.update_statusbar(message)
 
     def apply_to_all_frames(self):
-        """Apply the image processing to all frames in the image sequence."""
-        message = (
-            f"IMAGE BROWSER: Applying image preprocessing to "
-            f"all frames and saving outputs, please be patient."
-        )
+        """Apply selected image processing to all frames."""
+
+        message = "IMAGE BROWSER: Applying image preprocessing to all frames..."
         self.ivy_framework.update_statusbar(message)
         self.ivy_framework.progressBar.show()
 
-        # Pull parameters from the gui
+        # Existing parameters
         do_clahe = self.ivy_framework.checkboxApplyClahe.isChecked()
         do_auto_contrast = self.ivy_framework.checkboxAutoContrast.isChecked()
         clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
         horz_tile_size = int(self.ivy_framework.lineeditClaheHorzTileSize.text())
         vert_tile_size = int(self.ivy_framework.lineeditClaheVertTileSize.text())
         clahe_parameters = (clip, horz_tile_size, vert_tile_size)
-        auto_contrast_percent = float(
-            self.ivy_framework.lineeditAutoContrastPercentClip.text()
-        )
+        auto_contrast_percent = float(self.ivy_framework.lineeditAutoContrastPercentClip.text())
 
-        # Keep track of the processing steps taken
-        self.preprocess_steps_number += 1
-        self.preprocess_steps.append(
-            (
-                self.preprocess_steps_number,
-                do_clahe,
-                clahe_parameters,
-                do_auto_contrast,
-                auto_contrast_percent,
-            )
-        )
+        # NEW: Get enhancement parameters
+        do_unsharp = self.ivy_framework.checkboxUnsharpMask.isChecked()
+        do_edge = self.ivy_framework.checkboxEdgeEnhancement.isChecked()
+        do_dog = self.ivy_framework.checkboxDoG.isChecked()
+        do_bilateral = self.ivy_framework.checkboxBilateral.isChecked()
+        do_local_std = self.ivy_framework.checkboxLocalStd.isChecked()
 
-        # Connect the progress signal
+        # Get unsharp mask parameters
+        if do_unsharp:
+            try:
+                unsharp_kernel = int(self.ivy_framework.lineeditUnsharpKernel.text())
+                unsharp_sigma = float(self.ivy_framework.lineeditUnsharpSigma.text())
+                unsharp_amount = float(self.ivy_framework.lineeditUnsharpAmount.text())
+                unsharp_parameters = (unsharp_kernel, unsharp_sigma, unsharp_amount)
+            except ValueError:
+                QtWidgets.QMessageBox.warning(
+                    self.ivy_framework,
+                    "Invalid Parameters",
+                    "Please check unsharp mask parameters.",
+                    QtWidgets.QMessageBox.Ok
+                )
+                self.ivy_framework.progressBar.hide()
+                return
+        else:
+            unsharp_parameters = (5, 1.0, 1.0)  # defaults
+
+        # For other enhancements, use defaults (or add more controls if needed)
+        edge_alpha = 1.5
+        dog_parameters = (1.0, 2.0)
+        bilateral_parameters = (9, 75, 75)
+        local_std_kernel = 15
+
+        # Create processor
         processing_thread = ImageProcessor()
         processing_thread.progress.connect(self.preprocessor_process_progress)
-
-        # Connect the finished signal to a slot for handling the result
         processing_thread.finished.connect(self.preprocessor_process_finished)
 
-        # TODO: this is the actual connected call for Apply to All!
+        # Process images with all parameters
         self.ivy_framework.progressBar.setValue(0)
         self.ivy_framework.progressBar.show()
+
         processing_thread.preprocess_images(
             image_paths=self.sequence,
             clahe_parameters=clahe_parameters,
             auto_contrast_percent=auto_contrast_percent,
             do_clahe=do_clahe,
             do_auto_contrast=do_auto_contrast,
+            # NEW PARAMETERS:
+            do_unsharp_mask=do_unsharp,
+            unsharp_parameters=unsharp_parameters,
+            do_edge_enhance=do_edge,
+            edge_enhance_alpha=edge_alpha,
+            do_dog=do_dog,
+            dog_parameters=dog_parameters,
+            do_bilateral=do_bilateral,
+            bilateral_parameters=bilateral_parameters,
+            do_local_std=do_local_std,
+            local_std_kernel=local_std_kernel
         )
 
         # # Create an instance of the ImageProcessorThread
@@ -634,3 +799,349 @@ class ImageBrowserTab:
             current_image = self.image_path
             message = f"IMAGE BROWSER: Current image: {current_image}"
             self.ivy_framework.update_statusbar(message)
+
+    # ========================================================================
+    # New Methods for Enhanced Image Processing
+    # ========================================================================
+
+    def compute_water_roi_temporal_variance(self, sample_rate=5):
+        """
+        Compute temporal variance map to identify moving water regions.
+
+        Args:
+            sample_rate (int): Use every Nth frame for speed (default: 5)
+
+        Returns:
+            ndarray: Variance map showing motion intensity
+        """
+        if not self.sequence:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Images",
+                "Please load images first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+        message = "IMAGE BROWSER: Computing temporal variance for water ROI..."
+        self.ivy_framework.update_statusbar(message)
+        self.ivy_framework.progressBar.show()
+
+        def progress_callback(progress):
+            self.ivy_framework.progressBar.setValue(progress)
+
+        try:
+            variance_map = compute_temporal_variance(
+                self.sequence, sample_rate=sample_rate, progress_callback=progress_callback
+            )
+
+            self.ivy_framework.progressBar.hide()
+            message = "IMAGE BROWSER: Temporal variance computation complete."
+            self.ivy_framework.update_statusbar(message)
+
+            return variance_map
+
+        except Exception as e:
+            self.ivy_framework.progressBar.hide()
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to compute temporal variance: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def extract_water_roi_auto(self, variance_map=None, threshold_percentile=50,
+                                min_area_percent=5.0, use_color=False,
+                                hue_range=(90, 140)):
+        """
+        Extract water ROI using temporal variance and optionally color.
+
+        Args:
+            variance_map (ndarray): Pre-computed variance map (optional)
+            threshold_percentile (float): Variance threshold percentile (0-100)
+            min_area_percent (float): Minimum region area as % of image
+            use_color (bool): Also use color-based segmentation
+            hue_range (tuple): Hue range for water color (HSV)
+
+        Returns:
+            ndarray: Binary water ROI mask
+        """
+        if variance_map is None:
+            variance_map = self.compute_water_roi_temporal_variance()
+            if variance_map is None:
+                return None
+
+        try:
+            # Extract ROI from variance
+            roi_variance = extract_water_roi_from_variance(
+                variance_map,
+                threshold_percentile=threshold_percentile,
+                min_area_percent=min_area_percent
+            )
+
+            # Optionally combine with color segmentation
+            if use_color and self.sequence:
+                current_image = image_file_to_opencv_image(self.sequence[0])
+                roi_color = extract_water_roi_by_color(
+                    current_image,
+                    color_space='HSV',
+                    hue_range=hue_range
+                )
+
+                # Combine masks
+                roi_mask = combine_roi_masks([roi_variance, roi_color], method='union')
+            else:
+                roi_mask = roi_variance
+
+            return roi_mask
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to extract water ROI: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def analyze_current_frame_quality(self):
+        """
+        Analyze quality metrics for the current frame.
+
+        Returns:
+            dict: Quality metrics (blur score, exposure info)
+        """
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Detect blur
+            is_blurry, blur_score = detect_blur(cv_image)
+
+            # Analyze exposure
+            exposure_info = analyze_exposure(cv_image)
+
+            quality_metrics = {
+                'is_blurry': is_blurry,
+                'blur_score': blur_score,
+                'exposure': exposure_info
+            }
+
+            # Display results
+            quality_text = f"Blur Score: {blur_score:.2f} ({'Blurry' if is_blurry else 'Sharp'})\n"
+            quality_text += f"Brightness: {exposure_info['mean_brightness']:.1f}\n"
+            quality_text += f"Contrast: {exposure_info['histogram_spread']:.1f}\n"
+
+            if exposure_info['is_underexposed']:
+                quality_text += "Warning: Image is underexposed\n"
+            if exposure_info['is_overexposed']:
+                quality_text += "Warning: Image is overexposed\n"
+
+            QtWidgets.QMessageBox.information(
+                self.ivy_framework,
+                "Frame Quality Analysis",
+                quality_text,
+                QtWidgets.QMessageBox.Ok,
+            )
+
+            return quality_metrics
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to analyze frame quality: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return None
+
+    def show_motion_heatmap_impl(self, variance_map=None):
+        """
+        Display motion heatmap overlay on current image.
+
+        Args:
+            variance_map (ndarray): Pre-computed variance map (optional)
+        """
+        if variance_map is None:
+            variance_map = self.compute_water_roi_temporal_variance()
+            if variance_map is None:
+                return
+
+        try:
+            # Create heatmap
+            heatmap = create_motion_heatmap(variance_map)
+
+            # Display in image browser
+            height, width, _ = heatmap.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                heatmap, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = "IMAGE BROWSER: Showing motion heatmap"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create motion heatmap: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def show_texture_visualization(self, method='local_std', **kwargs):
+        """
+        Display texture visualization for current frame.
+
+        Args:
+            method (str): Visualization method ('local_std', 'dog', 'edges')
+            **kwargs: Additional parameters for the chosen method
+        """
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Create texture visualization
+            texture_viz = create_texture_visualization(cv_image, method=method, **kwargs)
+
+            # Display in image browser
+            height, width, _ = texture_viz.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                texture_viz, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = f"IMAGE BROWSER: Showing texture visualization ({method})"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create texture visualization: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def show_roi_overlay(self, roi_mask=None):
+        """
+        Overlay water ROI on current image (wrapper for button - uses cached mask).
+        """
+        import numpy as np
+
+        # Check if we have a cached mask first
+        if roi_mask is None and hasattr(self, '_cached_roi_mask') and self._cached_roi_mask is not None:
+            # Validate that cached mask is actually a numpy array
+            if isinstance(self._cached_roi_mask, np.ndarray):
+                roi_mask = self._cached_roi_mask
+            else:
+                logging.warning(f"Cached ROI mask has invalid type, clearing cache")
+                self._cached_roi_mask = None
+
+        # If still no mask, try to extract one
+        if roi_mask is None:
+            roi_mask = self.extract_water_roi_auto()
+            if roi_mask is None or not isinstance(roi_mask, np.ndarray):
+                QtWidgets.QMessageBox.warning(
+                    self.ivy_framework,
+                    "No ROI",
+                    "No water ROI available. Please compute variance and extract ROI first.",
+                    QtWidgets.QMessageBox.Ok,
+                )
+                return
+
+        if not self.image_path:
+            QtWidgets.QMessageBox.warning(
+                self.ivy_framework,
+                "No Image",
+                "Please load an image first.",
+                QtWidgets.QMessageBox.Ok,
+            )
+            return
+
+        try:
+            cv_image = image_file_to_opencv_image(self.image_path)
+
+            # Create overlay
+            overlay_image = overlay_roi_on_image(cv_image, roi_mask, color=(0, 255, 255), alpha=0.3)
+
+            # Display in image browser
+            height, width, _ = overlay_image.shape
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                overlay_image, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = "IMAGE BROWSER: Showing water ROI overlay"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            import traceback
+            logging.error(f"ROI overlay error: {str(e)}\n{traceback.format_exc()}")
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to create ROI overlay: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
+
+    def apply_enhancement_to_current_frame(self, enhancement_type, **params):
+        """
+        Apply a specific enhancement to the current frame for preview.
+
+        Args:
+            enhancement_type (str): Type of enhancement ('unsharp', 'edge', 'dog', 'bilateral', 'local_std')
+            **params: Parameters for the enhancement
+        """
+        if not self.sequence or self.sequence_index >= len(self.sequence):
+            return
+
+        current_image = self.sequence[self.sequence_index]
+        cv_image = image_file_to_opencv_image(current_image)
+        height, width = cv_image.shape[:2] if len(cv_image.shape) == 2 else cv_image.shape[:2]
+
+        try:
+            if enhancement_type == 'unsharp':
+                enhanced = apply_unsharp_mask(cv_image, **params)
+            elif enhancement_type == 'edge':
+                enhanced = apply_edge_enhancement(cv_image, **params)
+            elif enhancement_type == 'dog':
+                enhanced = apply_difference_of_gaussians(cv_image, **params)
+            elif enhancement_type == 'bilateral':
+                enhanced = apply_bilateral_filter_exposed(cv_image, **params)
+            elif enhancement_type == 'local_std':
+                enhanced = apply_local_std_dev(cv_image, **params)
+            else:
+                raise ValueError(f"Unknown enhancement type: {enhancement_type}")
+
+            pixmap = convert_opencv_image_to_qt_pixmap(
+                enhanced, display_width=width, display_height=height
+            )
+            self.imageBrowser.scene.setImage(pixmap)
+
+            message = f"IMAGE BROWSER: Applied {enhancement_type} enhancement to current frame"
+            self.ivy_framework.update_statusbar(message)
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self.ivy_framework,
+                "Error",
+                f"Failed to apply enhancement: {str(e)}",
+                QtWidgets.QMessageBox.Ok,
+            )
