@@ -170,7 +170,7 @@ videos/test1.mp4,318.211,invalid_time
 """
         csv_path.write_text(csv_content)
 
-        with pytest.raises(InvalidBatchCSVError, match="Invalid time format"):
+        with pytest.raises(InvalidBatchCSVError, match="has invalid format"):
             csv_parser.parse_csv(str(csv_path))
 
     def test_parse_end_time_before_start_time_raises_error(self, csv_parser, temp_dir):

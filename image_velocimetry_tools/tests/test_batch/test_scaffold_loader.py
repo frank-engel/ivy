@@ -186,6 +186,12 @@ class TestScaffoldLoaderValidateScaffold:
 
     def test_validate_valid_scaffold(self, scaffold_loader, sample_project_data, temp_dir):
         """Test validation of valid scaffold data."""
+        # Create cross-section file that validation expects
+        xs_dir = Path(temp_dir) / "5-discharge"
+        xs_dir.mkdir(parents=True, exist_ok=True)
+        xs_file = xs_dir / "cross_section.mat"
+        xs_file.write_text("dummy cross-section data")
+
         errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
 
         assert errors == []

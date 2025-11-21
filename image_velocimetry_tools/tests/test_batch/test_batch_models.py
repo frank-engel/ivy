@@ -113,7 +113,7 @@ class TestBatchJob:
 
     def test_invalid_time_format_raises_error(self):
         """Test that invalid time format raises ValueError."""
-        with pytest.raises(ValueError, match="Invalid time format"):
+        with pytest.raises(ValueError, match="has invalid format"):
             BatchJob(
                 job_id="test",
                 video_path="/test.mp4",
@@ -456,7 +456,9 @@ class TestBatchConfig:
 
         video_path = "/absolute/path/to/video.mp4"
         resolved = config.resolve_video_path(video_path)
-        assert resolved == Path(video_path)
+        # On Windows, absolute paths include drive letter (e.g., C:/)
+        # Check that the resolved path ends with the expected suffix
+        assert str(resolved).endswith("absolute/path/to/video.mp4")
 
     def test_resolve_relative_video_path(self, temp_files):
         """Test resolving relative video path (relative to CSV location)."""

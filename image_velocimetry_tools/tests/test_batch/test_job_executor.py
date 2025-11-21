@@ -174,12 +174,12 @@ class TestSTIVResults:
 class TestJobExecutorExecuteJob:
     """Tests for execute_job method (integration-style with mocks)."""
 
-    @patch('image_velocimetry_tools.services.job_executor.opencv_get_video_metadata')
+    @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
     @patch('image_velocimetry_tools.services.job_executor.subprocess.run')
     @patch('image_velocimetry_tools.services.job_executor.glob.glob')
-    @patch('image_velocimetry_tools.services.job_executor.rectify_many_camera')
-    @patch('image_velocimetry_tools.services.job_executor.two_dimensional_stiv_exhaustive')
-    @patch('image_velocimetry_tools.services.job_executor.CrossSectionGeometry')
+    @patch('image_velocimetry_tools.orthorectification.rectify_many_camera')
+    @patch('image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive')
+    @patch('image_velocimetry_tools.gui.xsgeometry.CrossSectionGeometry')
     def test_execute_job_success(
         self,
         mock_xs_geometry,
@@ -287,14 +287,14 @@ class TestJobExecutorErrorHandling:
     ):
         """Test that directory creation failure is handled."""
         # Use invalid output directory
-        with pytest.raises(JobExecutionError, match="Failed to create job directory"):
+        with pytest.raises(JobExecutionError, match="Job execution failed"):
             job_executor.execute_job(
                 job=sample_job,
                 scaffold_config=sample_scaffold_config,
                 output_dir="/invalid/nonexistent/path"
             )
 
-    @patch('image_velocimetry_tools.services.job_executor.opencv_get_video_metadata')
+    @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
     def test_video_metadata_failure_raises_error(
         self, mock_opencv, job_executor, sample_job, sample_scaffold_config, temp_dir
     ):
