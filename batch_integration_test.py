@@ -6,6 +6,7 @@ This script tests the batch processor with real data from batch_test_data/.
 
 import sys
 import shutil
+import platform
 from pathlib import Path
 
 # Add project root to path
@@ -40,13 +41,20 @@ def main():
     ]
 
     print("\n1. Setting up test data...")
+    is_windows = platform.system() == "Windows"
+
     for video_file in video_files:
         src = inputs_dir / video_file
         dst = videos_dir / video_file
         if not dst.exists() and src.exists():
-            # Create symlink instead of copying (saves space)
-            dst.symlink_to(src)
-            print(f"   Linked: {video_file}")
+            if is_windows:
+                # Copy files on Windows (symlinks require admin privileges)
+                shutil.copy2(src, dst)
+                print(f"   Copied: {video_file}")
+            else:
+                # Use symlinks on Unix (saves space)
+                dst.symlink_to(src)
+                print(f"   Linked: {video_file}")
 
     # Clean output directory
     if output_dir.exists():
@@ -139,11 +147,11 @@ def main():
         traceback.print_exc()
         return 1
     finally:
-        # Cleanup symlinks
+        # Cleanup videos directory (symlinks on Unix, copies on Windows)
         print("\n7. Cleaning up...")
         if videos_dir.exists():
             for item in videos_dir.iterdir():
-                if item.is_symlink():
+                if item.is_symlink() or item.is_file():
                     item.unlink()
             if not any(videos_dir.iterdir()):
                 videos_dir.rmdir()
