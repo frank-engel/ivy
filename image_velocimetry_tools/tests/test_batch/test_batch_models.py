@@ -457,8 +457,8 @@ class TestBatchConfig:
         video_path = "/absolute/path/to/video.mp4"
         resolved = config.resolve_video_path(video_path)
         # On Windows, absolute paths include drive letter (e.g., C:/)
-        # Check that the resolved path ends with the expected suffix
-        assert str(resolved).endswith("absolute/path/to/video.mp4")
+        # Use as_posix() to normalize path separators for comparison
+        assert resolved.as_posix().endswith("absolute/path/to/video.mp4")
 
     def test_resolve_relative_video_path(self, temp_files):
         """Test resolving relative video path (relative to CSV location)."""

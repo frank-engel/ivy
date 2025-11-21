@@ -175,8 +175,8 @@ class TestJobExecutorExecuteJob:
     """Tests for execute_job method (integration-style with mocks)."""
 
     @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
-    @patch('image_velocimetry_tools.services.job_executor.subprocess.run')
-    @patch('image_velocimetry_tools.services.job_executor.glob.glob')
+    @patch('subprocess.run')
+    @patch('glob.glob')
     @patch('image_velocimetry_tools.orthorectification.rectify_many_camera')
     @patch('image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive')
     @patch('image_velocimetry_tools.gui.xsgeometry.CrossSectionGeometry')
