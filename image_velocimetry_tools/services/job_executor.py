@@ -344,11 +344,9 @@ class JobExecutor(BaseService):
 
         # Create camera helper to get projection matrix
         camera_helper = CameraHelper()
-        camera_helper.set_correspondence_points(
-            world_points=gcps,
-            image_points=icps
-        )
-        projection_matrix = camera_helper.get_camera_matrix()
+        camera_helper.add_space_points(gcps)
+        camera_helper.add_image_points(icps)
+        projection_matrix, rmse = camera_helper.get_camera_matrix()
 
         # Prepare batch config for rectify_many_camera
         batch_config = [
