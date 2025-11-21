@@ -38,29 +38,27 @@ class ScaffoldLoader(BaseService):
     - Grid must be along cross-section line with masks
     """
 
-    # Required top-level keys in project_data.json
+    # Required top-level keys in project_data.json (real .ivy structure)
     REQUIRED_KEYS = [
+        "rectification_method",
         "rectification_parameters",
-        "cross_section_geometry_path",
-        "grid_parameters",
-        "stiv_parameters",
+        "bathymetry_ac3_filename",
         "ffmpeg_parameters",
     ]
 
-    # Required rectification parameters
-    REQUIRED_RECTIFICATION_KEYS = [
-        "method",
-        "ground_control_points",
-        "image_control_points",
+    # Required STIV parameters (flat keys in project_data)
+    REQUIRED_STIV_KEYS = [
+        "stiv_num_pixels",
+        "stiv_phi_origin",
+        "stiv_dphi",
+        "stiv_phi_range",
+        "stiv_max_vel_threshold_mps",
     ]
 
-    # Required STIV parameters
-    REQUIRED_STIV_KEYS = [
-        "num_pixels",
-        "phi_origin",
-        "d_phi",
-        "phi_range",
-        "max_vel_threshold_mps",
+    # Required grid parameters (flat keys in project_data)
+    REQUIRED_GRID_KEYS = [
+        "number_grid_points_along_xs_line",
+        "cross_section_line",
     ]
 
     def __init__(self):
@@ -205,67 +203,57 @@ class ScaffoldLoader(BaseService):
             if key not in project_data:
                 errors.append(f"Missing required key: '{key}'")
 
-        # Validate rectification parameters
+        # Validate rectification method (flat key in real .ivy files)
+        rectification_method = project_data.get("rectification_method")
+        if rectification_method != "camera matrix":
+            errors.append(
+                f"Batch processing requires rectification method "
+                f"'camera matrix', got: '{rectification_method}'"
+            )
+
+        # Validate rectification parameters exist (contains camera matrix data)
         if "rectification_parameters" in project_data:
             rect_params = project_data["rectification_parameters"]
 
-            # Check for required rectification keys
-            for key in self.REQUIRED_RECTIFICATION_KEYS:
-                if key not in rect_params:
-                    errors.append(
-                        f"Missing required rectification parameter: '{key}'"
-                    )
-
-            # Verify rectification method is camera_matrix
-            if rect_params.get("method") != "camera matrix":
+            # Check for camera matrix data
+            if "camera_matrix" not in rect_params:
                 errors.append(
-                    f"Batch processing requires rectification method "
-                    f"'camera matrix', got: '{rect_params.get('method')}'"
+                    "rectification_parameters missing 'camera_matrix'"
                 )
 
-            # Validate GCPs
-            gcps = rect_params.get("ground_control_points", [])
-            icps = rect_params.get("image_control_points", [])
-            if len(gcps) < 6:
+            # Validate world coords and pixel coords (these are the GCPs/ICPs)
+            world_coords = rect_params.get("world_coords", [])
+            pixel_coords = rect_params.get("pixel_coords", [])
+
+            if len(world_coords) < 6:
                 errors.append(
                     f"Camera matrix method requires at least 6 GCPs, "
-                    f"got {len(gcps)}"
+                    f"got {len(world_coords)}"
                 )
-            if len(gcps) != len(icps):
+            if len(world_coords) != len(pixel_coords):
                 errors.append(
-                    f"Number of GCPs ({len(gcps)}) must match number of "
-                    f"ICPs ({len(icps)})"
+                    f"Number of world coords ({len(world_coords)}) must match "
+                    f"number of pixel coords ({len(pixel_coords)})"
                 )
 
-        # Validate STIV parameters
-        if "stiv_parameters" in project_data:
-            stiv_params = project_data["stiv_parameters"]
-
-            for key in self.REQUIRED_STIV_KEYS:
-                if key not in stiv_params:
-                    errors.append(
-                        f"Missing required STIV parameter: '{key}'"
-                    )
-
-        # Validate grid parameters
-        if "grid_parameters" in project_data:
-            grid_params = project_data["grid_parameters"]
-
-            # Check that grid is along cross-section
-            if not grid_params.get("use_cross_section_line", False):
+        # Validate STIV parameters (flat keys in real .ivy files)
+        for key in self.REQUIRED_STIV_KEYS:
+            if key not in project_data:
                 errors.append(
-                    "Batch processing requires grid to be along cross-section line"
+                    f"Missing required STIV parameter: '{key}'"
                 )
 
-        # Check for cross-section geometry path
-        if "cross_section_geometry_path" in project_data:
-            xs_path = project_data["cross_section_geometry_path"]
-            if xs_path:
-                full_path = os.path.join(extract_dir, xs_path)
-                if not os.path.exists(full_path):
-                    errors.append(
-                        f"Cross-section geometry file not found: {xs_path}"
-                    )
+        # Validate grid parameters (flat keys in real .ivy files)
+        for key in self.REQUIRED_GRID_KEYS:
+            if key not in project_data:
+                errors.append(
+                    f"Missing required grid parameter: '{key}'"
+                )
+
+        # Note: We don't validate the bathymetry_ac3_filename path here
+        # because it contains an absolute path from when the scaffold was created.
+        # Instead, load_scaffold() uses _find_cross_section_file() to locate
+        # the .mat file in the extracted scaffold directory.
 
         return errors
 

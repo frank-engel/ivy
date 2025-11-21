@@ -345,9 +345,9 @@ class JobExecutor(BaseService):
         # Get rectification parameters
         rect_params = project_data["rectification_parameters"]
 
-        # Extract GCPs and ICPs
-        gcps = np.array(rect_params["ground_control_points"])  # N x 3
-        icps = np.array(rect_params["image_control_points"])  # N x 2
+        # Extract world coords and pixel coords (these are GCPs/ICPs in real .ivy files)
+        gcps = np.array(rect_params["world_coords"])  # N x 3
+        icps = np.array(rect_params["pixel_coords"])  # N x 2
 
         # Get water surface elevation (Z plane for rectification)
         # For camera matrix, we need to specify the rectification plane elevation
@@ -402,25 +402,21 @@ class JobExecutor(BaseService):
         np.ndarray
             Grid points array (N x 2) in pixel coordinates
         """
-        grid_params = project_data.get("grid_parameters", {})
-
-        # For batch processing, grid should be along cross-section line
-        if not grid_params.get("use_cross_section_line", False):
+        # In real .ivy files, grid parameters are flat keys (not nested)
+        # Get cross-section line (format: [[[x1, y1], [x2, y2]]])
+        xs_line = project_data.get("cross_section_line")
+        if xs_line is None or len(xs_line) == 0:
             raise JobExecutionError(
-                "Grid parameters must specify use_cross_section_line=True"
+                "Cross-section line not defined in project data"
             )
 
-        # Get cross-section line endpoints
-        xs_line_start = grid_params.get("cross_section_line_start")
-        xs_line_end = grid_params.get("cross_section_line_end")
+        # Extract start and end points from first line segment
+        line_segment = xs_line[0]  # [[x1, y1], [x2, y2]]
+        xs_line_start = line_segment[0]
+        xs_line_end = line_segment[1]
 
-        if xs_line_start is None or xs_line_end is None:
-            raise JobExecutionError(
-                "Cross-section line endpoints not specified in grid parameters"
-            )
-
-        # Get number of points or spacing
-        num_points = grid_params.get("num_points", 50)
+        # Get number of grid points
+        num_points = project_data.get("number_grid_points_along_xs_line", 50)
 
         # Generate evenly spaced points along the line
         x_start, y_start = xs_line_start
@@ -431,8 +427,8 @@ class JobExecutor(BaseService):
 
         grid_points = np.column_stack([x_points, y_points])
 
-        # Apply masks if specified
-        mask_polygons = grid_params.get("mask_polygons", [])
+        # Apply masks if specified (flat key in real .ivy files)
+        mask_polygons = project_data.get("mask_polygons", [])
         if mask_polygons:
             # Filter out points inside mask polygons
             # This is a simplified implementation
@@ -499,23 +495,19 @@ class JobExecutor(BaseService):
         STIVResults
             STIV analysis results
         """
-        stiv_params = project_data.get("stiv_parameters", {})
-        rect_params = project_data.get("rectification_parameters", {})
+        # In real .ivy files, STIV parameters are flat keys (not nested)
+        num_pixels = project_data.get("stiv_num_pixels", 20)
+        phi_origin = project_data.get("stiv_phi_origin", 90)
+        d_phi = project_data.get("stiv_dphi", 1.0)  # Note: key is 'dphi' not 'd_phi'
+        phi_range = project_data.get("stiv_phi_range", 90)
+        max_vel_threshold = project_data.get("stiv_max_vel_threshold_mps", 10.0)
+        sigma = project_data.get("stiv_gaussian_blur_sigma", 0.5)
 
-        # Get STIV parameters
-        num_pixels = stiv_params.get("num_pixels", 20)
-        phi_origin = stiv_params.get("phi_origin", 90)
-        d_phi = stiv_params.get("d_phi", 1.0)
-        phi_range = stiv_params.get("phi_range", 90)
-        max_vel_threshold = stiv_params.get("max_vel_threshold_mps", 10.0)
-        sigma = stiv_params.get("gaussian_blur_sigma", 0.5)
+        # Get pixel GSD (ground scale distance) - flat key in real .ivy files
+        pixel_gsd = project_data.get("pixel_ground_scale_distance_m", 0.01)  # meters/pixel
 
-        # Get pixel GSD (ground scale distance)
-        pixel_gsd = rect_params.get("pixel_gsd", 0.01)  # meters/pixel
-
-        # Get frame interval (d_t)
-        extraction_params = project_data.get("extraction_parameters", {})
-        timestep_ms = extraction_params.get("timestep_ms", 100)
+        # Get frame interval (d_t) - flat key in real .ivy files
+        timestep_ms = project_data.get("extraction_timestep_ms", 100)
         d_t = timestep_ms / 1000.0  # Convert to seconds
 
         # Extract x, y coordinates
