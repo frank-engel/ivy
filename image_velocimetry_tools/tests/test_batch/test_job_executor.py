@@ -180,7 +180,7 @@ class TestJobExecutorExecuteJob:
     @patch('image_velocimetry_tools.orthorectification.CameraHelper')
     @patch('image_velocimetry_tools.orthorectification.rectify_many_camera')
     @patch('image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive')
-    @patch('image_velocimetry_tools.gui.xsgeometry.CrossSectionGeometry')
+    @patch('image_velocimetry_tools.services.job_executor.CrossSectionGeometry')
     def test_execute_job_success(
         self,
         mock_xs_geometry,
