@@ -581,10 +581,25 @@ class JobExecutor(BaseService):
             xs_survey, grid_points, water_surface_elevation
         )
 
-        # Extract surface velocities
+        # Extract surface velocities (adds edge zeros)
         surface_velocities = self.discharge_service.extract_velocity_from_stiv(
             stiv_results, add_edge_zeros=True
         )
+
+        # Add edge nodes to stations and depths to match edge velocities
+        # Edge nodes are at the banks with zero depth
+        if len(surface_velocities) == len(stations) + 2:
+            # Estimate station spacing
+            station_spacing = stations[1] - stations[0] if len(stations) > 1 else 0
+            # Add edge station before first station
+            edge_station_left = stations[0] - station_spacing
+            # Add edge station after last station
+            edge_station_right = stations[-1] + station_spacing
+            # Insert edge nodes
+            stations = np.insert(stations, 0, edge_station_left)
+            stations = np.append(stations, edge_station_right)
+            depths = np.insert(depths, 0, 0.0)  # Zero depth at left edge
+            depths = np.append(depths, 0.0)     # Zero depth at right edge
 
         # Create discharge dataframe
         discharge_df = self.discharge_service.create_discharge_dataframe(
