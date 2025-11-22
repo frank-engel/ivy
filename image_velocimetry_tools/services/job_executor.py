@@ -176,30 +176,55 @@ class JobExecutor(BaseService):
                 display_units=display_units
             )
 
+            # Convert discharge from SI to display units
+            # discharge_result contains SI units (m³/s, m²)
+            discharge_si = discharge_result['total_discharge']  # m³/s
+            area_si = discharge_result['total_area']  # m²
+
+            # Convert to display units
+            from image_velocimetry_tools.common_functions import units_conversion
+            conversion_factor_Q = units_conversion(display_units)['Q']  # Flow rate conversion
+            conversion_factor_A = units_conversion(display_units)['A']  # Area conversion
+
+            discharge_display = discharge_si * conversion_factor_Q
+            area_display = area_si * conversion_factor_A
+
+            # Units labels
+            if display_units == "English":
+                Q_units = "cfs"
+                A_units = "ft²"
+            else:
+                Q_units = "m³/s"
+                A_units = "m²"
+
             # Calculate processing time
             processing_time = time.time() - start_time
 
-            # Mark job as completed
+            # Mark job as completed with discharge in display units
             job.mark_completed(
-                discharge_value=discharge_result['total_discharge'],
+                discharge_value=discharge_display,
                 processing_time=processing_time
             )
 
-            # Save results
+            # Save results (with both SI and display units)
             self._save_job_results(
-                job_dir, job, discharge_result, processing_time
+                job_dir, job, discharge_result, processing_time,
+                discharge_display, area_display, display_units
             )
 
             self.logger.info(
                 f"[{job.job_id}] Job completed successfully in {processing_time:.1f}s"
             )
             self.logger.info(
-                f"[{job.job_id}] Discharge: {discharge_result['total_discharge']:.3f} m³/s"
+                f"[{job.job_id}] Discharge: {discharge_display:.3f} {Q_units} "
+                f"({discharge_si:.3f} m³/s)"
             )
 
             return {
-                "discharge": discharge_result["total_discharge"],
-                "area": discharge_result["total_area"],
+                "discharge": discharge_display,  # In display units
+                "area": area_display,  # In display units
+                "discharge_si": discharge_si,  # Keep SI for reference
+                "area_si": area_si,  # Keep SI for reference
                 "processing_time": processing_time,
                 "job_output_dir": job_dir,
             }
@@ -696,7 +721,10 @@ class JobExecutor(BaseService):
         job_dir: str,
         job: BatchJob,
         discharge_result: Dict,
-        processing_time: float
+        processing_time: float,
+        discharge_display: float,
+        area_display: float,
+        display_units: str
     ) -> None:
         """Save job results to output directory.
 
@@ -707,20 +735,34 @@ class JobExecutor(BaseService):
         job : BatchJob
             Job specification
         discharge_result : dict
-            Discharge computation results
+            Discharge computation results (SI units)
         processing_time : float
             Processing time in seconds
+        discharge_display : float
+            Discharge in display units
+        area_display : float
+            Area in display units
+        display_units : str
+            Display units ("English" or "Metric")
         """
         import json
 
-        # Prepare results summary
+        # Prepare results summary with both SI and display units
         results = {
             "job_id": job.job_id,
             "video_path": job.video_path,
             "water_surface_elevation": job.water_surface_elevation,
             "alpha": job.alpha,
+            "display_units": display_units,
+            # Primary results in display units
+            "discharge": discharge_display,
+            "area": area_display,
+            "discharge_units": "cfs" if display_units == "English" else "m³/s",
+            "area_units": "ft²" if display_units == "English" else "m²",
+            # SI values for reference
             "discharge_m3s": discharge_result["total_discharge"],
             "area_m2": discharge_result["total_area"],
+            # Metadata
             "processing_time_seconds": processing_time,
             "measurement_number": job.measurement_number,
             "measurement_date": job.measurement_date,
