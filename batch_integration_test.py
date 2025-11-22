@@ -146,11 +146,12 @@ def main():
             scaffold_path=str(scaffold_path),
             batch_csv_path=str(batch_csv_path),
             output_dir=str(output_dir),
-            stop_on_first_failure=False
+            stop_on_first_failure=False,
+            save_ivy_projects=True  # Enable .ivy project archiving
         )
 
         # Run batch processing
-        print("\n4. Running batch processing...")
+        print("\n4. Running batch processing (with .ivy project saving)...")
         print("-" * 80)
         jobs = processor.run()
         print("-" * 80)
@@ -165,6 +166,13 @@ def main():
         print(f"   Total jobs: {len(jobs)}")
         print(f"   Completed: {len(completed)}")
         print(f"   Failed: {len(failed)}")
+
+        # Check for .ivy files
+        ivy_files = list(output_dir.glob("**/*.ivy"))
+        print(f"   .ivy files created: {len(ivy_files)}")
+        if ivy_files:
+            total_size_mb = sum(f.stat().st_size for f in ivy_files) / (1024 * 1024)
+            print(f"   Total .ivy size: {total_size_mb:.1f} MB")
 
         if failed:
             print("\n   Failed jobs:")
