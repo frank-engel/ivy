@@ -632,12 +632,20 @@ class JobExecutor(BaseService):
         try:
             xs_survey = AreaSurvey()
             xs_survey.load_areacomp(cross_section_path, units=display_units)
+
+            # Log the units from the AC3 file for debugging
+            self.logger.info(
+                f"Loaded AC3 cross-section: {cross_section_path}, "
+                f"AC3 file units: {xs_survey.units}, IVy display units: {display_units}"
+            )
         except Exception as e:
             raise JobExecutionError(
                 f"Failed to load cross-section geometry: {e}"
             ) from e
 
         # Get station and depth from cross-section using batch-compatible method
+        # Note: water_surface_elevation is already in SI (meters)
+        # The discharge_service will convert AC3 data to SI if needed
         stations, depths = self.discharge_service.get_station_and_depth_from_grid(
             xs_survey, grid_points, water_surface_elevation, xs_line_endpoints
         )

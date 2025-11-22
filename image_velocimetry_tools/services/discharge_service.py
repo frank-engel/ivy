@@ -43,11 +43,11 @@ class DischargeService:
         Args:
             xs_survey: AreaSurvey instance with loaded AC3 data
             grid_points: Grid points in world coordinates (N x 2) [X, Y]
-            water_surface_elevation: Water surface elevation in meters
+            water_surface_elevation: Water surface elevation in meters (SI)
             xs_line_endpoints: Cross-section line endpoints (2 x 2) [[x1, y1], [x2, y2]]
 
         Returns:
-            Tuple of (stations, depths) as numpy arrays
+            Tuple of (stations, depths) as numpy arrays in SI units (meters)
         """
         # Compute distances of grid points along the cross-section line
         # The cross-section line defines the direction, grid points should lie along it
@@ -69,19 +69,31 @@ class DischargeService:
             (end_point[1] - start_point[1])**2
         )
 
-        # Get wetted width from AC3 cross-section at water surface elevation
-        # Find where the water surface crosses the channel bed
+        # Get AC3 cross-section data
+        # IMPORTANT: xs_survey.survey DataFrame may be in English or Metric units
+        # Check xs_survey.units and convert to SI if needed
         stations_ac3 = xs_survey.survey["Stations"].to_numpy()
         elevations_ac3 = xs_survey.survey["AdjustedStage"].to_numpy()
 
-        # Find crossings at water surface elevation
+        # Check units and convert to SI (meters) if needed
+        if xs_survey.units == "English":
+            self.logger.info("AC3 cross-section is in English units, converting to SI")
+            # Convert feet to meters (1 ft = 0.3048 m)
+            stations_ac3 = stations_ac3 * 0.3048
+            elevations_ac3 = elevations_ac3 * 0.3048
+            # Also convert water_surface_elevation context for crossings calculation
+            wse_for_crossings = water_surface_elevation  # Already in SI
+        else:
+            wse_for_crossings = water_surface_elevation
+
+        # Find crossings at water surface elevation to get wetted width
         from image_velocimetry_tools.services.cross_section_service import CrossSectionService
         xs_service = CrossSectionService()
 
         crossings = xs_service.find_station_crossings(
             stations_ac3,
             elevations_ac3,
-            water_surface_elevation,
+            wse_for_crossings,
             mode='firstlast'
         )
 
