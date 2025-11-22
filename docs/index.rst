@@ -41,6 +41,10 @@ streamflow. Below is more information about each tab.
 *  `Uncertainty <./source/uncertainty.html>`_ – a discussion of how uncertainty is estimated by IVyTools.
 * `Reporting <./source/reporting_tab.html>`_ – generate documentation of the measurement suitable for archival.
 
+**Automated Processing:**
+
+* `Batch Processing <./source/batch_processing.html>`_ – process multiple videos from the same camera location automatically without the GUI interface.
+
 The left navigation pane contains a table of contents for browsing the
 complete documentation.
 
@@ -94,6 +98,7 @@ the guidance and instructions for
    ./source/space_time_image_results_tab.md
    ./source/discharge_tab.md
    ./source/reporting_tab.md
+   ./source/batch_processing.md
    ./source/changelog.md
    ./source/system_requirements.md
    ./source/codedocumentation.rst
