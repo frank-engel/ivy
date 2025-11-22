@@ -23,6 +23,7 @@ from image_velocimetry_tools.batch.models import BatchJob
 from image_velocimetry_tools.batch.exceptions import JobExecutionError
 from image_velocimetry_tools.stiv import two_dimensional_stiv_exhaustive
 from image_velocimetry_tools.gui.xsgeometry import CrossSectionGeometry
+from image_velocimetry_tools.file_management import deserialize_numpy_array
 
 
 @dataclass
@@ -443,6 +444,7 @@ class JobExecutor(BaseService):
         # In real .ivy files, grid parameters are flat keys (not nested)
         # Get cross-section line (format: [[[x1, y1], [x2, y2]]])
         xs_line = project_data.get("cross_section_line")
+        xs_line = deserialize_numpy_array(xs_line)
         if xs_line is None or len(xs_line) == 0:
             raise JobExecutionError(
                 "Cross-section line not defined in project data"
