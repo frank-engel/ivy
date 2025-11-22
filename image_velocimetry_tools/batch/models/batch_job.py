@@ -75,6 +75,7 @@ class BatchJob:
     job_id: str
     video_path: str
     water_surface_elevation: float
+    display_units: str = "Metric"  # Units that water_surface_elevation is in
 
     # Optional time clipping
     start_time: Optional[str] = None
@@ -249,6 +250,7 @@ class BatchJob:
             "job_id": self.job_id,
             "video_path": self.video_path,
             "water_surface_elevation": self.water_surface_elevation,
+            "display_units": self.display_units,
             "start_time": self.start_time,
             "end_time": self.end_time,
             "start_time_seconds": self.start_time_seconds,

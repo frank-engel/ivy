@@ -224,10 +224,17 @@ class BatchProcessor(BaseService):
 
             self.logger.info(f"Parsed {len(self.jobs)} jobs from CSV")
 
-            # Resolve video paths (relative to CSV location)
+            # Get display units from scaffold
+            display_units = self.scaffold_config["project_data"].get("display_units", "Metric")
+            self.logger.info(f"Scaffold display units: {display_units}")
+
+            # Resolve video paths and set display units for all jobs
             for job in self.jobs:
                 resolved_path = self.config.resolve_video_path(job.video_path)
                 job.video_path = str(resolved_path)
+
+                # Set display units from scaffold
+                job.display_units = display_units
 
                 # Validate video file exists
                 if not resolved_path.exists():

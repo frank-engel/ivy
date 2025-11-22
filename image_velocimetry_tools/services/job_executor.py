@@ -119,6 +119,20 @@ class JobExecutor(BaseService):
             scaffold_extract_dir = scaffold_config["extract_dir"]
             cross_section_path = scaffold_config["cross_section_path"]
 
+            # Convert water_surface_elevation from display units to SI (meters)
+            # Job WSE is in display units, but all processing needs SI
+            from image_velocimetry_tools.common_functions import units_conversion
+            display_units = project_data.get("display_units", "Metric")
+            conversion_factor = units_conversion(display_units)['L']
+
+            original_wse = job.water_surface_elevation
+            job.water_surface_elevation = job.water_surface_elevation / conversion_factor
+
+            self.logger.info(
+                f"Converted WSE from {original_wse} {display_units} to "
+                f"{job.water_surface_elevation:.3f} m (SI)"
+            )
+
             # Step 1: Extract frames from video
             self.logger.info(f"[{job.job_id}] Step 1/6: Extracting frames from video")
             frames_dir = self._extract_frames(job, job_dir, project_data)
@@ -347,7 +361,6 @@ class JobExecutor(BaseService):
             rectify_many_camera,
             CameraHelper
         )
-        from image_velocimetry_tools.common_functions import units_conversion
 
         # Get frames to process
         frames = sorted(glob.glob(os.path.join(frames_dir, "f*.jpg")))
@@ -366,16 +379,11 @@ class JobExecutor(BaseService):
         extent = rect_params["extent"]
 
         # Get water surface elevation (Z plane for rectification) from job
-        # Convert from display units to SI (meters)
-        display_units = project_data.get("display_units", "Metric")
-        conversion_factor = units_conversion(display_units)['L']
-
-        # WSE in batch CSV is in display units, convert to meters for rectification
-        z_plane = job.water_surface_elevation / conversion_factor
+        # Note: WSE is already in SI (meters) after conversion in execute_job()
+        z_plane = job.water_surface_elevation
 
         self.logger.info(
-            f"Using water surface elevation: {job.water_surface_elevation} "
-            f"{display_units} = {z_plane:.3f} m for rectification"
+            f"Using water surface elevation: {z_plane:.3f} m for rectification"
         )
 
         # Create camera helper to get projection matrix
@@ -612,13 +620,13 @@ class JobExecutor(BaseService):
         cross_section_path : str
             Path to AC3 cross-section file
         water_surface_elevation : float
-            Water surface elevation (m)
+            Water surface elevation in SI units (m)
         alpha : float
             Velocity correction coefficient
         xs_line_endpoints : np.ndarray
             Cross-section line endpoints (2 x 2) [[x1, y1], [x2, y2]]
         display_units : str
-            Display units ("English" or "Metric")
+            Display units from scaffold ("English" or "Metric")
 
         Returns
         -------
@@ -644,7 +652,7 @@ class JobExecutor(BaseService):
             ) from e
 
         # Get station and depth from cross-section using batch-compatible method
-        # Note: water_surface_elevation is already in SI (meters)
+        # Note: water_surface_elevation is already in SI (meters) after early conversion
         # The discharge_service will convert AC3 data to SI if needed
         stations, depths = self.discharge_service.get_station_and_depth_from_grid(
             xs_survey, grid_points, water_surface_elevation, xs_line_endpoints
