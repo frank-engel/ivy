@@ -1,12 +1,15 @@
 # Install requirements for image_velocimetry_tools
 # This file uses relaxed version constraints suitable for PyPI distribution
 # For exact reproducible environment, see requirements.txt
+#
+# NOTE: Runtime dependencies only. Dev tools (pytest, sphinx, black, etc.)
+# are NOT included here - install separately if needed for development.
 
 # Core scientific computing
 numpy>=1.22.1,<2.0
 pandas>=1.4.0,<3.0
 scipy>=1.7.3,<2.0
-matplotlib>=3.3.3,<4.0
+matplotlib>=3.6.3,<4.0  # Updated to match areacomp3 requirement
 
 # Image processing
 opencv-python-headless>=4.5.3,<5.0
