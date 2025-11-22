@@ -147,7 +147,7 @@ def main():
             batch_csv_path=str(batch_csv_path),
             output_dir=str(output_dir),
             stop_on_first_failure=False,
-            save_ivy_projects=True  # Enable .ivy project archiving
+            save_ivy_projects=False  # Enable .ivy project archiving
         )
 
         # Run batch processing
