@@ -54,7 +54,8 @@ class BatchProcessor(BaseService):
         scaffold_path: str,
         batch_csv_path: str,
         output_dir: str,
-        stop_on_first_failure: bool = False
+        stop_on_first_failure: bool = False,
+        save_ivy_projects: bool = False
     ):
         """Initialize the BatchProcessor.
 
@@ -69,6 +70,9 @@ class BatchProcessor(BaseService):
         stop_on_first_failure : bool, default=False
             If True, stop processing when first job fails
             If False, continue processing remaining jobs
+        save_ivy_projects : bool, default=False
+            If True, save a complete .ivy project for each job
+            WARNING: Creates large files and significantly slows processing
 
         Raises
         ------
@@ -82,7 +86,8 @@ class BatchProcessor(BaseService):
             scaffold_path=scaffold_path,
             batch_csv_path=batch_csv_path,
             output_dir=output_dir,
-            stop_on_first_failure=stop_on_first_failure
+            stop_on_first_failure=stop_on_first_failure,
+            save_ivy_projects=save_ivy_projects
         )
 
         # Validate configuration
@@ -357,7 +362,16 @@ class BatchProcessor(BaseService):
                     "video_path",
                     "water_surface_elevation",
                     "alpha",
-                    "discharge_m3s",
+                    "discharge",
+                    "area",
+                    "Q/A",
+                    "avg_velocity",
+                    "avg_surface_velocity",
+                    "max_surface_velocity",
+                    "max_depth",
+                    "min_depth",
+                    "uncertainty_iso_95pct",
+                    "uncertainty_ive_95pct",
                     "processing_time_seconds",
                     "error_message",
                     "measurement_number",
@@ -367,13 +381,30 @@ class BatchProcessor(BaseService):
 
                 # Write job results
                 for job in self.jobs:
+                    # Extract result details
+                    details = job.result_details or {}
+
+                    # Calculate Q/A (discharge / area = average velocity)
+                    q_over_a = ""
+                    if job.discharge_value and job.area_value and job.area_value > 0:
+                        q_over_a = f"{job.discharge_value / job.area_value:.4f}"
+
                     writer.writerow([
                         job.job_id,
                         job.status.value,
                         job.video_path,
                         job.water_surface_elevation,
                         job.alpha,
-                        job.discharge_value if job.discharge_value else "",
+                        f"{job.discharge_value:.4f}" if job.discharge_value else "",
+                        f"{job.area_value:.4f}" if job.area_value else "",
+                        q_over_a,
+                        f"{details.get('average_velocity', ''):.4f}" if details.get('average_velocity') else "",
+                        f"{details.get('average_surface_velocity', ''):.4f}" if details.get('average_surface_velocity') else "",
+                        f"{details.get('max_surface_velocity', ''):.4f}" if details.get('max_surface_velocity') else "",
+                        f"{details.get('max_depth', ''):.4f}" if details.get('max_depth') else "",
+                        f"{details.get('min_depth', ''):.4f}" if details.get('min_depth') else "",
+                        f"{details.get('uncertainty_iso_95pct', ''):.4f}" if details.get('uncertainty_iso_95pct') else "",
+                        f"{details.get('uncertainty_ive_95pct', ''):.4f}" if details.get('uncertainty_ive_95pct') else "",
                         f"{job.processing_time:.2f}" if job.processing_time else "",
                         job.error_message if job.error_message else "",
                         job.measurement_number if job.measurement_number else "",

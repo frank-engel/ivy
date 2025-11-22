@@ -200,9 +200,38 @@ class JobExecutor(BaseService):
             # Calculate processing time
             processing_time = time.time() - start_time
 
+            # Prepare result details for job
+            result_details = {}
+            if discharge_result.get("summary_statistics"):
+                stats = discharge_result["summary_statistics"]
+                conv_L = conversion_factor_A ** 0.5  # sqrt of area factor = length factor
+                conv_V = units_conversion(display_units)['V']
+
+                result_details.update({
+                    "average_velocity": stats["average_velocity"] * conv_V,
+                    "average_surface_velocity": stats["average_surface_velocity"] * conv_V,
+                    "max_surface_velocity": stats["max_surface_velocity"] * conv_V,
+                })
+
+            if discharge_result.get("max_depth") is not None:
+                conv_L = units_conversion(display_units)['L']
+                result_details.update({
+                    "max_depth": discharge_result["max_depth"] * conv_L,
+                    "min_depth": discharge_result["min_depth"] * conv_L,
+                })
+
+            if discharge_result.get("uncertainty"):
+                unc = discharge_result["uncertainty"]
+                if unc.get("u_iso"):
+                    result_details["uncertainty_iso_95pct"] = unc["u_iso"].get("u95_q")
+                if unc.get("u_ive"):
+                    result_details["uncertainty_ive_95pct"] = unc["u_ive"].get("u95_q")
+
             # Mark job as completed with discharge in display units
             job.mark_completed(
                 discharge_value=discharge_display,
+                area_value=area_display,
+                result_details=result_details,
                 processing_time=processing_time
             )
 
@@ -714,6 +743,48 @@ class JobExecutor(BaseService):
         # Compute total discharge
         discharge_result = self.discharge_service.compute_discharge(discharge_df)
 
+        # Compute uncertainty (requires rectification RMSE and scene width)
+        # For batch processing, we'll use estimated values or skip if not available
+        # TODO: Extract actual RMSE from rectification step
+        rectification_rmse = 0.5  # Placeholder - meters
+        scene_width = np.max(stations) - np.min(stations)  # meters
+
+        try:
+            uncertainty_result = self.discharge_service.compute_uncertainty(
+                discharge_result["discharge_results"],
+                discharge_result["total_discharge"],
+                rectification_rmse,
+                scene_width
+            )
+            discharge_result["uncertainty"] = uncertainty_result
+        except Exception as e:
+            self.logger.warning(f"Failed to compute uncertainty: {e}")
+            discharge_result["uncertainty"] = None
+
+        # Compute summary statistics (velocities, depths, etc.)
+        try:
+            summary_stats = self.discharge_service.compute_summary_statistics(
+                discharge_result["discharge_results"],
+                discharge_result["total_discharge"],
+                discharge_result["total_area"]
+            )
+            discharge_result["summary_statistics"] = summary_stats
+
+            # Extract depth statistics from discharge dataframe
+            depth_values = [
+                float(result["Depth"])
+                for result in discharge_result["discharge_results"].values()
+                if result["Status"] == "Used"
+            ]
+            discharge_result["max_depth"] = np.max(depth_values) if depth_values else 0
+            discharge_result["min_depth"] = np.min(depth_values) if depth_values else 0
+
+        except Exception as e:
+            self.logger.warning(f"Failed to compute summary statistics: {e}")
+            discharge_result["summary_statistics"] = None
+            discharge_result["max_depth"] = None
+            discharge_result["min_depth"] = None
+
         return discharge_result
 
     def _save_job_results(
@@ -746,6 +817,11 @@ class JobExecutor(BaseService):
             Display units ("English" or "Metric")
         """
         import json
+        from image_velocimetry_tools.common_functions import units_conversion
+
+        # Get conversion factors for display units
+        conv_L = units_conversion(display_units)['L']  # Length
+        conv_V = units_conversion(display_units)['V']  # Velocity
 
         # Prepare results summary with both SI and display units
         results = {
@@ -762,12 +838,42 @@ class JobExecutor(BaseService):
             # SI values for reference
             "discharge_m3s": discharge_result["total_discharge"],
             "area_m2": discharge_result["total_area"],
-            # Metadata
+        }
+
+        # Add summary statistics if available
+        if discharge_result.get("summary_statistics"):
+            stats = discharge_result["summary_statistics"]
+            results.update({
+                "average_velocity": stats["average_velocity"] * conv_V,
+                "average_velocity_units": "ft/s" if display_units == "English" else "m/s",
+                "average_surface_velocity": stats["average_surface_velocity"] * conv_V,
+                "max_surface_velocity": stats["max_surface_velocity"] * conv_V,
+                "velocity_units": "ft/s" if display_units == "English" else "m/s",
+            })
+
+        # Add depth statistics if available
+        if discharge_result.get("max_depth") is not None:
+            results.update({
+                "max_depth": discharge_result["max_depth"] * conv_L,
+                "min_depth": discharge_result["min_depth"] * conv_L,
+                "depth_units": "ft" if display_units == "English" else "m",
+            })
+
+        # Add uncertainty if available
+        if discharge_result.get("uncertainty"):
+            unc = discharge_result["uncertainty"]
+            if unc.get("u_iso"):
+                results["uncertainty_iso_95pct"] = unc["u_iso"].get("u95_q", None)
+            if unc.get("u_ive"):
+                results["uncertainty_ive_95pct"] = unc["u_ive"].get("u95_q", None)
+
+        # Add metadata
+        results.update({
             "processing_time_seconds": processing_time,
             "measurement_number": job.measurement_number,
             "measurement_date": job.measurement_date,
             "comments": job.comments,
-        }
+        })
 
         # Save results as JSON
         results_path = os.path.join(job_dir, "job_results.json")

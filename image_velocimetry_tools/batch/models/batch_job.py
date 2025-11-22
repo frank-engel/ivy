@@ -92,6 +92,8 @@ class BatchJob:
     # Job state (not from CSV)
     status: JobStatus = field(default=JobStatus.PENDING, init=False)
     discharge_value: Optional[float] = field(default=None, init=False)
+    area_value: Optional[float] = field(default=None, init=False)
+    result_details: Optional[Dict[str, Any]] = field(default=None, init=False)
     error_message: Optional[str] = field(default=None, init=False)
     processing_time: Optional[float] = field(default=None, init=False)
     start_time_seconds: Optional[float] = field(default=None, init=False)
@@ -204,18 +206,30 @@ class BatchJob:
         """Mark job as currently processing."""
         self.status = JobStatus.PROCESSING
 
-    def mark_completed(self, discharge_value: float, processing_time: float) -> None:
+    def mark_completed(
+        self,
+        discharge_value: float,
+        processing_time: float,
+        area_value: Optional[float] = None,
+        result_details: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Mark job as successfully completed.
 
         Parameters
         ----------
         discharge_value : float
-            Computed discharge in m³/s
+            Computed discharge (in display units)
         processing_time : float
             Time taken to process job in seconds
+        area_value : float, optional
+            Computed cross-sectional area (in display units)
+        result_details : dict, optional
+            Additional result statistics (velocities, depths, uncertainty, etc.)
         """
         self.status = JobStatus.COMPLETED
         self.discharge_value = discharge_value
+        self.area_value = area_value
+        self.result_details = result_details or {}
         self.processing_time = processing_time
         self.error_message = None
 

@@ -68,6 +68,7 @@ class BatchConfig:
     batch_csv_path: str
     output_dir: str
     stop_on_first_failure: bool = False
+    save_ivy_projects: bool = False  # Save .ivy project for each job (large files, slow)
 
     def __post_init__(self):
         """Resolve and validate paths after initialization."""
