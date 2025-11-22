@@ -146,12 +146,19 @@ class JobExecutor(BaseService):
             # Step 6: Compute discharge
             self.logger.info(f"[{job.job_id}] Step 6/6: Computing discharge")
             display_units = project_data.get("display_units", "Metric")
+
+            # Extract cross-section line endpoints
+            xs_line = project_data.get("cross_section_line")
+            xs_line = deserialize_numpy_array(xs_line)
+            xs_line_endpoints = np.array(xs_line[0])  # [[x1, y1], [x2, y2]]
+
             discharge_result = self._compute_discharge(
                 stiv_results,
                 grid_points,
                 cross_section_path,
                 job.water_surface_elevation,
                 job.alpha,
+                xs_line_endpoints=xs_line_endpoints,
                 display_units=display_units
             )
 
@@ -591,6 +598,7 @@ class JobExecutor(BaseService):
         cross_section_path: str,
         water_surface_elevation: float,
         alpha: float,
+        xs_line_endpoints: np.ndarray,
         display_units: str = "Metric"
     ) -> Dict[str, Any]:
         """Compute discharge from STIV results.
@@ -600,13 +608,15 @@ class JobExecutor(BaseService):
         stiv_results : STIVResults
             STIV analysis results
         grid_points : np.ndarray
-            Grid points (N x 2)
+            Grid points (N x 2) in world coordinates
         cross_section_path : str
             Path to AC3 cross-section file
         water_surface_elevation : float
             Water surface elevation (m)
         alpha : float
             Velocity correction coefficient
+        xs_line_endpoints : np.ndarray
+            Cross-section line endpoints (2 x 2) [[x1, y1], [x2, y2]]
         display_units : str
             Display units ("English" or "Metric")
 
@@ -627,9 +637,9 @@ class JobExecutor(BaseService):
                 f"Failed to load cross-section geometry: {e}"
             ) from e
 
-        # Get station and depth from cross-section
-        stations, depths = self.discharge_service.get_station_and_depth(
-            xs_survey, grid_points, water_surface_elevation
+        # Get station and depth from cross-section using batch-compatible method
+        stations, depths = self.discharge_service.get_station_and_depth_from_grid(
+            xs_survey, grid_points, water_surface_elevation, xs_line_endpoints
         )
 
         # Extract surface velocities (adds edge zeros)

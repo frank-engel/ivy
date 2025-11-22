@@ -27,6 +27,96 @@ class DischargeService:
 
     # ==================== Cross-Section Data ====================
 
+    def get_station_and_depth_from_grid(
+        self,
+        xs_survey,
+        grid_points: np.ndarray,
+        water_surface_elevation: float,
+        xs_line_endpoints: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Get station distances and depths from cross-section survey for batch processing.
+
+        This method converts grid points (world coordinates) to station distances
+        along the cross-section and interpolates elevations from the AC3 data.
+
+        Args:
+            xs_survey: AreaSurvey instance with loaded AC3 data
+            grid_points: Grid points in world coordinates (N x 2) [X, Y]
+            water_surface_elevation: Water surface elevation in meters
+            xs_line_endpoints: Cross-section line endpoints (2 x 2) [[x1, y1], [x2, y2]]
+
+        Returns:
+            Tuple of (stations, depths) as numpy arrays
+        """
+        # Compute distances of grid points along the cross-section line
+        # The cross-section line defines the direction, grid points should lie along it
+
+        # Extract endpoints
+        start_point = xs_line_endpoints[0]  # [x1, y1]
+        end_point = xs_line_endpoints[1]    # [x2, y2]
+
+        # Compute pixel distances along the line
+        # For each grid point, compute distance from start point
+        pixel_distances = np.sqrt(
+            (grid_points[:, 0] - start_point[0])**2 +
+            (grid_points[:, 1] - start_point[1])**2
+        )
+
+        # Total pixel distance (length of cross-section line in pixels)
+        total_pixel_distance = np.sqrt(
+            (end_point[0] - start_point[0])**2 +
+            (end_point[1] - start_point[1])**2
+        )
+
+        # Get wetted width from AC3 cross-section at water surface elevation
+        # Find where the water surface crosses the channel bed
+        stations_ac3 = xs_survey.survey["Stations"].to_numpy()
+        elevations_ac3 = xs_survey.survey["AdjustedStage"].to_numpy()
+
+        # Find crossings at water surface elevation
+        from image_velocimetry_tools.services.cross_section_service import CrossSectionService
+        xs_service = CrossSectionService()
+
+        crossings = xs_service.find_station_crossings(
+            stations_ac3,
+            elevations_ac3,
+            water_surface_elevation,
+            mode='firstlast'
+        )
+
+        if len(crossings) < 2:
+            # No valid wetted width, use full cross-section width
+            wetted_width = np.max(stations_ac3) - np.min(stations_ac3)
+            left_edge = np.min(stations_ac3)
+        else:
+            wetted_width = crossings[-1] - crossings[0]
+            left_edge = crossings[0]
+
+        # Convert pixel distances to real-world station distances
+        conversion_factor = wetted_width / total_pixel_distance
+        real_world_distances = pixel_distances * conversion_factor
+
+        # Add offset to match AC3 station coordinate system
+        stations = real_world_distances + left_edge
+
+        # Interpolate elevations at these stations from AC3 data
+        elevations = xs_service.interpolate_elevations(
+            stations_ac3,
+            elevations_ac3,
+            stations
+        )
+
+        # Convert elevations to depths
+        depths = water_surface_elevation - elevations
+
+        self.logger.debug(
+            f"Converted {len(stations)} grid points to stations and depths. "
+            f"Wetted width: {wetted_width:.2f}m, Station range: {stations[0]:.2f} to {stations[-1]:.2f}m"
+        )
+
+        return stations, depths
+
     def get_station_and_depth(
         self,
         xs_survey,
@@ -37,14 +127,14 @@ class DischargeService:
         Get station distances and depths from cross-section survey.
 
         Args:
-            xs_survey: CrossSectionGeometry instance with AC3 backend
+            xs_survey: CrossSectionGeometry instance with AC3 backend (GUI mode)
             grid_points: Grid points in pixel coordinates (N x 2)
             water_surface_elevation: Water surface elevation in meters
 
         Returns:
             Tuple of (stations, depths) as numpy arrays
         """
-        # Get station and elevation from AC3
+        # Get station and elevation from AC3 (GUI mode with get_pixel_xs method)
         stations, elevations = xs_survey.get_pixel_xs(grid_points)
 
         # AreaComp returns elevations (stage), convert to depths
