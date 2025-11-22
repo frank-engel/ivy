@@ -20,15 +20,25 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-# Read the dependencies from requirements.txt
-with open('requirements.txt', encoding='utf-16') as f:
-    requirements = f.read().splitlines()
+# Read the dependencies from install_requires.txt
+# Note: requirements.txt contains exact frozen versions for development
+# install_requires.txt contains relaxed constraints for distribution
+with open('install_requires.txt', encoding='utf-8') as f:
+    requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
     name='image_velocimetry_tools',
     version='1.0.0.2',
-    packages=['image_velocimetry_tools', 'image_velocimetry_tools.gui'],
+    packages=[
+        'image_velocimetry_tools',
+        'image_velocimetry_tools.gui',
+        'image_velocimetry_tools.batch',
+        'image_velocimetry_tools.batch.models',
+        'image_velocimetry_tools.services',
+        'image_velocimetry_tools.api',
+    ],
     py_modules=['image_velocimetry_tools'],
+    python_requires='>=3.11',
     url='https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy',
     license='GNU General Public License v3.0',
     author='Frank L. Engel and Travis Knight',
@@ -48,6 +58,7 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Scientific/Engineering :: Hydrology',
         'Topic :: Scientific/Engineering :: Image Processing',
     ],
