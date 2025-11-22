@@ -170,13 +170,17 @@ class CrossSectionGeometry:
             self.parent.is_area_comp_loaded = True
             self.parent.toolBox_bathymetry.setEnabled(True)
 
-        except BaseException:
+        except BaseException as e:
             # Trigger message if file fails to load. This could result is
             # the file was not an AreaComp3 file.
 
+            # Log the actual error for debugging
+            logging.error(f"Failed to load AreaComp file: {fname}", exc_info=True)
+
             msg = QtWidgets.QMessageBox()
             msg.setInformativeText(
-                "File failed to load. \nPlease verify the " "file was an AreaComp file."
+                f"File failed to load. \nPlease verify the file was an AreaComp file.\n\n"
+                f"Error details: {type(e).__name__}: {str(e)}"
             )
             msg.setWindowTitle("Error")
             msg.setIcon(QtWidgets.QMessageBox.Critical)
