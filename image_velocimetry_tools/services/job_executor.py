@@ -353,6 +353,9 @@ class JobExecutor(BaseService):
         gcps = np.array(rect_params["world_coords"])  # N x 3
         icps = np.array(rect_params["pixel_coords"])  # N x 2
 
+        # Extract the extent
+        extent = rect_params["extent"]
+
         # Get water surface elevation (Z plane for rectification) from job
         # Convert from display units to SI (meters)
         display_units = project_data.get("display_units", "Metric")
@@ -376,7 +379,8 @@ class JobExecutor(BaseService):
         batch_config = [
             frames_dir,  # Input folder
             z_plane,  # Z elevation for rectification plane
-            projection_matrix  # 3x4 projection matrix
+            projection_matrix,  # 3x4 projection matrix
+            extent  # 4x1 world extent bbox
         ]
 
         # Call rectify_many_camera

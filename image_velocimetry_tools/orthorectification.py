@@ -1254,6 +1254,7 @@ def rectify_many_camera(batchConfigList, extent=None, startFrame=0):
     imagesFolder = batchConfigList[0]
     Z = batchConfigList[1]
     projection_mtx = batchConfigList[2]
+    extent = batchConfigList[3]
     images = sorted(glob.glob(imagesFolder + "/f*.jpg"))
     count = 0
     # Load first image as numpy array for CameraHelper initialization
