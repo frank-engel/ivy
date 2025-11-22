@@ -20,7 +20,7 @@ results.print_summary()
 
 ## Documentation
 
-- **Full Guide**: See [docs/batch_processing_guide.md](../../docs/batch_processing_guide.md)
+- **Full Guide**: See [docs/batch_processing_guide.md](../../docs/source/batch_processing_guide.md)
 - **Examples**: See [examples/batch_processing_example.py](../../examples/batch_processing_example.py)
 
 ## What You Need
@@ -104,4 +104,4 @@ Results for a single video.
 
 ## More Information
 
-See the complete guide at [docs/batch_processing_guide.md](../../docs/batch_processing_guide.md)
+See the complete guide at [docs/batch_processing_guide.md](../../docs/source/batch_processing_guide.md)
