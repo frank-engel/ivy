@@ -66,7 +66,8 @@ class JobExecutor(BaseService):
         self,
         job: BatchJob,
         scaffold_config: Dict[str, Any],
-        output_dir: str
+        output_dir: str,
+        save_ivy_project: bool = False
     ) -> Dict[str, Any]:
         """Execute a complete batch processing job.
 
@@ -81,6 +82,8 @@ class JobExecutor(BaseService):
             - cross_section_path: Path to AC3 file
         output_dir : str
             Directory where job results should be written
+        save_ivy_project : bool, default=False
+            If True, save complete .ivy project archive for this job
 
         Returns
         -------
@@ -240,6 +243,15 @@ class JobExecutor(BaseService):
                 job_dir, job, discharge_result, processing_time,
                 discharge_display, area_display, display_units
             )
+
+            # Save .ivy project if requested
+            if save_ivy_project:
+                self.logger.info(f"[{job.job_id}] Creating .ivy project archive...")
+                ivy_project_path = self._save_ivy_project(
+                    job_dir, job, scaffold_config, project_data,
+                    discharge_result, grid_points, stiv_results
+                )
+                self.logger.info(f"[{job.job_id}] .ivy project saved: {ivy_project_path}")
 
             self.logger.info(
                 f"[{job.job_id}] Job completed successfully in {processing_time:.1f}s"
@@ -881,3 +893,115 @@ class JobExecutor(BaseService):
             json.dump(results, f, indent=2)
 
         self.logger.debug(f"Saved job results to {results_path}")
+
+    def _save_ivy_project(
+        self,
+        job_dir: str,
+        job: BatchJob,
+        scaffold_config: Dict,
+        project_data: Dict,
+        discharge_result: Dict,
+        grid_points: np.ndarray,
+        stiv_results: STIVResults
+    ) -> str:
+        """Save complete .ivy project archive for this job.
+
+        Parameters
+        ----------
+        job_dir : str
+            Job output directory
+        job : BatchJob
+            Job specification
+        scaffold_config : dict
+            Scaffold configuration
+        project_data : dict
+            Project data from scaffold
+        discharge_result : dict
+            Discharge computation results
+        grid_points : np.ndarray
+            Grid points used for STIV
+        stiv_results : STIVResults
+            STIV analysis results
+
+        Returns
+        -------
+        str
+            Path to created .ivy file
+        """
+        import zipfile
+        import copy
+        from image_velocimetry_tools.file_management import serialize_numpy_array
+
+        # Create job-specific project data by copying scaffold and updating
+        job_project_data = copy.deepcopy(project_data)
+
+        # Update with job-specific parameters
+        job_project_data.update({
+            "job_id": job.job_id,
+            "video_file": os.path.basename(job.video_path),
+            "water_surface_elevation": job.water_surface_elevation,
+            "alpha": job.alpha,
+            "discharge": discharge_result.get("total_discharge"),
+            "area": discharge_result.get("total_area"),
+            "measurement_number": job.measurement_number,
+            "measurement_date": job.measurement_date,
+            "measurement_time": job.measurement_time,
+            "gage_height": job.gage_height,
+            "comments": job.comments,
+        })
+
+        # Save STIV results
+        job_project_data["stiv_magnitudes"] = serialize_numpy_array(stiv_results.magnitudes_mps)
+        job_project_data["stiv_directions"] = serialize_numpy_array(stiv_results.directions)
+        job_project_data["stiv_stis"] = serialize_numpy_array(stiv_results.stis)
+        job_project_data["stiv_thetas"] = serialize_numpy_array(stiv_results.thetas)
+
+        # Save grid points
+        job_project_data["grid_points"] = serialize_numpy_array(grid_points)
+
+        # Create temporary directory for .ivy contents
+        ivy_temp_dir = os.path.join(job_dir, "_ivy_temp")
+        os.makedirs(ivy_temp_dir, exist_ok=True)
+
+        try:
+            # Save project_data.json
+            project_json_path = os.path.join(ivy_temp_dir, "project_data.json")
+            with open(project_json_path, 'w') as f:
+                json.dump(job_project_data, f, indent=4)
+
+            # Copy cross-section file from scaffold
+            cross_section_src = scaffold_config["cross_section_path"]
+            cross_section_filename = os.path.basename(cross_section_src)
+            cross_section_dst = os.path.join(ivy_temp_dir, cross_section_filename)
+            shutil.copy2(cross_section_src, cross_section_dst)
+
+            # Copy all image directories (frames and rectified frames)
+            for subdir in ["frames", "orthorectification", "image_stack"]:
+                src_subdir = os.path.join(job_dir, subdir)
+                if os.path.exists(src_subdir):
+                    dst_subdir = os.path.join(ivy_temp_dir, subdir)
+                    shutil.copytree(src_subdir, dst_subdir)
+
+            # Copy discharge results
+            discharge_csv_path = os.path.join(job_dir, "discharge_data.csv")
+            if os.path.exists(discharge_csv_path):
+                shutil.copy2(discharge_csv_path, os.path.join(ivy_temp_dir, "discharge_data.csv"))
+
+            # Create .ivy ZIP archive
+            ivy_output_path = os.path.join(job_dir, f"{job.job_id}.ivy")
+
+            with zipfile.ZipFile(ivy_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, dirs, files in os.walk(ivy_temp_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, ivy_temp_dir)
+                        zipf.write(file_path, arcname=arcname)
+
+            self.logger.debug(f"Created .ivy project: {ivy_output_path}")
+
+            return ivy_output_path
+
+        finally:
+            # Cleanup temporary directory
+            if os.path.exists(ivy_temp_dir):
+                shutil.rmtree(ivy_temp_dir)

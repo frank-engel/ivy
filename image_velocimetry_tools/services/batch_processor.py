@@ -277,17 +277,15 @@ class BatchProcessor(BaseService):
                 result = self.job_executor.execute_job(
                     job=job,
                     scaffold_config=self.scaffold_config,
-                    output_dir=str(self.config.output_dir_resolved)
+                    output_dir=str(self.config.output_dir_resolved),
+                    save_ivy_project=self.config.save_ivy_projects
                 )
 
                 job_end_time = time.time()
                 processing_time = job_end_time - job_start_time
 
-                # Mark job as completed
-                job.mark_completed(
-                    discharge_value=result["discharge"],
-                    processing_time=processing_time
-                )
+                # Note: job.mark_completed is already called inside execute_job
+                # with all details (discharge, area, statistics, etc.)
 
                 completed += 1
 
