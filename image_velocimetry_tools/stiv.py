@@ -9,7 +9,6 @@ from PIL import Image
 from PyQt5.QtCore import pyqtSignal, QObject
 from numpy import ndarray, dtype, signedinteger, unsignedinteger, floating, \
     timedelta64
-from numpy.typing import _8Bit, _64Bit
 from scipy.interpolate import RegularGridInterpolator, interp2d
 from scipy.ndimage import zoom
 from scipy.optimize import minimize_scalar
