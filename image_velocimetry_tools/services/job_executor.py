@@ -397,6 +397,28 @@ class JobExecutor(BaseService):
             raise JobExecutionError("No rectified frames were produced")
 
         self.logger.info(f"Orthorectified {len(rectified_frames)} frames")
+
+        # Apply flips if specified in project_data
+        flip_x = project_data.get("is_ortho_flip_x", False)
+        flip_y = project_data.get("is_ortho_flip_y", False)
+
+        if flip_x or flip_y:
+            from image_velocimetry_tools.image_processing_tools import flip_image_array
+            from imageio.v3 import imread, imwrite
+
+            self.logger.info(f"Applying flips to rectified frames: flip_x={flip_x}, flip_y={flip_y}")
+
+            for frame_path in rectified_frames:
+                # Read the rectified frame
+                img = imread(frame_path)
+
+                # Apply flips
+                flipped_img = flip_image_array(img, flip_x=flip_x, flip_y=flip_y)
+
+                # Write back the flipped image
+                imwrite(frame_path, flipped_img)
+
+            self.logger.info(f"Applied flips to {len(rectified_frames)} rectified frames")
         return rectified_frames
 
     def _generate_grid(
