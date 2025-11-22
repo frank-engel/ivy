@@ -22,7 +22,6 @@ from image_velocimetry_tools.services.discharge_service import DischargeService
 from image_velocimetry_tools.batch.models import BatchJob
 from image_velocimetry_tools.batch.exceptions import JobExecutionError
 from image_velocimetry_tools.stiv import two_dimensional_stiv_exhaustive
-from image_velocimetry_tools.gui.xsgeometry import CrossSectionGeometry
 from image_velocimetry_tools.file_management import deserialize_numpy_array
 
 
@@ -146,12 +145,14 @@ class JobExecutor(BaseService):
 
             # Step 6: Compute discharge
             self.logger.info(f"[{job.job_id}] Step 6/6: Computing discharge")
+            display_units = project_data.get("display_units", "Metric")
             discharge_result = self._compute_discharge(
                 stiv_results,
                 grid_points,
                 cross_section_path,
                 job.water_surface_elevation,
-                job.alpha
+                job.alpha,
+                display_units=display_units
             )
 
             # Calculate processing time
@@ -589,7 +590,8 @@ class JobExecutor(BaseService):
         grid_points: np.ndarray,
         cross_section_path: str,
         water_surface_elevation: float,
-        alpha: float
+        alpha: float,
+        display_units: str = "Metric"
     ) -> Dict[str, Any]:
         """Compute discharge from STIV results.
 
@@ -605,16 +607,21 @@ class JobExecutor(BaseService):
             Water surface elevation (m)
         alpha : float
             Velocity correction coefficient
+        display_units : str
+            Display units ("English" or "Metric")
 
         Returns
         -------
         dict
             Discharge computation results
         """
-        # Load cross-section geometry
+        # Load cross-section geometry using AreaComp backend directly
+        # (avoiding GUI-dependent CrossSectionGeometry class)
+        from areacomp.gui.areasurvey import AreaSurvey
+
         try:
-            xs_survey = CrossSectionGeometry()
-            xs_survey.import_geometry(cross_section_path)
+            xs_survey = AreaSurvey()
+            xs_survey.load_areacomp(cross_section_path, units=display_units)
         except Exception as e:
             raise JobExecutionError(
                 f"Failed to load cross-section geometry: {e}"
