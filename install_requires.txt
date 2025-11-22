@@ -24,7 +24,8 @@ numba>=0.53.1,<1.0
 PyQt5>=5.15.6,<6.0
 
 # Video processing
-ffmpeg-python>=0.2.0
+# Note: ffmpeg binary must be installed separately and available in PATH
+# or in ./bin/ directory. No Python package required.
 
 # Data formats
 h5py>=3.10.0,<4.0
