@@ -27,7 +27,7 @@ def example_1_basic():
     print("=" * 80)
 
     # Define paths (relative to this script)
-    data_dir = Path(__file__).parent.parent / "batch_test_data"
+    data_dir = Path(__file__).parent.parent / "image_velocimetry_tools/tests/test_integration/batch_test_data"
     scaffold = data_dir / "inputs" / "scaffold_project.ivy"
     batch_csv = data_dir / "inputs" / "batch_boneyard.csv"
     output = data_dir / "example_output_basic"
@@ -63,7 +63,7 @@ def example_2_with_progress():
     print("=" * 80)
 
     # Define paths
-    data_dir = Path(__file__).parent.parent / "batch_test_data"
+    data_dir = Path(__file__).parent.parent / "image_velocimetry_tools/tests/test_integration/batch_test_data"
     scaffold = data_dir / "inputs" / "scaffold_project.ivy"
     batch_csv = data_dir / "inputs" / "batch_boneyard.csv"
     output = data_dir / "example_output_progress"
@@ -105,7 +105,7 @@ def example_3_advanced_analysis():
     print("=" * 80)
 
     # Define paths
-    data_dir = Path(__file__).parent.parent / "batch_test_data"
+    data_dir = Path(__file__).parent.parent / "image_velocimetry_tools/tests/test_integration/batch_test_data"
     scaffold = data_dir / "inputs" / "scaffold_project.ivy"
     batch_csv = data_dir / "inputs" / "batch_boneyard.csv"
     output = data_dir / "example_output_advanced"

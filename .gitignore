@@ -4,6 +4,10 @@ docs/word/
 bin/
 /bin/
 image_velocimetry_tools/tests/test_integration/batch_test_data/integration_test_output
+/batch_test_data/
+/image_velocimetry_tools/tests/test_integration/batch_test_data/example_output_basic/
+/image_velocimetry_tools/tests/test_integration/batch_test_data/example_output_progress/
+/image_velocimetry_tools/tests/test_integration/batch_test_data/example_output_advanced/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -234,4 +238,4 @@ fabric.properties
 
 # VS Code Counter
 .VSCodeCounter/
-/batch_test_data/
+
