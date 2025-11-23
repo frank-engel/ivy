@@ -1,5 +1,4 @@
-"""Documentation module called by IVy Tools.
-"""
+"""Documentation module called by IVy Tools."""
 
 import getpass
 from datetime import datetime
@@ -46,9 +45,13 @@ class AddDocumentation(QtWidgets.QDialog, Ui_Dialog):
         """Checks if the party and comment boxes are filled out."""
         comment = self.comments_te.toPlainText()
         if len(comment) > 0:
-            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
+                True
+            )
         else:
-            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
+                False
+            )
 
     def set_data(self):
         """Save changes to the class attributes"""

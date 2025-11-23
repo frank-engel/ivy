@@ -7,4 +7,11 @@ from .ortho_controller import OrthoController
 from .grid_controller import GridController
 from .settings_controller import SettingsController
 
-__all__ = ['BaseController', 'VideoController', 'ProjectController', 'OrthoController', 'GridController', 'SettingsController']
+__all__ = [
+    "BaseController",
+    "VideoController",
+    "ProjectController",
+    "OrthoController",
+    "GridController",
+    "SettingsController",
+]

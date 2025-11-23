@@ -20,58 +20,96 @@ class Ui_Dialog(object):
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridlayoutDistortionModel = QtWidgets.QGridLayout()
-        self.gridlayoutDistortionModel.setObjectName("gridlayoutDistortionModel")
+        self.gridlayoutDistortionModel.setObjectName(
+            "gridlayoutDistortionModel"
+        )
         self.verticalLayout.addLayout(self.gridlayoutDistortionModel)
         self.groupboxLensCharacteristics = QtWidgets.QGroupBox(Dialog)
-        self.groupboxLensCharacteristics.setObjectName("groupboxLensCharacteristics")
-        self.gridLayout = QtWidgets.QGridLayout(self.groupboxLensCharacteristics)
+        self.groupboxLensCharacteristics.setObjectName(
+            "groupboxLensCharacteristics"
+        )
+        self.gridLayout = QtWidgets.QGridLayout(
+            self.groupboxLensCharacteristics
+        )
         self.gridLayout.setObjectName("gridLayout")
         self.formlayoutLensCharacteristics = QtWidgets.QFormLayout()
-        self.formlayoutLensCharacteristics.setObjectName("formlayoutLensCharacteristics")
-        self.labelLensCxText = QtWidgets.QLabel(self.groupboxLensCharacteristics)
+        self.formlayoutLensCharacteristics.setObjectName(
+            "formlayoutLensCharacteristics"
+        )
+        self.labelLensCxText = QtWidgets.QLabel(
+            self.groupboxLensCharacteristics
+        )
         self.labelLensCxText.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensCxText.setObjectName("labelLensCxText")
-        self.formlayoutLensCharacteristics.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelLensCxText)
-        self.labelLensCyText = QtWidgets.QLabel(self.groupboxLensCharacteristics)
+        self.formlayoutLensCharacteristics.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelLensCxText
+        )
+        self.labelLensCyText = QtWidgets.QLabel(
+            self.groupboxLensCharacteristics
+        )
         self.labelLensCyText.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensCyText.setObjectName("labelLensCyText")
-        self.formlayoutLensCharacteristics.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelLensCyText)
-        self.labelLensK1Text = QtWidgets.QLabel(self.groupboxLensCharacteristics)
+        self.formlayoutLensCharacteristics.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelLensCyText
+        )
+        self.labelLensK1Text = QtWidgets.QLabel(
+            self.groupboxLensCharacteristics
+        )
         self.labelLensK1Text.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensK1Text.setObjectName("labelLensK1Text")
-        self.formlayoutLensCharacteristics.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelLensK1Text)
-        self.labelLensK2Text = QtWidgets.QLabel(self.groupboxLensCharacteristics)
+        self.formlayoutLensCharacteristics.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelLensK1Text
+        )
+        self.labelLensK2Text = QtWidgets.QLabel(
+            self.groupboxLensCharacteristics
+        )
         self.labelLensK2Text.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensK2Text.setObjectName("labelLensK2Text")
-        self.formlayoutLensCharacteristics.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelLensK2Text)
+        self.formlayoutLensCharacteristics.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelLensK2Text
+        )
         self.lineeditCx = QtWidgets.QLineEdit(self.groupboxLensCharacteristics)
         self.lineeditCx.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditCx.setObjectName("lineeditCx")
-        self.formlayoutLensCharacteristics.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.lineeditCx)
+        self.formlayoutLensCharacteristics.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.lineeditCx
+        )
         self.lineeditCy = QtWidgets.QLineEdit(self.groupboxLensCharacteristics)
         self.lineeditCy.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditCy.setObjectName("lineeditCy")
-        self.formlayoutLensCharacteristics.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.lineeditCy)
+        self.formlayoutLensCharacteristics.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.lineeditCy
+        )
         self.lineeditK1 = QtWidgets.QLineEdit(self.groupboxLensCharacteristics)
         self.lineeditK1.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditK1.setObjectName("lineeditK1")
-        self.formlayoutLensCharacteristics.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lineeditK1)
+        self.formlayoutLensCharacteristics.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.lineeditK1
+        )
         self.lineeditK2 = QtWidgets.QLineEdit(self.groupboxLensCharacteristics)
         self.lineeditK2.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditK2.setObjectName("lineeditK2")
-        self.formlayoutLensCharacteristics.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.lineeditK2)
-        self.gridLayout.addLayout(self.formlayoutLensCharacteristics, 0, 0, 1, 1)
-        self.buttonboxConfirmClose = QtWidgets.QDialogButtonBox(self.groupboxLensCharacteristics)
+        self.formlayoutLensCharacteristics.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.lineeditK2
+        )
+        self.gridLayout.addLayout(
+            self.formlayoutLensCharacteristics, 0, 0, 1, 1
+        )
+        self.buttonboxConfirmClose = QtWidgets.QDialogButtonBox(
+            self.groupboxLensCharacteristics
+        )
         self.buttonboxConfirmClose.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonboxConfirmClose.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonboxConfirmClose.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
         self.buttonboxConfirmClose.setObjectName("buttonboxConfirmClose")
         self.gridLayout.addWidget(self.buttonboxConfirmClose, 1, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupboxLensCharacteristics)
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
-        self.buttonboxConfirmClose.accepted.connect(Dialog.accept) # type: ignore
-        self.buttonboxConfirmClose.rejected.connect(Dialog.reject) # type: ignore
+        self.buttonboxConfirmClose.accepted.connect(Dialog.accept)  # type: ignore
+        self.buttonboxConfirmClose.rejected.connect(Dialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Dialog)
         Dialog.setTabOrder(self.lineeditCx, self.lineeditCy)
         Dialog.setTabOrder(self.lineeditCy, self.lineeditK1)
@@ -80,7 +118,9 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.groupboxLensCharacteristics.setTitle(_translate("Dialog", "Lens Characteristics"))
+        self.groupboxLensCharacteristics.setTitle(
+            _translate("Dialog", "Lens Characteristics")
+        )
         self.labelLensCxText.setText(_translate("Dialog", "cx:"))
         self.labelLensCyText.setText(_translate("Dialog", "cy:"))
         self.labelLensK1Text.setText(_translate("Dialog", "k1:"))
@@ -93,6 +133,7 @@ class Ui_Dialog(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()

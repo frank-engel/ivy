@@ -68,7 +68,9 @@ class BatchConfig:
     batch_csv_path: str
     output_dir: str
     stop_on_first_failure: bool = False
-    save_ivy_projects: bool = False  # Save .ivy project for each job (large files, slow)
+    save_ivy_projects: bool = (
+        False  # Save .ivy project for each job (large files, slow)
+    )
 
     def __post_init__(self):
         """Resolve and validate paths after initialization."""
@@ -152,9 +154,7 @@ class BatchConfig:
                             f"No write permission for output directory parent: {parent}"
                         )
                 except (OSError, PermissionError) as e:
-                    errors.append(
-                        f"Cannot create output directory: {e}"
-                    )
+                    errors.append(f"Cannot create output directory: {e}")
             elif not self.output_dir_resolved.is_dir():
                 errors.append(
                     f"Output path exists but is not a directory: "
@@ -197,8 +197,7 @@ class BatchConfig:
         """
         # Sanitize job_id for filesystem use
         safe_job_id = "".join(
-            c if c.isalnum() or c in ('-', '_') else '_'
-            for c in job_id
+            c if c.isalnum() or c in ("-", "_") else "_" for c in job_id
         )
         return self.output_dir_resolved / f"job_{safe_job_id}"
 

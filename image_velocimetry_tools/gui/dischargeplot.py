@@ -102,13 +102,15 @@ class QPlot:
 
         # fix dtypes where table model changes dtypes to str.
         self.sum_df["Width"] = self.sum_df["Width"].astype("float64")
-        self.sum_df["Station Distance"] = self.sum_df["Station Distance"].astype(
+        self.sum_df["Station Distance"] = self.sum_df[
+            "Station Distance"
+        ].astype("float64")
+        self.sum_df["Unit Discharge"] = self.sum_df["Unit Discharge"].astype(
             "float64"
         )
-        self.sum_df["Unit Discharge"] = self.sum_df["Unit Discharge"].astype("float64")
-        self.sum_df["Surface Velocity"] = self.sum_df["Surface Velocity"].astype(
-            "float64"
-        )
+        self.sum_df["Surface Velocity"] = self.sum_df[
+            "Surface Velocity"
+        ].astype("float64")
         self.sum_df["Depth"] = self.sum_df["Depth"].astype("float64")
 
         wse = self.xs.xs_survey.stage
@@ -120,9 +122,15 @@ class QPlot:
 
         # set color code for bar graph
         self.sum_df["color_code"] = "orange"
-        self.sum_df.loc[self.sum_df["PercentQ"].abs() < 5, "color_code"] = "green"
-        self.sum_df.loc[self.sum_df["PercentQ"].abs() >= 10, "color_code"] = "red"
-        self.sum_df.loc[self.sum_df["Status"] != "Used", "color_code"] = "silver"
+        self.sum_df.loc[self.sum_df["PercentQ"].abs() < 5, "color_code"] = (
+            "green"
+        )
+        self.sum_df.loc[self.sum_df["PercentQ"].abs() >= 10, "color_code"] = (
+            "red"
+        )
+        self.sum_df.loc[self.sum_df["Status"] != "Used", "color_code"] = (
+            "silver"
+        )
 
     def create_plot(self):
         """Generate stacked xs vel/q plot."""
@@ -271,8 +279,12 @@ class QPlot:
             # update bar color
             # self.q[bar].set_facecolor('r')
 
-        self.velocity.set_xdata(self.sum_df["Station Distance"] * self.units["L"])
-        self.velocity.set_xdata(self.sum_df["Surface Velocity"] * self.units["L"])
+        self.velocity.set_xdata(
+            self.sum_df["Station Distance"] * self.units["L"]
+        )
+        self.velocity.set_xdata(
+            self.sum_df["Surface Velocity"] * self.units["L"]
+        )
 
         self.canvas.draw()
 
@@ -301,7 +313,9 @@ class QPlot:
             x (float): pixel location of the annotation
         """
         station = self.sum_df.iloc[
-            (self.sum_df["Station Distance"] * self.units["L"] - x).abs().argsort()[:1]
+            (self.sum_df["Station Distance"] * self.units["L"] - x)
+            .abs()
+            .argsort()[:1]
         ]
 
         if station.shape[0] > 0:
@@ -383,7 +397,9 @@ class QPlot:
                 bar.set_edgecolor("black")
                 bar.set_linewidth(1)
 
-        self.selected_pnt.set_xdata(station["Station Distance"] * self.units["L"])
+        self.selected_pnt.set_xdata(
+            station["Station Distance"] * self.units["L"]
+        )
         self.selected_pnt.set_ydata(station["Elevation"] * self.units["L"])
 
         self.canvas.draw()

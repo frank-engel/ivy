@@ -15,9 +15,13 @@ if not ffmpeg_cmd or not ffprobe_cmd:
     if ffmpeg_fallback.exists() and ffprobe_fallback.exists():
         ffmpeg_cmd = str(ffmpeg_fallback)
         ffprobe_cmd = str(ffprobe_fallback)
-        logging.warning("[ffmpeg] Using local ./bin/ fallback; system binaries not found.")
+        logging.warning(
+            "[ffmpeg] Using local ./bin/ fallback; system binaries not found."
+        )
     else:
-        raise FileNotFoundError("FFmpeg and FFprobe not found in environment variables, system PATH, or local ./bin/")
+        raise FileNotFoundError(
+            "FFmpeg and FFprobe not found in environment variables, system PATH, or local ./bin/"
+        )
 
 
 class TestCreateFFmpegCommand(unittest.TestCase):
@@ -40,7 +44,9 @@ class TestCreateFFmpegCommand(unittest.TestCase):
             "start_time": "00:01:00.0",
         }
         result = create_ffmpeg_command(dictionary)
-        expected = f"{ffmpeg_cmd} -ss 00:01:00.0 -i input.mp4 -c:v copy -y output.mp4"
+        expected = (
+            f"{ffmpeg_cmd} -ss 00:01:00.0 -i input.mp4 -c:v copy -y output.mp4"
+        )
         self.assertEqual(result, expected)
 
     def test_create_command_with_end_time(self):
@@ -50,7 +56,9 @@ class TestCreateFFmpegCommand(unittest.TestCase):
             "end_time": "00:02:30.0",
         }
         result = create_ffmpeg_command(dictionary)
-        expected = f"{ffmpeg_cmd} -to 00:02:30.0 -i input.mp4 -c:v copy -y output.mp4"
+        expected = (
+            f"{ffmpeg_cmd} -to 00:02:30.0 -i input.mp4 -c:v copy -y output.mp4"
+        )
         self.assertEqual(result, expected)
 
     def test_create_command_with_extract_frames(self):
@@ -137,11 +145,13 @@ class TestFFmpegFunctions(unittest.TestCase):
         current_directory = os.getcwd()
 
         # Test default parameters
-        cmd = ffmpeg_compute_motion_trajectories_from_frames_command(self.frames_folder)
+        cmd = ffmpeg_compute_motion_trajectories_from_frames_command(
+            self.frames_folder
+        )
         expected = (
             f'{ffmpeg_cmd} -i "test_frames/f%05d.jpg" -vf '
             '"vidstabdetect=stepsize=6:shakiness=10:accuracy=10:result=test_frames/transforms.trf" '
-            '-f null -'
+            "-f null -"
         )
         self.assertEqual(cmd, expected)
 
@@ -157,7 +167,7 @@ class TestFFmpegFunctions(unittest.TestCase):
             f'{ffmpeg_cmd} -i "test_frames/f%05d.jpg" -vf '
             '"vidstabdetect=stepsize=12:shakiness=5:accuracy=5:result'
             '=test_frames/test_transforms.trf" '
-            '-f null -'
+            "-f null -"
         )
         self.assertEqual(cmd, expected)
 

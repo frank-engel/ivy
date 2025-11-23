@@ -34,34 +34,46 @@ class TestMakeWindowsSafeFilename(unittest.TestCase):
     def test_no_disallowed_characters(self):
         input_string = "SafeFilename123"
         expected_result = "SafeFilename123"
-        self.assertEqual(make_windows_safe_filename(input_string), expected_result)
+        self.assertEqual(
+            make_windows_safe_filename(input_string), expected_result
+        )
 
     def test_with_disallowed_characters(self):
         input_string = "File/Name:with?disallowed*chars<>"
         expected_result = "File_Name_with_disallowed_chars__"
-        self.assertEqual(make_windows_safe_filename(input_string), expected_result)
+        self.assertEqual(
+            make_windows_safe_filename(input_string), expected_result
+        )
 
     def test_with_spaces(self):
         input_string = "File Name With Spaces"
         expected_result = "File_Name_With_Spaces"
-        self.assertEqual(make_windows_safe_filename(input_string), expected_result)
+        self.assertEqual(
+            make_windows_safe_filename(input_string), expected_result
+        )
 
     def test_mix_of_disallowed_characters_and_spaces(self):
         input_string = "My:File?Name/with Spaces<and|bars>"
         expected_result = "My_File_Name_with_Spaces_and_bars_"
-        self.assertEqual(make_windows_safe_filename(input_string), expected_result)
+        self.assertEqual(
+            make_windows_safe_filename(input_string), expected_result
+        )
 
     def test_empty_string(self):
         input_string = ""
         expected_result = ""
-        self.assertEqual(make_windows_safe_filename(input_string), expected_result)
+        self.assertEqual(
+            make_windows_safe_filename(input_string), expected_result
+        )
 
 
 class TestFormatWindowsPath(unittest.TestCase):
     def test_with_spaces(self):
         path_with_spaces = "C:\\Program Files (x86)\\WinRar\\Rar.exe"
         formatted_path = format_windows_path(path_with_spaces)
-        self.assertEqual(formatted_path, '"C:/Program Files (x86)/WinRar/Rar.exe"')
+        self.assertEqual(
+            formatted_path, '"C:/Program Files (x86)/WinRar/Rar.exe"'
+        )
 
     def test_without_spaces(self):
         path_without_spaces = "D:/ProgramFiles/SomeApp/App.exe"
@@ -122,25 +134,33 @@ class TestCompareVersions(unittest.TestCase):
 
 class TestLoadAndParseGCPCSV(unittest.TestCase):
     def setUp(self):
-        self.csv_english = io.StringIO("""GCP Name,X (ft),Y (ft),Z (ft),X (pixel),Y (pixel)
+        self.csv_english = io.StringIO(
+            """GCP Name,X (ft),Y (ft),Z (ft),X (pixel),Y (pixel)
 GCP1,1000,2000,30,400,300
 GCP2,1010,2010,32,410,310
-""")
+"""
+        )
 
-        self.csv_bad = io.StringIO("""1000,2000,30
+        self.csv_bad = io.StringIO(
+            """1000,2000,30
 1010,2010,32
-""")
+"""
+        )
 
-        self.csv_minimal = io.StringIO("""GCP Name,X (ft),Y (ft)
+        self.csv_minimal = io.StringIO(
+            """GCP Name,X (ft),Y (ft)
 GCP1,1000,2000
 GCP2,1010,2010
-""")
+"""
+        )
 
         self.unit_prompt = lambda: "English"
 
     def test_parse_english_units(self):
         df, units = load_and_parse_gcp_csv(
-            self.csv_english, swap_ortho_path="", unit_prompt_callback=self.unit_prompt
+            self.csv_english,
+            swap_ortho_path="",
+            unit_prompt_callback=self.unit_prompt,
         )
         self.assertEqual(units, "English")
         self.assertIn("X", df.columns)
@@ -150,14 +170,21 @@ GCP2,1010,2010
 
     def test_missing_optional_columns(self):
         df, _ = load_and_parse_gcp_csv(
-            self.csv_minimal, swap_ortho_path="", unit_prompt_callback=self.unit_prompt
+            self.csv_minimal,
+            swap_ortho_path="",
+            unit_prompt_callback=self.unit_prompt,
         )
         expected_cols = [
-            "X", "Y", "Z",
-            "X (pixel)", "Y (pixel)",
-            "Error X (pixel)", "Error Y (pixel)",
+            "X",
+            "Y",
+            "Z",
+            "X (pixel)",
+            "Y (pixel)",
+            "Error X (pixel)",
+            "Error Y (pixel)",
             "Tot. Error (pixel)",
-            "Use in Rectification", "Use in Validation"
+            "Use in Rectification",
+            "Use in Validation",
         ]
         for col in expected_cols:
             self.assertIn(col, df.columns)
@@ -166,10 +193,16 @@ GCP2,1010,2010
 
     def test_numeric_conversion(self):
         df, _ = load_and_parse_gcp_csv(
-            self.csv_english, swap_ortho_path="", unit_prompt_callback=self.unit_prompt
+            self.csv_english,
+            swap_ortho_path="",
+            unit_prompt_callback=self.unit_prompt,
         )
-        self.assertTrue(pd.to_numeric(df["X"], errors="coerce").notnull().all())
-        self.assertTrue(pd.to_numeric(df["Z"], errors="coerce").notnull().all())
+        self.assertTrue(
+            pd.to_numeric(df["X"], errors="coerce").notnull().all()
+        )
+        self.assertTrue(
+            pd.to_numeric(df["Z"], errors="coerce").notnull().all()
+        )
 
 
 if __name__ == "__main__":

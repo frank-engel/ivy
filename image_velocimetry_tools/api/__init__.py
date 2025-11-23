@@ -11,7 +11,7 @@ from .batch_api import (
 )
 
 __all__ = [
-    'run_batch_processing',
-    'BatchResults',
-    'JobResult',
+    "run_batch_processing",
+    "BatchResults",
+    "JobResult",
 ]

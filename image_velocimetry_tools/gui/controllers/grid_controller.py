@@ -9,7 +9,9 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtWidgets
 from PIL import Image
 
-from image_velocimetry_tools.gui.controllers.base_controller import BaseController
+from image_velocimetry_tools.gui.controllers.base_controller import (
+    BaseController,
+)
 from image_velocimetry_tools.gui.models.grid_model import GridModel
 from image_velocimetry_tools.services.grid_service import GridService
 from image_velocimetry_tools.graphics import Instructions
@@ -31,10 +33,7 @@ class GridController(BaseController):
     """
 
     def __init__(
-        self,
-        main_window,
-        grid_model: GridModel,
-        grid_service: GridService
+        self, main_window, grid_model: GridModel, grid_service: GridService
     ):
         """Initialize the grid controller.
 
@@ -54,7 +53,9 @@ class GridController(BaseController):
         """Connect UI signals to controller methods and model signals to UI updates."""
         # Model signals
         self.grid_model.grid_created.connect(self.on_model_grid_created)
-        self.grid_model.line_grid_created.connect(self.on_model_line_grid_created)
+        self.grid_model.line_grid_created.connect(
+            self.on_model_line_grid_created
+        )
         self.grid_model.grid_cleared.connect(self.on_model_grid_cleared)
 
         self.logger.debug("Grid controller signals connected")
@@ -62,12 +63,16 @@ class GridController(BaseController):
     @pyqtSlot()
     def on_model_grid_created(self):
         """Handle grid created signal from model."""
-        self.logger.info(f"Grid created with {self.grid_model.get_num_grid_points()} points")
+        self.logger.info(
+            f"Grid created with {self.grid_model.get_num_grid_points()} points"
+        )
 
     @pyqtSlot(str)
     def on_model_line_grid_created(self, mode: str):
         """Handle line grid created signal from model."""
-        self.logger.info(f"Line grid created in {mode} mode with {self.grid_model.get_num_grid_points()} points")
+        self.logger.info(
+            f"Line grid created in {mode} mode with {self.grid_model.get_num_grid_points()} points"
+        )
 
     @pyqtSlot()
     def on_model_grid_cleared(self):
@@ -150,7 +155,7 @@ class GridController(BaseController):
                     vert,  # vertical_spacing
                     horz,  # horizontal_spacing
                     mask_polygons=mask_polygons if has_mask else None,
-                    clean_mask=True
+                    clean_mask=True,
                 )
             except Exception as e:
                 self.logger.error(f"Error generating grid: {str(e)}")
@@ -160,7 +165,9 @@ class GridController(BaseController):
             # Update model
             self.grid_model.results_grid = grid
             self.grid_model.binary_mask = binary_mask
-            self.grid_model.results_grid_world = grid  # TODO: Transform to world coords
+            self.grid_model.results_grid_world = (
+                grid  # TODO: Transform to world coords
+            )
             self.grid_model.is_cross_section_grid = False
 
             # Clear existing visualizations
@@ -185,8 +192,12 @@ class GridController(BaseController):
                 pixel_gsd = mw.pixel_ground_scale_distance_m
                 horz_world = pixel_gsd * horz
                 vert_world = pixel_gsd * vert
-                mw.labelHorzSpacingWorldUnits.setText(f"px ({horz_world:.2f} world)")
-                mw.labelVertSpacingWorldUnits.setText(f"px ({vert_world:.2f} world)")
+                mw.labelHorzSpacingWorldUnits.setText(
+                    f"px ({horz_world:.2f} world)"
+                )
+                mw.labelVertSpacingWorldUnits.setText(
+                    f"px ({vert_world:.2f} world)"
+                )
             except (AttributeError, TypeError):
                 pass
 
@@ -197,7 +208,9 @@ class GridController(BaseController):
         # Emit signal
         self.grid_model.grid_created.emit()
 
-        message = f"GRID PREPARATION: Results grid created with {len(grid)} points"
+        message = (
+            f"GRID PREPARATION: Results grid created with {len(grid)} points"
+        )
         mw.update_statusbar(message)
         self.logger.info(f"Regular grid created: {len(grid)} points")
 
@@ -268,7 +281,7 @@ class GridController(BaseController):
                     line_end,
                     num_points,
                     mask_polygons=mask_polygons if has_mask else None,
-                    clean_mask=True
+                    clean_mask=True,
                 )
             except Exception as e:
                 self.logger.error(f"Error generating line grid: {str(e)}")
@@ -278,7 +291,9 @@ class GridController(BaseController):
             # Update model
             self.grid_model.results_grid = line_grid
             self.grid_model.binary_mask = binary_mask
-            self.grid_model.results_grid_world = line_grid  # TODO: Transform to world coords
+            self.grid_model.results_grid_world = (
+                line_grid  # TODO: Transform to world coords
+            )
 
             # Clear and visualize grid
             mw.gridpreparation.imageBrowser.clearPoints()
@@ -311,15 +326,21 @@ class GridController(BaseController):
         # Emit signal
         self.grid_model.line_grid_created.emit(mode)
 
-        message = f"GRID PREPARATION: Line grid created with {len(line_grid)} points"
+        message = (
+            f"GRID PREPARATION: Line grid created with {len(line_grid)} points"
+        )
         mw.update_statusbar(message)
-        self.logger.info(f"Line grid created ({mode}): {len(line_grid)} points")
+        self.logger.info(
+            f"Line grid created ({mode}): {len(line_grid)} points"
+        )
 
         return True
 
     # ==================== Grid Export ====================
 
-    def _save_grid_to_csv(self, pixel_grid: np.ndarray, world_grid: np.ndarray):
+    def _save_grid_to_csv(
+        self, pixel_grid: np.ndarray, world_grid: np.ndarray
+    ):
         """Save grid to CSV file.
 
         Args:
@@ -329,7 +350,9 @@ class GridController(BaseController):
         mw = self.main_window
 
         try:
-            filepath = os.path.join(mw.swap_grids_directory, "results_grid.csv")
+            filepath = os.path.join(
+                mw.swap_grids_directory, "results_grid.csv"
+            )
 
             with open(filepath, "w", newline="") as csvfile:
                 fieldnames = [

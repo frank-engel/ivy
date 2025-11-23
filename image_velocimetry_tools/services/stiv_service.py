@@ -32,9 +32,7 @@ class STIVService:
 
     @staticmethod
     def compute_sti_velocity(
-        theta: Union[float, np.ndarray],
-        gsd: float,
-        dt: float
+        theta: Union[float, np.ndarray], gsd: float, dt: float
     ) -> Union[float, np.ndarray]:
         """
         Calculate velocity from STI angle using Fujita et al. (2007) equation 16.
@@ -60,9 +58,7 @@ class STIVService:
 
     @staticmethod
     def compute_sti_angle(
-        velocity: Union[float, np.ndarray],
-        gsd: float,
-        dt: float
+        velocity: Union[float, np.ndarray], gsd: float, dt: float
     ) -> Union[float, np.ndarray]:
         """
         Calculate STI angle from velocity (inverse of compute_sti_velocity).
@@ -91,7 +87,7 @@ class STIVService:
         average_direction: float,
         gsd: float,
         dt: float,
-        is_upstream: bool = False
+        is_upstream: bool = False,
     ) -> float:
         """
         Convert manual angle measurement to velocity magnitude.
@@ -134,7 +130,9 @@ class STIVService:
         return manual_velocity_mps
 
     @staticmethod
-    def load_stiv_results_from_csv(csv_file_path: str) -> Dict[str, np.ndarray]:
+    def load_stiv_results_from_csv(
+        csv_file_path: str,
+    ) -> Dict[str, np.ndarray]:
         """
         Load STIV results from a CSV file.
 
@@ -167,15 +165,15 @@ class STIVService:
 
         # Extract columns from the CSV data
         result = {
-            'X': data[:, 0].astype(float),
-            'Y': data[:, 1].astype(float),
-            'U': data[:, 2].astype(float),
-            'V': data[:, 3].astype(float),
-            'Magnitude': data[:, 4].astype(float),
-            'Scalar_Projection': data[:, 5].astype(float),
-            'Direction': data[:, 6].astype(float),
-            'Tagline_Direction': data[:, 7].astype(float),
-            'Normal_Direction': data[:, 8].astype(float),
+            "X": data[:, 0].astype(float),
+            "Y": data[:, 1].astype(float),
+            "U": data[:, 2].astype(float),
+            "V": data[:, 3].astype(float),
+            "Magnitude": data[:, 4].astype(float),
+            "Scalar_Projection": data[:, 5].astype(float),
+            "Direction": data[:, 6].astype(float),
+            "Tagline_Direction": data[:, 7].astype(float),
+            "Normal_Direction": data[:, 8].astype(float),
         }
 
         return result
@@ -185,7 +183,7 @@ class STIVService:
         magnitudes_mps: np.ndarray,
         directions: np.ndarray,
         thetas: Optional[np.ndarray],
-        survey_units: Dict[str, float]
+        survey_units: Dict[str, float],
     ) -> List[Dict]:
         """
         Prepare STIV results data for display in the STI Review table.
@@ -224,11 +222,12 @@ class STIVService:
             zip(magnitudes_mps, directions, thetas)
         ):
             row_data = {
-                'id': row + 1,
-                'direction': direction,
-                'theta': theta,
-                'original_velocity': magnitude * survey_units['V'],
-                'manual_velocity': magnitude * survey_units['V'],  # Initialize to original
+                "id": row + 1,
+                "direction": direction,
+                "theta": theta,
+                "original_velocity": magnitude * survey_units["V"],
+                "manual_velocity": magnitude
+                * survey_units["V"],  # Initialize to original
             }
             table_data.append(row_data)
 
@@ -239,7 +238,7 @@ class STIVService:
         stiv_data: Dict[str, np.ndarray],
         manual_velocities: np.ndarray,
         manual_indices: List[int],
-        tagline_direction: float
+        tagline_direction: float,
     ) -> Dict[str, np.ndarray]:
         """
         Apply manual velocity corrections to STIV results.
@@ -267,8 +266,8 @@ class STIVService:
             - 'manual_indices': List of manually edited indices
         """
         # Start with original scalar projections
-        scalar_projections = stiv_data['Scalar_Projection'].copy()
-        directions = stiv_data['Direction']
+        scalar_projections = stiv_data["Scalar_Projection"].copy()
+        directions = stiv_data["Direction"]
 
         # Recompute scalar projections for manually modified results
         for i in manual_indices:
@@ -279,8 +278,8 @@ class STIVService:
             )
 
         return {
-            'scalar_projections': scalar_projections,
-            'manual_indices': manual_indices
+            "scalar_projections": scalar_projections,
+            "manual_indices": manual_indices,
         }
 
     @staticmethod
@@ -308,8 +307,7 @@ class STIVService:
 
     @staticmethod
     def compute_frame_step(
-        sample_time_ms: float,
-        video_frame_rate: float
+        sample_time_ms: float, video_frame_rate: float
     ) -> int:
         """
         Compute the frame step from sample time and video frame rate.
@@ -343,8 +341,7 @@ class STIVService:
 
     @staticmethod
     def compute_sample_time_seconds(
-        frame_step: int,
-        video_frame_rate: float
+        frame_step: int, video_frame_rate: float
     ) -> float:
         """
         Compute actual sample time in seconds from frame step and frame rate.

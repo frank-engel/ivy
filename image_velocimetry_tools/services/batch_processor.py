@@ -15,13 +15,17 @@ from image_velocimetry_tools.services.base_service import BaseService
 from image_velocimetry_tools.services.batch_csv_parser import BatchCSVParser
 from image_velocimetry_tools.services.scaffold_loader import ScaffoldLoader
 from image_velocimetry_tools.services.job_executor import JobExecutor
-from image_velocimetry_tools.batch.models import BatchConfig, BatchJob, JobStatus
+from image_velocimetry_tools.batch.models import (
+    BatchConfig,
+    BatchJob,
+    JobStatus,
+)
 from image_velocimetry_tools.batch.exceptions import (
     BatchProcessingError,
     InvalidBatchCSVError,
     InvalidScaffoldError,
     JobExecutionError,
-    BatchValidationError
+    BatchValidationError,
 )
 
 
@@ -55,7 +59,7 @@ class BatchProcessor(BaseService):
         batch_csv_path: str,
         output_dir: str,
         stop_on_first_failure: bool = False,
-        save_ivy_projects: bool = False
+        save_ivy_projects: bool = False,
     ):
         """Initialize the BatchProcessor.
 
@@ -87,7 +91,7 @@ class BatchProcessor(BaseService):
             batch_csv_path=batch_csv_path,
             output_dir=output_dir,
             stop_on_first_failure=stop_on_first_failure,
-            save_ivy_projects=save_ivy_projects
+            save_ivy_projects=save_ivy_projects,
         )
 
         # Validate configuration
@@ -132,12 +136,12 @@ class BatchProcessor(BaseService):
         """
         self.batch_start_time = time.time()
 
-        self.logger.info("="*60)
+        self.logger.info("=" * 60)
         self.logger.info("Starting batch processing")
         self.logger.info(f"  Scaffold: {self.config.scaffold_path}")
         self.logger.info(f"  Batch CSV: {self.config.batch_csv_path}")
         self.logger.info(f"  Output: {self.config.output_dir}")
-        self.logger.info("="*60)
+        self.logger.info("=" * 60)
 
         try:
             # Step 1: Create output directory
@@ -175,7 +179,9 @@ class BatchProcessor(BaseService):
         """Create output directory structure."""
         try:
             self.config.create_output_directory()
-            self.logger.info(f"Created output directory: {self.config.output_dir}")
+            self.logger.info(
+                f"Created output directory: {self.config.output_dir}"
+            )
         except Exception as e:
             raise BatchProcessingError(
                 f"Failed to create output directory: {e}"
@@ -186,7 +192,7 @@ class BatchProcessor(BaseService):
         file_handler = logging.FileHandler(log_path)
         file_handler.setLevel(logging.INFO)
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
@@ -230,7 +236,9 @@ class BatchProcessor(BaseService):
             self.logger.info(f"Parsed {len(self.jobs)} jobs from CSV")
 
             # Get display units from scaffold
-            display_units = self.scaffold_config["project_data"].get("display_units", "Metric")
+            display_units = self.scaffold_config["project_data"].get(
+                "display_units", "Metric"
+            )
             self.logger.info(f"Scaffold display units: {display_units}")
 
             # Resolve video paths and set display units for all jobs
@@ -250,14 +258,16 @@ class BatchProcessor(BaseService):
         except InvalidBatchCSVError as e:
             raise BatchProcessingError(f"Invalid batch CSV: {e}") from e
         except Exception as e:
-            raise BatchProcessingError(f"Failed to parse batch CSV: {e}") from e
+            raise BatchProcessingError(
+                f"Failed to parse batch CSV: {e}"
+            ) from e
 
     def _execute_all_jobs(self) -> None:
         """Execute all jobs sequentially."""
         self.logger.info("")
-        self.logger.info("="*60)
+        self.logger.info("=" * 60)
         self.logger.info(f"Executing {len(self.jobs)} jobs")
-        self.logger.info("="*60)
+        self.logger.info("=" * 60)
 
         completed = 0
         failed = 0
@@ -265,7 +275,7 @@ class BatchProcessor(BaseService):
         for idx, job in enumerate(self.jobs, 1):
             self.logger.info("")
             self.logger.info(f"Job {idx}/{len(self.jobs)}: {job.job_id}")
-            self.logger.info("-"*60)
+            self.logger.info("-" * 60)
 
             # Get job output directory
             job_output_dir = self.config.get_job_output_dir(job.job_id)
@@ -278,7 +288,7 @@ class BatchProcessor(BaseService):
                     job=job,
                     scaffold_config=self.scaffold_config,
                     output_dir=str(self.config.output_dir_resolved),
-                    save_ivy_project=self.config.save_ivy_projects
+                    save_ivy_project=self.config.save_ivy_projects,
                 )
 
                 job_end_time = time.time()
@@ -301,8 +311,7 @@ class BatchProcessor(BaseService):
 
                 # Mark job as failed
                 job.mark_failed(
-                    error_message=str(e),
-                    processing_time=processing_time
+                    error_message=str(e), processing_time=processing_time
                 )
 
                 failed += 1
@@ -324,12 +333,14 @@ class BatchProcessor(BaseService):
 
                 job.mark_failed(
                     error_message=f"Unexpected error: {e}",
-                    processing_time=processing_time
+                    processing_time=processing_time,
                 )
 
                 failed += 1
 
-                self.logger.error(f"[{job.job_id}] FAILED - Unexpected error: {e}")
+                self.logger.error(
+                    f"[{job.job_id}] FAILED - Unexpected error: {e}"
+                )
 
                 if self.config.stop_on_first_failure:
                     self.logger.error(
@@ -339,9 +350,11 @@ class BatchProcessor(BaseService):
                     break
 
         self.logger.info("")
-        self.logger.info("="*60)
-        self.logger.info(f"Batch execution complete: {completed} succeeded, {failed} failed")
-        self.logger.info("="*60)
+        self.logger.info("=" * 60)
+        self.logger.info(
+            f"Batch execution complete: {completed} succeeded, {failed} failed"
+        )
+        self.logger.info("=" * 60)
 
     def _generate_summary(self) -> None:
         """Generate batch summary CSV file."""
@@ -350,32 +363,34 @@ class BatchProcessor(BaseService):
         self.logger.info(f"Generating summary report: {summary_path}")
 
         try:
-            with open(summary_path, 'w', newline='') as csvfile:
+            with open(summary_path, "w", newline="") as csvfile:
                 writer = csv.writer(csvfile)
 
                 # Write header
-                writer.writerow([
-                    "job_id",
-                    "status",
-                    "video_path",
-                    "water_surface_elevation",
-                    "alpha",
-                    "discharge",
-                    "area",
-                    "Q/A",
-                    "avg_velocity",
-                    "avg_surface_velocity",
-                    "max_surface_velocity",
-                    "max_depth",
-                    "min_depth",
-                    "uncertainty_iso_95pct",
-                    "uncertainty_ive_95pct",
-                    "processing_time_seconds",
-                    "error_message",
-                    "measurement_number",
-                    "measurement_date",
-                    "comments"
-                ])
+                writer.writerow(
+                    [
+                        "job_id",
+                        "status",
+                        "video_path",
+                        "water_surface_elevation",
+                        "alpha",
+                        "discharge",
+                        "area",
+                        "Q/A",
+                        "avg_velocity",
+                        "avg_surface_velocity",
+                        "max_surface_velocity",
+                        "max_depth",
+                        "min_depth",
+                        "uncertainty_iso_95pct",
+                        "uncertainty_ive_95pct",
+                        "processing_time_seconds",
+                        "error_message",
+                        "measurement_number",
+                        "measurement_date",
+                        "comments",
+                    ]
+                )
 
                 # Write job results
                 for job in self.jobs:
@@ -384,31 +399,83 @@ class BatchProcessor(BaseService):
 
                     # Calculate Q/A (discharge / area = average velocity)
                     q_over_a = ""
-                    if job.discharge_value and job.area_value and job.area_value > 0:
-                        q_over_a = f"{job.discharge_value / job.area_value:.4f}"
+                    if (
+                        job.discharge_value
+                        and job.area_value
+                        and job.area_value > 0
+                    ):
+                        q_over_a = (
+                            f"{job.discharge_value / job.area_value:.4f}"
+                        )
 
-                    writer.writerow([
-                        job.job_id,
-                        job.status.value,
-                        job.video_path,
-                        job.water_surface_elevation,
-                        job.alpha,
-                        f"{job.discharge_value:.4f}" if job.discharge_value else "",
-                        f"{job.area_value:.4f}" if job.area_value else "",
-                        q_over_a,
-                        f"{details.get('average_velocity', ''):.4f}" if details.get('average_velocity') else "",
-                        f"{details.get('average_surface_velocity', ''):.4f}" if details.get('average_surface_velocity') else "",
-                        f"{details.get('max_surface_velocity', ''):.4f}" if details.get('max_surface_velocity') else "",
-                        f"{details.get('max_depth', ''):.4f}" if details.get('max_depth') else "",
-                        f"{details.get('min_depth', ''):.4f}" if details.get('min_depth') else "",
-                        f"{details.get('uncertainty_iso_95pct', ''):.4f}" if details.get('uncertainty_iso_95pct') else "",
-                        f"{details.get('uncertainty_ive_95pct', ''):.4f}" if details.get('uncertainty_ive_95pct') else "",
-                        f"{job.processing_time:.2f}" if job.processing_time else "",
-                        job.error_message if job.error_message else "",
-                        job.measurement_number if job.measurement_number else "",
-                        job.measurement_date if job.measurement_date else "",
-                        job.comments if job.comments else ""
-                    ])
+                    writer.writerow(
+                        [
+                            job.job_id,
+                            job.status.value,
+                            job.video_path,
+                            job.water_surface_elevation,
+                            job.alpha,
+                            (
+                                f"{job.discharge_value:.4f}"
+                                if job.discharge_value
+                                else ""
+                            ),
+                            f"{job.area_value:.4f}" if job.area_value else "",
+                            q_over_a,
+                            (
+                                f"{details.get('average_velocity', ''):.4f}"
+                                if details.get("average_velocity")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('average_surface_velocity', ''):.4f}"
+                                if details.get("average_surface_velocity")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('max_surface_velocity', ''):.4f}"
+                                if details.get("max_surface_velocity")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('max_depth', ''):.4f}"
+                                if details.get("max_depth")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('min_depth', ''):.4f}"
+                                if details.get("min_depth")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('uncertainty_iso_95pct', ''):.4f}"
+                                if details.get("uncertainty_iso_95pct")
+                                else ""
+                            ),
+                            (
+                                f"{details.get('uncertainty_ive_95pct', ''):.4f}"
+                                if details.get("uncertainty_ive_95pct")
+                                else ""
+                            ),
+                            (
+                                f"{job.processing_time:.2f}"
+                                if job.processing_time
+                                else ""
+                            ),
+                            job.error_message if job.error_message else "",
+                            (
+                                job.measurement_number
+                                if job.measurement_number
+                                else ""
+                            ),
+                            (
+                                job.measurement_date
+                                if job.measurement_date
+                                else ""
+                            ),
+                            job.comments if job.comments else "",
+                        ]
+                    )
 
             self.logger.info(f"Summary report saved: {summary_path}")
 
@@ -419,13 +486,18 @@ class BatchProcessor(BaseService):
     def _print_final_summary(self, total_time: float) -> None:
         """Print final summary to console and log."""
         # Count status
-        completed = sum(1 for job in self.jobs if job.status == JobStatus.COMPLETED)
+        completed = sum(
+            1 for job in self.jobs if job.status == JobStatus.COMPLETED
+        )
         failed = sum(1 for job in self.jobs if job.status == JobStatus.FAILED)
-        pending = sum(1 for job in self.jobs if job.status == JobStatus.PENDING)
+        pending = sum(
+            1 for job in self.jobs if job.status == JobStatus.PENDING
+        )
 
         # Calculate total discharge
         total_discharge = sum(
-            job.discharge_value for job in self.jobs
+            job.discharge_value
+            for job in self.jobs
             if job.discharge_value is not None
         )
 
@@ -455,7 +527,9 @@ Batch Log:        {self.config.get_batch_log_path().name}
             extract_dir = self.scaffold_config.get("extract_dir")
             if extract_dir:
                 self.scaffold_loader.cleanup_scaffold(extract_dir)
-                self.logger.debug(f"Cleaned up scaffold directory: {extract_dir}")
+                self.logger.debug(
+                    f"Cleaned up scaffold directory: {extract_dir}"
+                )
 
     def get_progress(self) -> Dict[str, Any]:
         """Get current batch processing progress.
@@ -478,14 +552,20 @@ Batch Log:        {self.config.get_batch_log_path().name}
                 "failed": 0,
                 "pending": 0,
                 "processing": 0,
-                "percent_complete": 0.0
+                "percent_complete": 0.0,
             }
 
         total = len(self.jobs)
-        completed = sum(1 for job in self.jobs if job.status == JobStatus.COMPLETED)
+        completed = sum(
+            1 for job in self.jobs if job.status == JobStatus.COMPLETED
+        )
         failed = sum(1 for job in self.jobs if job.status == JobStatus.FAILED)
-        processing = sum(1 for job in self.jobs if job.status == JobStatus.PROCESSING)
-        pending = sum(1 for job in self.jobs if job.status == JobStatus.PENDING)
+        processing = sum(
+            1 for job in self.jobs if job.status == JobStatus.PROCESSING
+        )
+        pending = sum(
+            1 for job in self.jobs if job.status == JobStatus.PENDING
+        )
 
         percent = ((completed + failed) / total * 100) if total > 0 else 0.0
 
@@ -495,5 +575,5 @@ Batch Log:        {self.config.get_batch_log_path().name}
             "failed": failed,
             "pending": pending,
             "processing": processing,
-            "percent_complete": percent
+            "percent_complete": percent,
         }

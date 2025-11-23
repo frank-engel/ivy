@@ -81,6 +81,7 @@ class JobResult:
     details : dict
         Additional statistics (velocities, depths, uncertainty, etc.)
     """
+
     job_id: str
     video_name: str
     status: str
@@ -137,6 +138,7 @@ class BatchResults:
     total_time : float
         Total processing time (seconds)
     """
+
     jobs: List[JobResult]
     output_folder: str
     summary_csv: str
@@ -205,7 +207,7 @@ def run_batch_processing(
     output_folder: str,
     stop_on_error: bool = False,
     save_projects: bool = False,
-    progress_callback: Optional[Callable[[int, int, str, str], None]] = None
+    progress_callback: Optional[Callable[[int, int, str, str], None]] = None,
 ) -> BatchResults:
     """Run batch image velocimetry analysis on multiple videos.
 
@@ -341,7 +343,9 @@ def run_batch_processing(
     output_path = Path(output_folder)
 
     if not scaffold_path.exists():
-        raise FileNotFoundError(f"Scaffold project not found: {scaffold_project}")
+        raise FileNotFoundError(
+            f"Scaffold project not found: {scaffold_project}"
+        )
 
     if not csv_path.exists():
         raise FileNotFoundError(f"Batch CSV not found: {batch_csv}")
@@ -352,15 +356,18 @@ def run_batch_processing(
         batch_csv_path=str(csv_path),
         output_dir=str(output_path),
         stop_on_first_failure=stop_on_error,
-        save_ivy_projects=save_projects
+        save_ivy_projects=save_projects,
     )
 
     # Set up progress callback if provided
     if progress_callback:
+
         def _internal_callback(current_job, total_jobs, job_id, status_msg):
             # Extract video name from job for callback
             video_name = "unknown"
-            if hasattr(processor, 'jobs') and current_job <= len(processor.jobs):
+            if hasattr(processor, "jobs") and current_job <= len(
+                processor.jobs
+            ):
                 job = processor.jobs[current_job - 1]
                 video_name = Path(job.video_path).name
 
@@ -371,6 +378,7 @@ def run_batch_processing(
 
     # Run batch processing
     import time
+
     start_time = time.time()
 
     try:
@@ -403,7 +411,7 @@ def run_batch_processing(
             alpha=job.alpha,
             processing_time=job.processing_time or 0.0,
             error_message=job.error_message,
-            details=job.result_details or {}
+            details=job.result_details or {},
         )
         job_results.append(job_result)
 
@@ -421,7 +429,7 @@ def run_batch_processing(
         total_jobs=len(job_results),
         successful_jobs=successful,
         failed_jobs=failed,
-        total_time=total_time
+        total_time=total_time,
     )
 
     return results

@@ -38,7 +38,7 @@ def valid_scaffold_file(temp_dir):
     scaffold_path = Path(temp_dir) / "scaffold.ivy"
 
     # Create a minimal valid scaffold
-    with zipfile.ZipFile(scaffold_path, 'w') as zipf:
+    with zipfile.ZipFile(scaffold_path, "w") as zipf:
         project_data = {
             "rectification_parameters": {
                 "method": "camera matrix",
@@ -83,12 +83,14 @@ def output_dir(temp_dir):
 class TestBatchProcessorInitialization:
     """Tests for BatchProcessor initialization."""
 
-    def test_init_with_valid_config(self, valid_scaffold_file, valid_batch_csv, output_dir):
+    def test_init_with_valid_config(
+        self, valid_scaffold_file, valid_batch_csv, output_dir
+    ):
         """Test initialization with valid configuration."""
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         assert processor.config is not None
@@ -105,44 +107,54 @@ class TestBatchProcessorInitialization:
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
             output_dir=output_dir,
-            stop_on_first_failure=True
+            stop_on_first_failure=True,
         )
 
         assert processor.config.stop_on_first_failure is True
 
-    def test_init_with_invalid_scaffold_raises_error(self, valid_batch_csv, output_dir, temp_dir):
+    def test_init_with_invalid_scaffold_raises_error(
+        self, valid_batch_csv, output_dir, temp_dir
+    ):
         """Test that invalid scaffold path raises BatchValidationError."""
         invalid_scaffold = str(Path(temp_dir) / "nonexistent.ivy")
 
-        with pytest.raises(BatchValidationError, match="Configuration validation failed"):
+        with pytest.raises(
+            BatchValidationError, match="Configuration validation failed"
+        ):
             BatchProcessor(
                 scaffold_path=invalid_scaffold,
                 batch_csv_path=valid_batch_csv,
-                output_dir=output_dir
+                output_dir=output_dir,
             )
 
-    def test_init_with_invalid_csv_raises_error(self, valid_scaffold_file, output_dir, temp_dir):
+    def test_init_with_invalid_csv_raises_error(
+        self, valid_scaffold_file, output_dir, temp_dir
+    ):
         """Test that invalid CSV path raises BatchValidationError."""
         invalid_csv = str(Path(temp_dir) / "nonexistent.csv")
 
-        with pytest.raises(BatchValidationError, match="Configuration validation failed"):
+        with pytest.raises(
+            BatchValidationError, match="Configuration validation failed"
+        ):
             BatchProcessor(
                 scaffold_path=valid_scaffold_file,
                 batch_csv_path=invalid_csv,
-                output_dir=output_dir
+                output_dir=output_dir,
             )
 
-    def test_init_initializes_services(self, valid_scaffold_file, valid_batch_csv, output_dir):
+    def test_init_initializes_services(
+        self, valid_scaffold_file, valid_batch_csv, output_dir
+    ):
         """Test that initialization creates service instances."""
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
-        assert hasattr(processor, 'csv_parser')
-        assert hasattr(processor, 'scaffold_loader')
-        assert hasattr(processor, 'job_executor')
+        assert hasattr(processor, "csv_parser")
+        assert hasattr(processor, "scaffold_loader")
+        assert hasattr(processor, "job_executor")
         assert processor.csv_parser is not None
         assert processor.scaffold_loader is not None
         assert processor.job_executor is not None
@@ -151,11 +163,11 @@ class TestBatchProcessorInitialization:
 class TestBatchProcessorSetup:
     """Tests for batch processor setup methods."""
 
-    @patch.object(BatchProcessor, '_cleanup')
-    @patch.object(BatchProcessor, '_generate_summary')
-    @patch.object(BatchProcessor, '_execute_all_jobs')
-    @patch.object(BatchProcessor, '_parse_batch_csv')
-    @patch.object(BatchProcessor, '_load_scaffold')
+    @patch.object(BatchProcessor, "_cleanup")
+    @patch.object(BatchProcessor, "_generate_summary")
+    @patch.object(BatchProcessor, "_execute_all_jobs")
+    @patch.object(BatchProcessor, "_parse_batch_csv")
+    @patch.object(BatchProcessor, "_load_scaffold")
     def test_setup_output_directory(
         self,
         mock_load_scaffold,
@@ -165,13 +177,13 @@ class TestBatchProcessorSetup:
         mock_cleanup,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test that _setup_output_directory creates the directory."""
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         # Mock methods to avoid full execution
@@ -188,9 +200,15 @@ class TestBatchProcessorSetup:
 class TestBatchProcessorRun:
     """Tests for run method."""
 
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job"
+    )
     def test_run_successful_batch(
         self,
         mock_execute_job,
@@ -198,7 +216,7 @@ class TestBatchProcessorRun:
         mock_parse_csv,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test successful batch processing run."""
         # Mock scaffold loading
@@ -213,13 +231,13 @@ class TestBatchProcessorRun:
             BatchJob(
                 job_id="test_001",
                 video_path="videos/test1.mp4",
-                water_surface_elevation=318.211
+                water_surface_elevation=318.211,
             ),
             BatchJob(
                 job_id="test_002",
                 video_path="videos/test2.mp4",
-                water_surface_elevation=318.6
-            )
+                water_surface_elevation=318.6,
+            ),
         ]
         mock_parse_csv.return_value = mock_jobs
 
@@ -228,14 +246,14 @@ class TestBatchProcessorRun:
             "discharge": 5.32,
             "area": 12.5,
             "processing_time": 120.0,
-            "job_output_dir": "/tmp/output/job_001"
+            "job_output_dir": "/tmp/output/job_001",
         }
 
         # Run batch processor
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         jobs = processor.run()
@@ -249,9 +267,15 @@ class TestBatchProcessorRun:
         summary_path = Path(output_dir) / "batch_summary.csv"
         assert summary_path.exists()
 
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job"
+    )
     def test_run_with_job_failures(
         self,
         mock_execute_job,
@@ -259,7 +283,7 @@ class TestBatchProcessorRun:
         mock_parse_csv,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test batch processing with some job failures."""
         from image_velocimetry_tools.batch.exceptions import JobExecutionError
@@ -276,13 +300,13 @@ class TestBatchProcessorRun:
             BatchJob(
                 job_id="test_001",
                 video_path="videos/test1.mp4",
-                water_surface_elevation=318.211
+                water_surface_elevation=318.211,
             ),
             BatchJob(
                 job_id="test_002",
                 video_path="videos/test2.mp4",
-                water_surface_elevation=318.6
-            )
+                water_surface_elevation=318.6,
+            ),
         ]
         mock_parse_csv.return_value = mock_jobs
 
@@ -292,16 +316,16 @@ class TestBatchProcessorRun:
                 "discharge": 5.32,
                 "area": 12.5,
                 "processing_time": 120.0,
-                "job_output_dir": "/tmp/output/job_001"
+                "job_output_dir": "/tmp/output/job_001",
             },
-            JobExecutionError("Video file not found")
+            JobExecutionError("Video file not found"),
         ]
 
         # Run batch processor
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         jobs = processor.run()
@@ -312,9 +336,15 @@ class TestBatchProcessorRun:
         assert jobs[1].status == JobStatus.FAILED
         assert jobs[1].error_message is not None
 
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job"
+    )
     def test_run_with_stop_on_first_failure(
         self,
         mock_execute_job,
@@ -322,7 +352,7 @@ class TestBatchProcessorRun:
         mock_parse_csv,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test batch processing stops on first failure when configured."""
         from image_velocimetry_tools.batch.exceptions import JobExecutionError
@@ -336,21 +366,26 @@ class TestBatchProcessorRun:
 
         # Mock CSV parsing - 3 jobs
         mock_jobs = [
-            BatchJob(job_id=f"test_{i:03d}", video_path=f"video{i}.mp4",
-                    water_surface_elevation=318.0)
+            BatchJob(
+                job_id=f"test_{i:03d}",
+                video_path=f"video{i}.mp4",
+                water_surface_elevation=318.0,
+            )
             for i in range(1, 4)
         ]
         mock_parse_csv.return_value = mock_jobs
 
         # First job fails
-        mock_execute_job.side_effect = JobExecutionError("Video file not found")
+        mock_execute_job.side_effect = JobExecutionError(
+            "Video file not found"
+        )
 
         # Run batch processor with stop_on_first_failure=True
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
             output_dir=output_dir,
-            stop_on_first_failure=True
+            stop_on_first_failure=True,
         )
 
         jobs = processor.run()
@@ -365,9 +400,15 @@ class TestBatchProcessorRun:
 class TestBatchProcessorGenerateSummary:
     """Tests for _generate_summary method."""
 
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job"
+    )
     def test_generate_summary_creates_csv(
         self,
         mock_execute_job,
@@ -375,7 +416,7 @@ class TestBatchProcessorGenerateSummary:
         mock_parse_csv,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test that summary CSV is generated correctly."""
         # Mock scaffold loading
@@ -392,7 +433,7 @@ class TestBatchProcessorGenerateSummary:
                 video_path="videos/test1.mp4",
                 water_surface_elevation=318.211,
                 measurement_number=1,
-                comments="Test job"
+                comments="Test job",
             )
         ]
         mock_parse_csv.return_value = mock_jobs
@@ -402,14 +443,14 @@ class TestBatchProcessorGenerateSummary:
             "discharge": 5.32,
             "area": 12.5,
             "processing_time": 120.0,
-            "job_output_dir": "/tmp/output/job_001"
+            "job_output_dir": "/tmp/output/job_001",
         }
 
         # Run batch processor
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         processor.run()
@@ -433,21 +474,25 @@ class TestBatchProcessorGenerateSummary:
 class TestBatchProcessorGetProgress:
     """Tests for get_progress method."""
 
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
     def test_get_progress_no_jobs(
         self,
         mock_parse_csv,
         mock_load_scaffold,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test get_progress with no jobs."""
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         progress = processor.get_progress()
@@ -466,13 +511,16 @@ class TestBatchProcessorGetProgress:
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         # Manually create jobs with different statuses
         processor.jobs = [
-            BatchJob(job_id=f"job_{i}", video_path=f"video{i}.mp4",
-                    water_surface_elevation=318.0)
+            BatchJob(
+                job_id=f"job_{i}",
+                video_path=f"video{i}.mp4",
+                water_surface_elevation=318.0,
+            )
             for i in range(5)
         ]
 
@@ -490,41 +538,51 @@ class TestBatchProcessorGetProgress:
         assert progress["failed"] == 1
         assert progress["processing"] == 1
         assert progress["pending"] == 1
-        assert progress["percent_complete"] == 60.0  # (2 completed + 1 failed) / 5 * 100
+        assert (
+            progress["percent_complete"] == 60.0
+        )  # (2 completed + 1 failed) / 5 * 100
 
 
 class TestBatchProcessorErrorHandling:
     """Tests for error handling in BatchProcessor."""
 
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
     def test_run_with_scaffold_load_failure(
         self,
         mock_load_scaffold,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test that scaffold loading failure is handled."""
-        mock_load_scaffold.side_effect = InvalidScaffoldError("Invalid scaffold")
+        mock_load_scaffold.side_effect = InvalidScaffoldError(
+            "Invalid scaffold"
+        )
 
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         with pytest.raises(BatchProcessingError, match="Invalid scaffold"):
             processor.run()
 
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
     def test_run_with_csv_parse_failure(
         self,
         mock_parse_csv,
         mock_load_scaffold,
         valid_scaffold_file,
         valid_batch_csv,
-        output_dir
+        output_dir,
     ):
         """Test that CSV parsing failure is handled."""
         mock_load_scaffold.return_value = {
@@ -538,7 +596,7 @@ class TestBatchProcessorErrorHandling:
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         with pytest.raises(BatchProcessingError, match="Invalid CSV"):
@@ -548,9 +606,15 @@ class TestBatchProcessorErrorHandling:
 class TestBatchProcessorPathResolution:
     """Tests for path resolution in batch processor."""
 
-    @patch('image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv')
-    @patch('image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold')
-    @patch('image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job')
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.BatchCSVParser.parse_csv"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.ScaffoldLoader.load_scaffold"
+    )
+    @patch(
+        "image_velocimetry_tools.services.batch_processor.JobExecutor.execute_job"
+    )
     def test_resolve_relative_video_paths(
         self,
         mock_execute_job,
@@ -559,7 +623,7 @@ class TestBatchProcessorPathResolution:
         valid_scaffold_file,
         valid_batch_csv,
         output_dir,
-        temp_dir
+        temp_dir,
     ):
         """Test that relative video paths are resolved correctly."""
         # Mock scaffold loading
@@ -580,7 +644,7 @@ class TestBatchProcessorPathResolution:
         mock_job = BatchJob(
             job_id="test_001",
             video_path="videos/test1.mp4",  # Relative path
-            water_surface_elevation=318.211
+            water_surface_elevation=318.211,
         )
         mock_parse_csv.return_value = [mock_job]
 
@@ -589,14 +653,14 @@ class TestBatchProcessorPathResolution:
             "discharge": 5.0,
             "area": 10.0,
             "processing_time": 100.0,
-            "job_output_dir": "/tmp/output/job_001"
+            "job_output_dir": "/tmp/output/job_001",
         }
 
         # Run batch processor
         processor = BatchProcessor(
             scaffold_path=valid_scaffold_file,
             batch_csv_path=valid_batch_csv,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         jobs = processor.run()

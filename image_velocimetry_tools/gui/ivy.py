@@ -91,8 +91,9 @@ from image_velocimetry_tools.gui.HomographyDistanceConversionTool import (
 from image_velocimetry_tools.gui.LensCharacteristics import LensCharacteristics
 from image_velocimetry_tools.gui.adddocumentation import AddDocumentation
 from image_velocimetry_tools.gui.dialogs.IVy_GUI import Ui_MainWindow
-from image_velocimetry_tools.gui.dialogs.settings import \
-    Settings as Settings_Dialog
+from image_velocimetry_tools.gui.dialogs.settings import (
+    Settings as Settings_Dialog,
+)
 from image_velocimetry_tools.gui.discharge import DischargeTab
 from image_velocimetry_tools.exportpdf import Report
 from image_velocimetry_tools.gui.filesystem import (
@@ -102,21 +103,37 @@ from image_velocimetry_tools.gui.filesystem import (
 )
 from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.services.project_service import ProjectService
-from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
-from image_velocimetry_tools.services.image_stack_service import ImageStackService
+from image_velocimetry_tools.services.orthorectification_service import (
+    OrthorectificationService,
+)
+from image_velocimetry_tools.services.image_stack_service import (
+    ImageStackService,
+)
 from image_velocimetry_tools.services.grid_service import GridService
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
 from image_velocimetry_tools.gui.models.grid_model import GridModel
 from image_velocimetry_tools.gui.models.settings_model import SettingsModel
-from image_velocimetry_tools.gui.controllers.video_controller import VideoController
-from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
-from image_velocimetry_tools.gui.controllers.ortho_controller import OrthoController
-from image_velocimetry_tools.gui.controllers.grid_controller import GridController
-from image_velocimetry_tools.gui.controllers.settings_controller import SettingsController
-from image_velocimetry_tools.gui.gridding import GridPreparationTab, \
-    GridGenerator
+from image_velocimetry_tools.gui.controllers.video_controller import (
+    VideoController,
+)
+from image_velocimetry_tools.gui.controllers.project_controller import (
+    ProjectController,
+)
+from image_velocimetry_tools.gui.controllers.ortho_controller import (
+    OrthoController,
+)
+from image_velocimetry_tools.gui.controllers.grid_controller import (
+    GridController,
+)
+from image_velocimetry_tools.gui.controllers.settings_controller import (
+    SettingsController,
+)
+from image_velocimetry_tools.gui.gridding import (
+    GridPreparationTab,
+    GridGenerator,
+)
 from image_velocimetry_tools.gui.image_browser import ImageBrowserTab
 from image_velocimetry_tools.gui.reporting import ReportingTab
 from image_velocimetry_tools.gui.stiv_helper import StivHelper
@@ -131,8 +148,9 @@ from image_velocimetry_tools.image_processing_tools import (
     flip_image_array,
     flip_and_save_images,
 )
-from image_velocimetry_tools.image_processing_tools import \
-    image_file_to_numpy_array
+from image_velocimetry_tools.image_processing_tools import (
+    image_file_to_numpy_array,
+)
 from image_velocimetry_tools.opencv_tools import opencv_get_video_metadata
 from image_velocimetry_tools.orthorectification import (
     CameraHelper,
@@ -162,7 +180,8 @@ logging.basicConfig(filename=None, level=logging.DEBUG)
 import ctypes
 
 myappid = (
-    f"USGS.ImageVelocityTools." f"image_velocimetry_tools.{__version__}.{__author__}"
+    f"USGS.ImageVelocityTools."
+    f"image_velocimetry_tools.{__version__}.{__author__}"
 )
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
@@ -237,12 +256,16 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.__icon_path__ = "icons"
         self.setWindowTitle(f"{self.__program_name__} v{self.__version__}")
         self.setWindowIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "IVy_logo.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "IVy_logo.svg")
+            )
         )
 
         # Init the temporary swap directory structure
         self.swap_directory = create_temp_directory()
-        self.file_system_watcher = QtCore.QFileSystemWatcher([self.swap_directory])
+        self.file_system_watcher = QtCore.QFileSystemWatcher(
+            [self.swap_directory]
+        )
         self.swap_image_directory = safe_make_directory(
             os.path.join(self.swap_directory, "1-images")
         )
@@ -266,7 +289,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Init the Project Structure Tree Views
         self.file_system_model = FileSystemModelManager(self.swap_directory)
         self.setup_tree_view(self.treeviewProjectStructureImageryProcessingTab)
-        self.setup_tree_view(self.treeviewProjectStructureOrthorectificationTab)
+        self.setup_tree_view(
+            self.treeviewProjectStructureOrthorectificationTab
+        )
         self.setup_tree_view(self.treeviewProjectStructureGridPreparationTab)
         self.setup_tree_view(self.treeviewProjectStructureSTIVTab)
         self.setup_tree_view(self.treeviewProjectStructureSTIVTabOpt)
@@ -333,7 +358,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.units_label = "English"
         self.display_units = "English"
         try:
-            ss = self.sticky_settings.set("last_display_units", self.display_units)
+            ss = self.sticky_settings.set(
+                "last_display_units", self.display_units
+            )
         except KeyError:
             self.sticky_settings.new("last_display_units", self.display_units)
         self.actionUnits.setEnabled(False)
@@ -417,7 +444,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         "Set as Cross-section Background Image", self
                     )
                     xs_action.triggered.connect(
-                        lambda: self.set_cross_section_background_image(image_path)
+                        lambda: self.set_cross_section_background_image(
+                            image_path
+                        )
                     )
                     menu.addAction(xs_action)
 
@@ -426,7 +455,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         "Set as Grid Preparation Background Image", self
                     )
                     grid_action.triggered.connect(
-                        lambda: self.set_grid_preparation_background_image(image_path)
+                        lambda: self.set_grid_preparation_background_image(
+                            image_path
+                        )
                     )
                     menu.addAction(grid_action)
 
@@ -435,7 +466,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         "Set as Image Velocimetry Background Image", self
                     )
                     image_action.triggered.connect(
-                        lambda: self.set_image_velocimetry_background_image(image_path)
+                        lambda: self.set_image_velocimetry_background_image(
+                            image_path
+                        )
                     )
                     menu.addAction(image_action)
 
@@ -521,7 +554,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 icon=self.__icon_path__ + os.sep + "IVy_logo.ico",
             )
             if result == "yes":
-                self.gridpreparation.imageBrowser.scene.load_image(image_filename)
+                self.gridpreparation.imageBrowser.scene.load_image(
+                    image_filename
+                )
                 self.warning_dialog(
                     title="Background image set",
                     message="Background image successfully applied",
@@ -671,7 +706,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         try:
                             shutil.copytree(file_path, save_folder_path)
                         except Exception as e:
-                            print(f"An error occurred while copying the folder: {e}")
+                            print(
+                                f"An error occurred while copying the folder: {e}"
+                            )
 
                 elif os.path.isfile(file_path):
                     # Use QFileDialog to choose a save location for the file
@@ -683,7 +720,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         try:
                             shutil.copyfile(file_path, save_path)
                         except Exception as e:
-                            print(f"An error occurred while copying the file: {e}")
+                            print(
+                                f"An error occurred while copying the file: {e}"
+                            )
 
     def new_project(self):
         """Create a new IVy Project, discarding all currently loaded data.
@@ -713,7 +752,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # - Reinit all Image Browsers
         # - Clear project trees
 
-        logging.warning("new_project() is a minimal implementation - full cleanup pending")
+        logging.warning(
+            "new_project() is a minimal implementation - full cleanup pending"
+        )
 
     def _draw_cross_section_line(self):
         """Draw the rectified cross-section line on the image."""
@@ -781,10 +822,16 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Get the loaded project data
         json_filename = os.path.join(self.swap_directory, "project_data.json")
         try:
-            project_dict = self.project_service.load_project_from_json(json_filename)
-            project_dict["project_file_path"] = self.project_model.project_filename
+            project_dict = self.project_service.load_project_from_json(
+                json_filename
+            )
+            project_dict["project_file_path"] = (
+                self.project_model.project_filename
+            )
         except (FileNotFoundError, ValueError, IOError) as e:
-            logging.error(f"Error loading project data after successful open: {str(e)}")
+            logging.error(
+                f"Error loading project data after successful open: {str(e)}"
+            )
             return
 
         # Update self.project_filename for backwards compatibility
@@ -800,7 +847,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.comments.load_dict(comments)
                     self.update_comment_tbl()
             else:
-                logging.debug(f"No comments in the supplied *.ivy Project file.")
+                logging.debug(
+                    f"No comments in the supplied *.ivy Project file."
+                )
         except Exception as e:
             logging.error(f"An error occurred while loading comments: {e}")
 
@@ -819,10 +868,14 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
                 self.reporting.party = reporting.get("party")
-                set_text_if_not_none(reporting.get("party"), self.partyLineEdit)
+                set_text_if_not_none(
+                    reporting.get("party"), self.partyLineEdit
+                )
 
                 self.reporting.weather = reporting.get("weather")
-                set_text_if_not_none(reporting.get("weather"), self.weatherLineEdit)
+                set_text_if_not_none(
+                    reporting.get("weather"), self.weatherLineEdit
+                )
 
                 self.reporting.meas_date = reporting.get("meas_date")
                 set_date(reporting.get("meas_date"), self.measDate)
@@ -844,7 +897,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 self.reporting.meas_number = reporting.get("meas_number")
                 set_value_if_not_none(
-                    reporting.get("meas_number"), self.measurementNumberspinBox, int
+                    reporting.get("meas_number"),
+                    self.measurementNumberspinBox,
+                    int,
                 )
 
                 self.reporting.project_description = reporting.get(
@@ -863,9 +918,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.video_metadata = project_dict["video_metadata"]
                 self.set_video_metadata(self.video_metadata)
         else:
-            msg = (
-                f"OPEN PROJECT: Project file does not contain a video file location"
-            )
+            msg = f"OPEN PROJECT: Project file does not contain a video file location"
             logging.error(msg)
             self.warning_dialog(
                 f"Error Opening Project",
@@ -892,8 +945,18 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
                 return
         try:
-            start_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["start_time"]) * 1000  # ms
-            end_time = hhmmss_to_seconds(project_dict["ffmpeg_parameters"]["end_time"]) * 1000   # ms
+            start_time = (
+                hhmmss_to_seconds(
+                    project_dict["ffmpeg_parameters"]["start_time"]
+                )
+                * 1000
+            )  # ms
+            end_time = (
+                hhmmss_to_seconds(
+                    project_dict["ffmpeg_parameters"]["end_time"]
+                )
+                * 1000
+            )  # ms
 
             # Update model - this will emit signals that update UI
             self.video_model.set_clip_times(start_time, end_time)
@@ -973,7 +1036,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.video_model.video_strip_audio = self.video_strip_audio
             self.video_model.video_normalize_luma = self.video_normalize_luma
             self.video_model.video_curve_preset = self.video_curve_preset
-            self.video_model.video_ffmpeg_stabilize = self.video_ffmpeg_stabilize
+            self.video_model.video_ffmpeg_stabilize = (
+                self.video_ffmpeg_stabilize
+            )
         except:
             msg = f"OPEN PROJECT: Unable to load video metadata"
             logging.error(msg)
@@ -1034,8 +1099,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # labels are updated even if clip times haven't changed from defaults
             self.video_controller._show_clip_information()
         except:
-            msg = (f"OPEN PROJECT: Unable to set frame extraction "
-                   f"information")
+            msg = (
+                f"OPEN PROJECT: Unable to set frame extraction " f"information"
+            )
             logging.error(msg)
             self.warning_dialog(
                 f"Error Opening Project",
@@ -1050,7 +1116,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             # There are image frames
             if project_dict["imagebrowser_sequence"] is not None:
-                self.imagebrowser.sequence_index = project_dict["sequence_index"]
+                self.imagebrowser.sequence_index = project_dict[
+                    "sequence_index"
+                ]
                 self.imagebrowser.sequence = [
                     os.path.join(self.swap_image_directory, item)
                     for item in project_dict["imagebrowser_sequence"]
@@ -1082,7 +1150,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Load a GCP image if available
         try:
             calibration_image_path = os.path.join(
-                self.swap_orthorectification_directory, "!calibration_image.jpg"
+                self.swap_orthorectification_directory,
+                "!calibration_image.jpg",
             )
 
             if os.path.exists(
@@ -1090,7 +1159,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             ):  # Check for !calibration_image.jpg
                 self.ortho_original_image.open(filepath=calibration_image_path)
                 self.ortho_original_image.setEnabled(True)
-                self.set_menu_item_color("actionOpen_Ground_Control_Image", "good")
+                self.set_menu_item_color(
+                    "actionOpen_Ground_Control_Image", "good"
+                )
             elif (
                 "last_ortho_gcp_image_path" in project_dict
                 and project_dict["last_ortho_gcp_image_path"] is not None
@@ -1181,7 +1252,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Load GCP Points table
         try:
             ground_control_points_path = os.path.join(
-                self.swap_orthorectification_directory, "ground_control_points.csv"
+                self.swap_orthorectification_directory,
+                "ground_control_points.csv",
             )
 
             if os.path.exists(ground_control_points_path):
@@ -1221,10 +1293,13 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Water surface elevation
         try:
             if project_dict.get("water_surface_elevation") is not None:
-                self.ortho_rectified_wse_m = project_dict["water_surface_elevation"]
+                self.ortho_rectified_wse_m = project_dict[
+                    "water_surface_elevation"
+                ]
                 self.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(
-                    self.ortho_rectified_wse_m *
-                    units_conversion(self.display_units)['L'])
+                    self.ortho_rectified_wse_m
+                    * units_conversion(self.display_units)["L"]
+                )
 
                 # Propagate WSE to cross-section and discharge components
                 # This emits signal_wse_changed which updates the areacomp backend
@@ -1267,7 +1342,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
             # Apply the same flip X & Y the user saved.
 
-
             if project_dict["pixel_ground_scale_distance_m"] is not None:
                 self.rectify_single_frame()
                 self.set_button_color("buttonRectifyCurrentImage", "good")
@@ -1306,16 +1380,19 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     )
 
             cross_section_start_bank = project_dict.get(
-                "cross_section_start_bank")
+                "cross_section_start_bank"
+            )
             if cross_section_start_bank is not None:
                 self.cross_section_start_bank = cross_section_start_bank
 
             cross_section_line = project_dict.get("cross_section_line")
             if cross_section_line is not None:
                 self.cross_section_line = deserialize_numpy_array(
-                    cross_section_line)
-                self.cross_section_rectified_eps = self.cross_section_line.reshape(
-                    2, 2)
+                    cross_section_line
+                )
+                self.cross_section_rectified_eps = (
+                    self.cross_section_line.reshape(2, 2)
+                )
 
                 # Update the UI
                 self._draw_cross_section_line()
@@ -1346,7 +1423,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # Handle cross-section grid
             if project_dict.get("is_cross_section_grid"):
                 self.is_cross_section_grid = True
-                num_points = project_dict.get("number_grid_points_along_xs_line")
+                num_points = project_dict.get(
+                    "number_grid_points_along_xs_line"
+                )
 
                 if num_points:
                     self.rectify_single_frame()
@@ -1367,8 +1446,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 if self.cross_section_line_exists:
                     self.gridpreparation.add_line_of_given_length()
-                    num_points = project_dict.get("number_grid_points_along_xs_line",
-                                                  0)
+                    num_points = project_dict.get(
+                        "number_grid_points_along_xs_line", 0
+                    )
                     self.spinbocXsLineNumPoints.setValue(num_points)
                     self.create_line_grid(mode="cross_section")
 
@@ -1385,14 +1465,22 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # Set Keys that map directly to attributes and widgets
             stiv_params = [
                 ("stiv_dphi", "stiv_dphi", self.spinboxSTIVdPhi),
-                ("stiv_phi_origin", "stiv_phi_origin",
-                 self.spinboxSTIVPhiOrigin),
-                ("stiv_phi_range", "stiv_phi_range",
-                 self.spinboxSTIVPhiRange),
-                ("stiv_max_vel_threshold_mps", "stiv_max_vel_threshold_mps",
-                 self.spinboxSTIVMaxVelThreshold),
-                ("stiv_gaussian_blur_sigma", "stiv_gaussian_blur_sigma",
-                 self.doublespinboxStivGaussianBlurSigma),
+                (
+                    "stiv_phi_origin",
+                    "stiv_phi_origin",
+                    self.spinboxSTIVPhiOrigin,
+                ),
+                ("stiv_phi_range", "stiv_phi_range", self.spinboxSTIVPhiRange),
+                (
+                    "stiv_max_vel_threshold_mps",
+                    "stiv_max_vel_threshold_mps",
+                    self.spinboxSTIVMaxVelThreshold,
+                ),
+                (
+                    "stiv_gaussian_blur_sigma",
+                    "stiv_gaussian_blur_sigma",
+                    self.doublespinboxStivGaussianBlurSigma,
+                ),
             ]
 
             for key, attr, item in stiv_params:
@@ -1404,13 +1492,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # Special handling for stiv_num_pixels since it has extra logic
             stiv_num_pixels = project_dict.get("stiv_num_pixels")
             stiv_search_line_length = project_dict.get(
-                "stiv_search_line_length_m")
-            if stiv_num_pixels is not None and self.pixel_ground_scale_distance_m is not None:
+                "stiv_search_line_length_m"
+            )
+            if (
+                stiv_num_pixels is not None
+                and self.pixel_ground_scale_distance_m is not None
+            ):
                 self.stiv_num_pixels = stiv_num_pixels
 
                 if stiv_search_line_length is None:  # Will be meters
                     self.stiv_search_line_length_m = (
-                            stiv_num_pixels * self.pixel_ground_scale_distance_m
+                        stiv_num_pixels * self.pixel_ground_scale_distance_m
                     )
                 else:
                     self.stiv_search_line_length_m = stiv_search_line_length
@@ -1419,7 +1511,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.doublespinboxStivSearchLineDistance.setValue(
                     self.stiv_search_line_length_m * self.survey_units["L"]
                 )
-
 
         except (TypeError, AttributeError, KeyError) as e:
             logging.warning(f"Failed to load STIV parameters: {e}")
@@ -1430,16 +1521,21 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             normals = project_dict.get("stiv_magnitude_normals")
             if normals is not None:
                 self.stiv.magnitude_normals_mps = deserialize_numpy_array(
-                    normals)
+                    normals
+                )
 
             # Load STIV Magnitudes and Directions if available
             magnitudes_mps = project_dict.get("stiv_magnitudes")
             if magnitudes_mps is not None:
                 self.results_grid = deserialize_numpy_array(
-                    project_dict["results_grid"])
-                self.stiv.magnitudes_mps = deserialize_numpy_array(magnitudes_mps)
+                    project_dict["results_grid"]
+                )
+                self.stiv.magnitudes_mps = deserialize_numpy_array(
+                    magnitudes_mps
+                )
                 self.stiv.directions = deserialize_numpy_array(
-                    project_dict["stiv_directions"])
+                    project_dict["stiv_directions"]
+                )
 
                 directions_rad = np.radians(self.stiv.directions)
                 X = self.results_grid[:, 0].astype(float)
@@ -1447,7 +1543,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 # Attempt to load from CSV (overrides the above if successful)
                 csv_file_path = os.path.join(
-                    self.swap_velocities_directory, "stiv_results.csv")
+                    self.swap_velocities_directory, "stiv_results.csv"
+                )
                 csv_data = self._load_stiv_results_from_csv(csv_file_path)
                 if csv_data:
                     X = csv_data["X"]
@@ -1498,10 +1595,18 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         norm_vectors[~nan_indices, 3],
                         global_scale=self.vector_scale,
                     )
-                    plot_quivers(self.stiv.imageBrowser, vectors_draw,
-                                 "green", Qt.DotLine)
-                    plot_quivers(self.stiv.imageBrowser, norm_vectors_draw,
-                                 "yellow", Qt.SolidLine)
+                    plot_quivers(
+                        self.stiv.imageBrowser,
+                        vectors_draw,
+                        "green",
+                        Qt.DotLine,
+                    )
+                    plot_quivers(
+                        self.stiv.imageBrowser,
+                        norm_vectors_draw,
+                        "yellow",
+                        Qt.SolidLine,
+                    )
                 self.stiv.magnitude_normals_mps = np.abs(scalar_projections)
                 self.stiv_exists = True
 
@@ -1514,7 +1619,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
                 # Load any STIs
-                if glob.glob(os.path.join(self.swap_image_directory, "STI*.jpg")):
+                if glob.glob(
+                    os.path.join(self.swap_image_directory, "STI*.jpg")
+                ):
                     thetas = project_dict.get("thetas", None)
                     if thetas is not None:
                         self.stiv.thetas = deserialize_numpy_array(thetas)
@@ -1532,7 +1639,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     "manual_average_directions", None
                 )
                 if manual_average_directions is not None:
-                    self.sti.manual_average_directions = manual_average_directions
+                    self.sti.manual_average_directions = (
+                        manual_average_directions
+                    )
                     self.is_manual_sti_corrections = True
                     for row, average_direction in enumerate(
                         manual_average_directions
@@ -1552,7 +1661,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                             gsd = self.pixel_ground_scale_distance_m
                             dt = self.extraction_timestep_ms / 1000
                             manual_velocity = (
-                                -np.tan(np.deg2rad(average_direction)) * gsd / dt
+                                -np.tan(np.deg2rad(average_direction))
+                                * gsd
+                                / dt
                             )
                             new_item = QtWidgets.QTableWidgetItem(
                                 f"{manual_velocity * self.survey_units['V']:.2f}"
@@ -1596,7 +1707,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
             # If we got here, enable the Report Button
             self.toolButtonExportPDF.setEnabled(True)
-
 
         # Update this associated with last process step
         process_step = project_dict.get("process_step")
@@ -1647,7 +1757,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             image_stack_exists = False
         stiv_exist = np.logical_or(
-            "stiv_magnitudes" in project_dict, "stiv_opt_magnitudes" in project_dict
+            "stiv_magnitudes" in project_dict,
+            "stiv_opt_magnitudes" in project_dict,
         )
         if stiv_exist and not image_stack_exists:
             message = (
@@ -1691,7 +1802,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             ss = self.sticky_settings.get("last_video_clip_filename")
             self.video_clip_filename = ss
         except KeyError:
-            self.video_clip_filename = f"{self.ffmpeg_parameters['output_video']}"
+            self.video_clip_filename = (
+                f"{self.ffmpeg_parameters['output_video']}"
+            )
         except FileNotFoundError:
             # Create the settings file
             self.sticky_settings = Settings(self.ivy_settings_file)
@@ -1726,14 +1839,18 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             export_filename = ss
         except KeyError:
             try:
-                export_filename = (f"{QDir.homePath()}{os.sep}"
-                                   f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')} - "
-                                   f"{self.reporting.station_number} - "
-                                   f"{self.reporting.station_name} - "
-                                   f"IVy-Summary"
-                                   f".pdf")
+                export_filename = (
+                    f"{QDir.homePath()}{os.sep}"
+                    f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')} - "
+                    f"{self.reporting.station_number} - "
+                    f"{self.reporting.station_name} - "
+                    f"IVy-Summary"
+                    f".pdf"
+                )
             except:
-                export_filename = f"{QDir.homePath()}{os.sep}IVy Summary " f"Report.pdf"
+                export_filename = (
+                    f"{QDir.homePath()}{os.sep}IVy Summary " f"Report.pdf"
+                )
         except FileNotFoundError:
             # Create the settings file
             self.sticky_settings = Settings(self.ivy_settings_file)
@@ -1759,7 +1876,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         #     self.update_ffmpeg_parameters()
         project_dict = {
             key: value
-            for (key, value) in zip(self.__dict__.keys(), self.__dict__.values())
+            for (key, value) in zip(
+                self.__dict__.keys(), self.__dict__.values()
+            )
             if type(value) == list
             or type(value) == str
             or type(value) == dict
@@ -1815,7 +1934,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if self.region_of_interest_pixels is not None:
             project_dict["region_of_interest_pixels"] = [
-                serialize_numpy_array(arr) for arr in self.region_of_interest_pixels
+                serialize_numpy_array(arr)
+                for arr in self.region_of_interest_pixels
             ]
 
         # Orthorectification
@@ -1824,16 +1944,21 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.ortho_original_image.image_file_path
             )
         project_dict["water_surface_elevation"] = self.ortho_rectified_wse_m
-        project_dict["orthotable_dataframe"] = self.orthotable_dataframe.to_dict()
+        project_dict["orthotable_dataframe"] = (
+            self.orthotable_dataframe.to_dict()
+        )
         project_dict["rectification_parameters"] = dict_arrays_to_list(
             project_dict["rectification_parameters"]
         )
-        project_dict[
-            "pixel_ground_scale_distance_m"] = self.pixel_ground_scale_distance_m
+        project_dict["pixel_ground_scale_distance_m"] = (
+            self.pixel_ground_scale_distance_m
+        )
 
         # Grid Preparation
         if self.results_grid is not None:
-            project_dict["results_grid"] = serialize_numpy_array(self.results_grid)
+            project_dict["results_grid"] = serialize_numpy_array(
+                self.results_grid
+            )
         if self.results_grid_world is not None:
             project_dict["results_grid_world"] = serialize_numpy_array(
                 self.results_grid_world
@@ -1861,8 +1986,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Image velocimetry
         # STIV
         if self.stiv_search_line_length_m is not None:
-            project_dict[
-                "stiv_search_line_length_m"] = self.stiv_search_line_length_m
+            project_dict["stiv_search_line_length_m"] = (
+                self.stiv_search_line_length_m
+            )
         if self.stiv.magnitudes_mps is not None:
             project_dict["stiv_magnitudes"] = serialize_numpy_array(
                 self.stiv.magnitudes_mps
@@ -2055,16 +2181,24 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.extraction_timestep_ms = self.video_timestep_ms
         self.extraction_video_file_name = self.video_file_name
         self.groupboxFrameExtraction.setEnabled(True)
-        self.labelVideoFramerateValue.setText(f"{self.video_frame_rate:.3f} fps")
-        self.labelVideoTimestepValue.setText(f"{self.video_timestep_ms:.4f} ms")
+        self.labelVideoFramerateValue.setText(
+            f"{self.video_frame_rate:.3f} fps"
+        )
+        self.labelVideoTimestepValue.setText(
+            f"{self.video_timestep_ms:.4f} ms"
+        )
         self.labelNumOfFramesValue.setText(f"{self.video_num_frames:d}")
         self.labelVideoResolutionValue.setText(f"{self.video_resolution} px")
         self.labelStartFrameValue.setText("0")
         self.labelEndFrameValue.setText(
             f"{seconds_to_frame_number(float(self.video_duration), self.video_frame_rate)}"
         )
-        self.labelNewFrameRateValue.setText(f"{self.extraction_frame_rate:.3f} fps")
-        self.labelNewTimestepValue.setText(f"{self.extraction_timestep_ms:.4f} ms")
+        self.labelNewFrameRateValue.setText(
+            f"{self.extraction_frame_rate:.3f} fps"
+        )
+        self.labelNewTimestepValue.setText(
+            f"{self.extraction_timestep_ms:.4f} ms"
+        )
         self.labelNewNumFramesValue.setText(f"{self.video_num_frames}")
         # Use parameter instead of self.video_metadata
         self.labelLensCxValue.setText(f"{video_metadata['width'] / 2:.3f}")
@@ -2079,17 +2213,18 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.is_frames_extracted = False
         self.video_metadata = opencv_get_video_metadata(
             self.video_file_name,
-            status_callback=self.signal_opencv_updates.emit
+            status_callback=self.signal_opencv_updates.emit,
         )
 
         self.video_metadata = ffprobe_add_exif_metadata(
-            self.video_file_name,
-            self.video_metadata
+            self.video_file_name, self.video_metadata
         )
 
         self.set_video_metadata(self.video_metadata)
         logging.info("Video Metadata:")
-        logging.info(json.dumps(self.video_metadata, sort_keys=False, indent=4))
+        logging.info(
+            json.dumps(self.video_metadata, sort_keys=False, indent=4)
+        )
 
         # At this point, I can populate the Reporting Tab
         creation_time = self.video_metadata.get("exif_creation_time", None)
@@ -2098,23 +2233,20 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             dt = parse_creation_time(creation_time)
 
         else:  # Fallback: Try to smart parse the file name
-            dt = parse_creation_time(os.path.basename(
-                self.video_file_name))
+            dt = parse_creation_time(os.path.basename(self.video_file_name))
 
         if dt is not None:
             # Set date
-            self.measDate.setDate(
-                QDate(dt.year, dt.month, dt.day))
+            self.measDate.setDate(QDate(dt.year, dt.month, dt.day))
 
             # Set start time (triggers self.start_time_change)
-            self.measStartTime.setTime(
-                QTime(dt.hour, dt.minute, dt.second))
+            self.measStartTime.setTime(QTime(dt.hour, dt.minute, dt.second))
 
             # Compute and set end time (triggers self.end_time_change)
             dt_end = dt + datetime.timedelta(seconds=duration)
             self.measEndTime.setTime(
-                QTime(dt_end.hour, dt_end.minute, dt_end.second))
-
+                QTime(dt_end.hour, dt_end.minute, dt_end.second)
+            )
 
             # Warn the user to check times
             # Not sure if I want this dialog here or not. It locks the
@@ -2134,17 +2266,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.measStartTime.setTime(QTime(0, 0))
             self.measEndTime.setTime(QTime(0, 0))
 
-
-
-
-
-
         self.video_working_path = self.swap_image_directory
         # self.video_working_path = os.path.splitext(self.video_file_name)[0]
         self.video_player.setMedia(
             QMediaContent(QUrl.fromLocalFile(self.video_file_name))
         )
-
 
         self.video_player.setVideoOutput(self.widgetVideo)
         self.buttonPlay.setEnabled(True)
@@ -2152,7 +2278,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_player.play()
         logging.debug(f"Playing {self.video_file_name}")
 
-        self.tabWidget.setCurrentIndex(0)  # Activate the video tab upon playing video
+        self.tabWidget.setCurrentIndex(
+            0
+        )  # Activate the video tab upon playing video
         self.is_video_loaded = True
 
         to_enable = [
@@ -2181,7 +2309,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Tracks video position and updates playhead and time labels"""
         self.sliderVideoPlayHead.setValue(position)
         self.labelVideoPlayheadTime.setText(
-            float_seconds_to_time_string(float(position / 1000), precision="second")
+            float_seconds_to_time_string(
+                float(position / 1000), precision="second"
+            )
             + f" [{seconds_to_frame_number(float(position / 1000), self.video_frame_rate)}]"
         )
 
@@ -2193,7 +2323,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_clip_end_time = 0
         try:
             self.labelVideoDuration.setText(
-                float_seconds_to_time_string(float(duration / 1000), precision="second")
+                float_seconds_to_time_string(
+                    float(duration / 1000), precision="second"
+                )
                 + f" [{seconds_to_frame_number(float(duration / 1000), self.video_frame_rate)}]"
             )
         except:
@@ -2204,13 +2336,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.video_player.state() == QMediaPlayer.PlayingState:
             self.buttonPlay.setIcon(
                 QtGui.QIcon(
-                    resource_path(self.__icon_path__ + os.sep + "pause-solid.svg")
+                    resource_path(
+                        self.__icon_path__ + os.sep + "pause-solid.svg"
+                    )
                 )
             )
         else:
             self.buttonPlay.setIcon(
                 QtGui.QIcon(
-                    resource_path(self.__icon_path__ + os.sep + "play-solid.svg")
+                    resource_path(
+                        self.__icon_path__ + os.sep + "play-solid.svg"
+                    )
                 )
             )
 
@@ -2250,7 +2386,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         video_strip_audio = self.checkboxStripAudio.isChecked()
         video_normalize_luma = self.checkboxFfmpegNormalizeLuma.isChecked()
         video_curve_preset = self.comboboxFfmpegCurvePresets.currentText()
-        video_ffmpeg_stabilize = self.checkboxFfmpeg2PassStabilization.isChecked()
+        video_ffmpeg_stabilize = (
+            self.checkboxFfmpeg2PassStabilization.isChecked()
+        )
 
         # Update model with current UI settings
         self.video_model.video_rotation = video_rotation
@@ -2275,8 +2413,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         if video_clip_filename:
             output_video = video_clip_filename
         else:
-            video_dir = os.path.dirname(
-                video_file_name) if video_file_name else self.swap_directory
+            video_dir = (
+                os.path.dirname(video_file_name)
+                if video_file_name
+                else self.swap_directory
+            )
             output_video = self.video_service.generate_clip_filename(
                 input_video_path=video_file_name or "no_video_loaded.mp4",
                 start_time_ms=video_clip_start_time,
@@ -2286,7 +2427,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 flip=video_flip,
                 normalize_luma=video_normalize_luma,
                 curve_preset=video_curve_preset,
-                stabilize=video_ffmpeg_stabilize
+                stabilize=video_ffmpeg_stabilize,
             )
 
         # Use VideoService to build FFmpeg parameters
@@ -2360,7 +2501,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             start_time = self.sliderVideoPlayHead.sliderPosition()
             end_time = self.video_clip_end_time
             if end_time is not None and end_time > 0 and start_time > end_time:
-                start_time = end_time  # Cannot have a start time after end of video
+                start_time = (
+                    end_time  # Cannot have a start time after end of video
+                )
             self.video_clip_start_time = start_time
             self.video_clip_end_time = end_time
             self.buttonClipStart.setText(
@@ -2378,7 +2521,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             end_time = self.sliderVideoPlayHead.sliderPosition()
             start_time = self.video_clip_start_time
             if start_time is not None and start_time > end_time:
-                start_time = end_time  # Cannot have a start time after end of video
+                start_time = (
+                    end_time  # Cannot have a start time after end of video
+                )
             self.video_clip_start_time = start_time
             self.video_clip_end_time = end_time
             self.buttonClipEnd.setText(
@@ -2440,9 +2585,15 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.extraction_num_frames = int(
                 (end_frame - start_frame) / self.extraction_frame_step
             )
-            self.labelNewFrameRateValue.setText(f"{self.extraction_frame_rate:.3f} fps")
-            self.labelNewTimestepValue.setText(f"{self.extraction_timestep_ms:.4f} ms")
-            self.labelNewNumFramesValue.setText(f"{self.extraction_num_frames}")
+            self.labelNewFrameRateValue.setText(
+                f"{self.extraction_frame_rate:.3f} fps"
+            )
+            self.labelNewTimestepValue.setText(
+                f"{self.extraction_timestep_ms:.4f} ms"
+            )
+            self.labelNewNumFramesValue.setText(
+                f"{self.extraction_num_frames}"
+            )
             self.update_statusbar(message)
 
     def video_process_monitor(self):
@@ -2450,7 +2601,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.process_step == "create_video_clip":
             self.update_ffmpeg_parameters()
             # Read clip filename from model
-            self.extraction_video_file_name = self.video_model.video_clip_filename
+            self.extraction_video_file_name = (
+                self.video_model.video_clip_filename
+            )
             self.update_ffmpeg_parameters()
             self.ffmpeg_thread_is_running = False
             self.ffmpeg_thread_is_finished = False
@@ -2502,19 +2655,28 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             extract_info = {
                 "source_video_file": self.ffmpeg_parameters["input_video"],
                 "clip_video_file": self.ffmpeg_parameters["output_video"],
-                "processed_date": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                "user": os.environ["COMPUTERNAME"] + os.sep + os.environ["USERNAME"],
+                "processed_date": datetime.datetime.now().strftime(
+                    "%Y-%m-%d_%H-%M-%S"
+                ),
+                "user": os.environ["COMPUTERNAME"]
+                + os.sep
+                + os.environ["USERNAME"],
                 "start_time": self.ffmpeg_parameters["start_time"],
                 "start_frame": seconds_to_frame_number(
-                    self.video_clip_start_time / 1000, self.extraction_frame_rate
+                    self.video_clip_start_time / 1000,
+                    self.extraction_frame_rate,
                 ),
                 "end_time": self.ffmpeg_parameters["end_time"],
                 "end_frame": seconds_to_frame_number(
                     self.video_clip_end_time / 1000, self.extraction_frame_rate
                 ),
                 "frame_step": self.ffmpeg_parameters["extract_frame_step"],
-                "frames_location": self.ffmpeg_parameters["extracted_frames_folder"],
-                "frame_name_pattern": self.ffmpeg_parameters["extract_frame_pattern"],
+                "frames_location": self.ffmpeg_parameters[
+                    "extracted_frames_folder"
+                ],
+                "frame_name_pattern": self.ffmpeg_parameters[
+                    "extract_frame_pattern"
+                ],
                 "original_video_metadata": self.video_metadata,
             }
             with open(info_file, "w") as f:
@@ -2529,7 +2691,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def get_lens_characteristics(self):
         """Grab the supplied lens characteristics from the sub-gui"""
-        logging.debug("##### Opening lens_characteristics to get lens characteristics")
+        logging.debug(
+            "##### Opening lens_characteristics to get lens characteristics"
+        )
         if self.is_video_loaded:
             cx, cy, k1, k2 = (
                 float(self.labelLensCxValue.text()),
@@ -2582,7 +2746,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             not self.ffmpeg_thread_is_running
         ):  # Don't allow starting a new thread if one is already running
             self.ffmpeg_thread_is_running = True
-            self.ffmpeg_process.start(create_ffmpeg_command(self.ffmpeg_parameters))
+            self.ffmpeg_process.start(
+                create_ffmpeg_command(self.ffmpeg_parameters)
+            )
 
     def ffmpeg_run_frame_extraction_process(self):
         """Ffmpeg thread watcher for frame extraction."""
@@ -2596,7 +2762,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             logging.debug(
                 f"FFMPEG Extract Frames command: {create_ffmpeg_command(self.ffmpeg_parameters)}"
             )
-            self.ffmpeg_process.start(create_ffmpeg_command(self.ffmpeg_parameters))
+            self.ffmpeg_process.start(
+                create_ffmpeg_command(self.ffmpeg_parameters)
+            )
 
     def ffmpeg_run_stabilization_pass1(self):
         """Ffmpeg thread watcher for pass 1 stabilization."""
@@ -2618,7 +2786,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         ):  # Don't allow starting a new thread if one is already running
             self.ffmpeg_thread_is_running = True
             self.ffmpeg_process.start(
-                ffmpeg_remove_motion_from_frames_command(self.extracted_frames_folder)
+                ffmpeg_remove_motion_from_frames_command(
+                    self.extracted_frames_folder
+                )
             )
             self.stabilize_step2_finished = True
 
@@ -2632,9 +2802,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         prompt_to_load_gcp_image = False
 
         if (
-            self.process_step == "stabilize_pass2" and self.stabilize_step2_finished
+            self.process_step == "stabilize_pass2"
+            and self.stabilize_step2_finished
         ):  # If we are here, stabilization just finished
-            logging.debug("Stabilization complete. Create a stabilization check image.")
+            logging.debug(
+                "Stabilization complete. Create a stabilization check image."
+            )
             file_pattern = "f*.jpg"
             processed_frames = glob.glob(
                 f"{self.extracted_frames_folder}" f"/{file_pattern}"
@@ -2656,9 +2829,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.imagebrowser.folder_path = self.ffmpeg_parameters[
                 "extracted_frames_folder"
             ]
-            self.imagebrowser.reload = (
-                True  # Ensures the frame loader will not prompt user for a folder
-            )
+            self.imagebrowser.reload = True  # Ensures the frame loader will not prompt user for a folder
             self.imagebrowser.open_image_folder()
             self.imagebrowser.reload = False
             self.set_qwidget_state_by_name(
@@ -2704,7 +2875,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             if choices[result].lower() == "yes":
                 try:
                     # Put image into the viewer
-                    self.ortho_original_load_gcp_image(self.imagebrowser.image_path)
+                    self.ortho_original_load_gcp_image(
+                        self.imagebrowser.image_path
+                    )
                     self.sticky_settings.set(
                         "last_ortho_gcp_image_path",
                         self.ortho_original_image.image_file_path,
@@ -2730,7 +2903,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ffmpeg_thread_is_running = False
                     self.ffmpeg_thread_is_finished = False
                     self.ffmpeg_run_stabilization_pass1()
-                    message = f"PROCESSING: Stabilization Pass 1, please be patient"
+                    message = (
+                        f"PROCESSING: Stabilization Pass 1, please be patient"
+                    )
                     self.update_statusbar(message)
                     self.progressBar.show()
                 if (
@@ -2751,7 +2926,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.ffmpeg_thread_is_running = False
                     self.ffmpeg_thread_is_finished = False
                     self.ffmpeg_run_stabilization_pass2()
-                    message = f"PROCESSING: Stabilization Pass 2, please be patient"
+                    message = (
+                        f"PROCESSING: Stabilization Pass 2, please be patient"
+                    )
                     self.update_statusbar(message)
                     self.progressBar.show()
 
@@ -2772,7 +2949,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             #     ImageStackTask
             self.progressBar.setValue(0)
             self.progressBar.show()
-            map_file_path = os.path.join(self.swap_directory, "image_stack.dat")
+            map_file_path = os.path.join(
+                self.swap_directory, "image_stack.dat"
+            )
 
             # processed_frames = self.imagebrowser.sequence
             processed_frames = glob.glob(
@@ -2791,14 +2970,18 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 with self.wait_cursor():
                     map_file_size_thres = 9e8
                     try:
-                        image_stack = self.image_stack_service.create_image_stack(
-                            image_paths=processed_frames,
-                            progress_callback=progress_callback,
-                            map_file_path=map_file_path,
-                            map_file_size_thres=map_file_size_thres,
+                        image_stack = (
+                            self.image_stack_service.create_image_stack(
+                                image_paths=processed_frames,
+                                progress_callback=progress_callback,
+                                map_file_path=map_file_path,
+                                map_file_size_thres=map_file_size_thres,
+                            )
                         )
                         self.image_stack_process_finished(image_stack)
-                        self.set_button_color("pushbuttonCreateRefreshImageStackSTIV", "good")
+                        self.set_button_color(
+                            "pushbuttonCreateRefreshImageStackSTIV", "good"
+                        )
                     except ValueError as e:
                         self.warning_dialog(
                             "Image Stack Creation Failed",
@@ -2839,7 +3022,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         ]
         self.pushbuttonExportProjectedFrames.setEnabled(True)
         self.set_qwidget_state_by_name(to_enable, True)
-        logging.debug("image_stack_process_finished: stack created successfully")
+        logging.debug(
+            "image_stack_process_finished: stack created successfully"
+        )
         message = "ORTHORECTIFICATION: Image Stack Created."
         self.update_statusbar(message)
         self.set_tab_icon("tabOrthorectification", "good")
@@ -2851,7 +3036,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
     def start_image_preprocessor_process(self):
         """Starts the image preprocessor image"""
         # Prepare the inputs to the image preprocessor
-        image_paths = glob.glob(os.path.join(self.swap_image_directory, "f*.jpg"))
+        image_paths = glob.glob(
+            os.path.join(self.swap_image_directory, "f*.jpg")
+        )
 
         # Get preprocessing parameters from UI
         do_clahe = False
@@ -2868,31 +3055,38 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             clahe_vert_tiles = int(self.lineeditClaheVertTileSize.text())
         if self.checkboxAutoContrast.isChecked():
             do_auto_contrast = True
-            auto_contrast_percent = int(self.lineeditAutoContrastPercentClip.text())
+            auto_contrast_percent = int(
+                self.lineeditAutoContrastPercentClip.text()
+            )
 
         # Validate preprocessing parameters using service
-        validation_errors = self.image_stack_service.validate_preprocessing_parameters(
-            clahe_clip=clahe_clip,
-            clahe_horz_tiles=clahe_horz_tiles,
-            clahe_vert_tiles=clahe_vert_tiles,
-            auto_contrast_percent=auto_contrast_percent,
+        validation_errors = (
+            self.image_stack_service.validate_preprocessing_parameters(
+                clahe_clip=clahe_clip,
+                clahe_horz_tiles=clahe_horz_tiles,
+                clahe_vert_tiles=clahe_vert_tiles,
+                auto_contrast_percent=auto_contrast_percent,
+            )
         )
         if validation_errors:
             self.warning_dialog(
                 "Invalid Preprocessing Parameters",
-                "The following preprocessing parameters are invalid:\n" + "\n".join(validation_errors),
+                "The following preprocessing parameters are invalid:\n"
+                + "\n".join(validation_errors),
                 style="ok",
             )
             return
 
         # Use service to get properly formatted parameters
-        preprocessing_params = self.image_stack_service.get_preprocessing_parameters(
-            do_clahe=do_clahe,
-            clahe_clip=clahe_clip,
-            clahe_horz_tiles=clahe_horz_tiles,
-            clahe_vert_tiles=clahe_vert_tiles,
-            do_auto_contrast=do_auto_contrast,
-            auto_contrast_percent=auto_contrast_percent,
+        preprocessing_params = (
+            self.image_stack_service.get_preprocessing_parameters(
+                do_clahe=do_clahe,
+                clahe_clip=clahe_clip,
+                clahe_horz_tiles=clahe_horz_tiles,
+                clahe_vert_tiles=clahe_vert_tiles,
+                do_auto_contrast=do_auto_contrast,
+                auto_contrast_percent=auto_contrast_percent,
+            )
         )
         clahe_parameters = preprocessing_params["clahe_parameters"]
 
@@ -3070,7 +3264,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.rectify_many_camera_matrix
                 )  # Any other args, kwargs are passed to the run function
             worker.signals.result.connect(self.orthorectify_many_results)
-            worker.signals.finished.connect(self.orthorectify_many_thread_finished)
+            worker.signals.finished.connect(
+                self.orthorectify_many_thread_finished
+            )
             worker.signals.progress.connect(self.update_progress_bar_qthreads)
 
             # Execute
@@ -3090,7 +3286,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
           5. hide progress bar when thread finishes (may have to do this in update_progress_bar?)
 
         """
-        logging.debug(f"Processing STIV for all frames based on current settings.")
+        logging.debug(
+            f"Processing STIV for all frames based on current settings."
+        )
 
         sender_button = self.sender()
 
@@ -3118,7 +3316,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.stiv.pixel_gsd = self.pixel_ground_scale_distance_m
         self.stiv.d_t = self.extraction_timestep_ms / 1000  # in seconds
         self.stiv.max_velocity_threshold_mps = self.stiv_max_vel_threshold_mps
-        self.stiv.map_file_path = os.path.join(self.swap_directory, "stiv_map_file.dat")
+        self.stiv.map_file_path = os.path.join(
+            self.swap_directory, "stiv_map_file.dat"
+        )
 
         # Configure stiv optimized processor
         # TODO: think about whether I need this second stiv_opt, or maybe
@@ -3131,7 +3331,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.stiv_opt.phi_range = self.stiv_phi_range
         self.stiv_opt.pixel_gsd = self.pixel_ground_scale_distance_m
         self.stiv_opt.d_t = self.extraction_timestep_ms / 1000  # in seconds
-        self.stiv_opt.max_velocity_threshold_mps = self.stiv_opt_max_vel_threshold_mps
+        self.stiv_opt.max_velocity_threshold_mps = (
+            self.stiv_opt_max_vel_threshold_mps
+        )
         self.stiv_opt.map_file_path = os.path.join(
             self.swap_directory, "stiv_map_file.dat"
         )
@@ -3173,7 +3375,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         # Check if the thread pool has active threads
         if self.threadpool.activeThreadCount() == 0:
-            logging.info("stop_current_threadpool_task: No active threads to " "stop.")
+            logging.info(
+                "stop_current_threadpool_task: No active threads to " "stop."
+            )
             return
 
         # Iterate through active threads and cancel them
@@ -3220,7 +3424,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Show result in the Grid Preparation tab
         first_transformed_image = self.find_first_transformed_image()
 
-        self.gridpreparation.imageBrowser.scene.load_image(first_transformed_image)
+        self.gridpreparation.imageBrowser.scene.load_image(
+            first_transformed_image
+        )
         self.gridpreparation.imageBrowser.setEnabled(True)
         self.update_statusbar(message)
         self.progressBar.hide()
@@ -3259,7 +3465,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             f"Note: An image stack is required before performing "
             f"Image Velocimetry analyses."
         )
-        result = self.warning_dialog("Create Image Stack?", message, "YesCancel")
+        result = self.warning_dialog(
+            "Create Image Stack?", message, "YesCancel"
+        )
         if result == "yes" and not self.image_processor_thread_is_running:
             message = (
                 "ORTHORECTIFICATION: Creating Image Stack. Image "
@@ -3291,7 +3499,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             image_folder=self.imagebrowser.folder_path,
             flip_x=self.is_ortho_flip_x,
             flip_y=self.is_ortho_flip_y,
-            progress_callback=progress_callback
+            progress_callback=progress_callback,
         )
 
         return "Done."
@@ -3303,7 +3511,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         This is the function executed by the ThreadPool.
         """
         # Get list of extracted frame images
-        sequence = sorted(glob.glob(os.path.join(self.swap_image_directory, "f*.jpg")))
+        sequence = sorted(
+            glob.glob(os.path.join(self.swap_image_directory, "f*.jpg"))
+        )
         num_images = len(sequence)
 
         # Get rectification parameters
@@ -3331,11 +3541,13 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             transformed_image = flip_image_array(
                 image=transformed_image,
                 flip_x=self.is_ortho_flip_x,
-                flip_y=self.is_ortho_flip_y
+                flip_y=self.is_ortho_flip_y,
             )
 
             # Save rectified image
-            output_path = os.path.join(self.swap_image_directory, f"t{idx:05d}.jpg")
+            output_path = os.path.join(
+                self.swap_image_directory, f"t{idx:05d}.jpg"
+            )
             Image.fromarray(transformed_image).save(output_path)
             logging.debug(f"Saved rectified image: {output_path}")
 
@@ -3365,10 +3577,14 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         cam.set_camera_matrix(self.rectification_parameters["camera_matrix"])
 
         # Get rectification parameters
-        water_surface_elev = self.rectification_parameters["water_surface_elev"]
+        water_surface_elev = self.rectification_parameters[
+            "water_surface_elev"
+        ]
         extent = self.rectification_parameters["extent"]
 
-        for idx, img_file in enumerate(tqdm(images_to_process, total=num_images)):
+        for idx, img_file in enumerate(
+            tqdm(images_to_process, total=num_images)
+        ):
             # Load image
             img = np.array(Image.open(img_file))
 
@@ -3384,7 +3600,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             transformed_image = flip_image_array(
                 image=transformed_image,
                 flip_x=self.is_ortho_flip_x,
-                flip_y=self.is_ortho_flip_y
+                flip_y=self.is_ortho_flip_y,
             )
 
             # Save rectified image
@@ -3431,13 +3647,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Update the number of grid points along a simple line"""
         value = self.spinboxLineNumPoints.value()
         self.grid_controller.set_line_num_points(value)
-        self.number_grid_points_along_line = value  # Keep for backwards compatibility
+        self.number_grid_points_along_line = (
+            value  # Keep for backwards compatibility
+        )
 
     def change_xs_line_num_points(self):
         """Update the number of grid points along a defined cross-section line"""
         value = self.spinbocXsLineNumPoints.value()
         self.grid_controller.set_xs_line_num_points(value)
-        self.number_grid_points_along_xs_line = value  # Keep for backwards compatibility
+        self.number_grid_points_along_xs_line = (
+            value  # Keep for backwards compatibility
+        )
 
     def change_horz_grid_size(self):
         """Update the horizontal grid size"""
@@ -3474,7 +3694,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             result[headers[c]] = items
         return result
 
-    def set_table_from_dict(self, dictionary: dict, table: QtWidgets.QTableWidget):
+    def set_table_from_dict(
+        self, dictionary: dict, table: QtWidgets.QTableWidget
+    ):
         """Imports a supplied dictionary into a QTableWidget."""
         keys = list(dictionary.keys())
         values = list(dictionary.values())
@@ -3620,7 +3842,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ortho_controller.make_all_cells_white()
 
         # Update self for backwards compatibility
-        self.orthotable_cell_colored = self.ortho_model._orthotable_cell_colored
+        self.orthotable_cell_colored = (
+            self.ortho_model._orthotable_cell_colored
+        )
 
     def orthotable_load_csv_on_open(self, file_name):
         """Load GCP CSV file (used by project loading) - delegates to OrthoController."""
@@ -3631,7 +3855,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.orthotable_dataframe = self.ortho_model.orthotable_dataframe
             self.orthotable_is_changed = self.ortho_model.orthotable_is_changed
             self.is_ortho_table_loaded = self.ortho_model.is_ortho_table_loaded
-            self.orthotable_file_survey_units = self.ortho_model.orthotable_file_survey_units
+            self.orthotable_file_survey_units = (
+                self.ortho_model.orthotable_file_survey_units
+            )
 
         return success
 
@@ -3717,8 +3943,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             df[use_col] = df[use_col].map(string_to_boolean)
 
             # Filter rows meeting all conditions
-            valid = df[["X (pixel)", "Y (pixel)"]].notna().all(axis=1) & df[
-                use_col]
+            valid = (
+                df[["X (pixel)", "Y (pixel)"]].notna().all(axis=1)
+                & df[use_col]
+            )
 
             # Get filtered data
             filtered = df[valid]
@@ -3734,7 +3962,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             return points
 
         except Exception as e:
-            logging.warning(f"Error loading GCP points data in get_orthotable_points_to_plot: {e}")
+            logging.warning(
+                f"Error loading GCP points data in get_orthotable_points_to_plot: {e}"
+            )
             return
 
     def orthotable_load_csv(self):
@@ -3777,7 +4007,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             file_name (str): path to the file
         """
         self.orthotable_file_name = file_name
-        self.orthotable_fname = os.path.splitext(str(file_name))[0].split("/")[-1]
+        self.orthotable_fname = os.path.splitext(str(file_name))[0].split("/")[
+            -1
+        ]
 
     def orthotable_save_csv(self):
         """Save the GCP points table as is, in the display units"""
@@ -3796,9 +4028,13 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             dict = self.get_table_as_dict(self.orthoPointsTable)
             pd.DataFrame(dict).fillna("").to_csv(file_name, index=False)
             try:
-                self.sticky_settings.set("last_orthotable_file_name", file_name)
+                self.sticky_settings.set(
+                    "last_orthotable_file_name", file_name
+                )
             except KeyError:
-                self.sticky_settings.new("last_orthotable_file_name", file_name)
+                self.sticky_settings.new(
+                    "last_orthotable_file_name", file_name
+                )
 
     def draw_cross_section_line(self):
         """Draw the cross section line on the correct image"""
@@ -3880,17 +4116,21 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_statusbar(message)
 
     def cross_section_manager_eps(self):
-        """Executes when the User updates a Rectified Endpoints coordinate
-
-        """
+        """Executes when the User updates a Rectified Endpoints coordinate"""
         method = self.rectification_method
         new_eps = np.array(
-            [[
-                [self.sbLeftBankXRectifiedCoordPixels.value(),
-                 self.sbLeftBankYRectifiedCoordPixels.value()],
-                [self.sbRightBankRectifiedXCoordPixels.value(),
-                 self.sbRightBankRectifiedYCoordPixels.value()]
-            ]],
+            [
+                [
+                    [
+                        self.sbLeftBankXRectifiedCoordPixels.value(),
+                        self.sbLeftBankYRectifiedCoordPixels.value(),
+                    ],
+                    [
+                        self.sbRightBankRectifiedXCoordPixels.value(),
+                        self.sbRightBankRectifiedYCoordPixels.value(),
+                    ],
+                ]
+            ],
         )
         self.rectified_xs_image.clearLines()
         self.rectified_xs_image.scene.set_current_instruction(
@@ -3922,10 +4162,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Set the line pixel length and enable the ability to draw the line
         # in the Grid Prep tab
-        line_length = self.rectified_xs_image.scene.line_item[
-            -1].line_length
+        line_length = self.rectified_xs_image.scene.line_item[-1].line_length
         logging.debug(
-            f"CROSS-SECTION: The drawn XS is {line_length} " f"pixels long.")
+            f"CROSS-SECTION: The drawn XS is {line_length} " f"pixels long."
+        )
         self.cross_section_length_pixels = line_length
         self.cross_section_line = self.rectified_xs_image.lines_ndarray()
         self.cross_section_rectified_eps = (
@@ -3934,8 +4174,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.cross_section_line_exists = True
         self.set_qwidget_state_by_name("CrossSectionPage", True)
         if self.is_area_comp_loaded:
-            self.enable_disable_tabs(self.tabWidget,
-                                     "tabGridPreparation", True)
+            self.enable_disable_tabs(
+                self.tabWidget, "tabGridPreparation", True
+            )
 
     def cross_section_manager(self):
         """Executes when the User completes drawing a cross-section.
@@ -3959,10 +4200,16 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     QtGui.QPen(QtGui.QColor("yellow"), 5)
                 )
             if method == "homography":
-                H = np.array(self.rectification_parameters["homography_matrix"])
+                H = np.array(
+                    self.rectification_parameters["homography_matrix"]
+                )
                 line = self.perspective_xs_image.scene.line_item[-1]
-                points = np.array([(point.x(), point.y()) for point in line.m_points])
-                transformed_points = transform_points_with_homography(points, H)
+                points = np.array(
+                    [(point.x(), point.y()) for point in line.m_points]
+                )
+                transformed_points = transform_points_with_homography(
+                    points, H
+                )
                 self.rectified_xs_image.clearLines()
                 self.rectified_xs_image.scene.set_current_instruction(
                     Instructions.ADD_LINE_BY_POINTS,
@@ -3985,7 +4232,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
                 line = self.perspective_xs_image.scene.line_item[-1]
-                points = np.array([(point.x(), point.y()) for point in line.m_points])
+                points = np.array(
+                    [(point.x(), point.y()) for point in line.m_points]
+                )
                 points_h = get_homographic_coordinates_2D(points).T
 
                 # points_h = get_homographic_coordinates_3D(points)
@@ -4014,7 +4263,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
             line_eps = self.perspective_xs_image.lines_ndarray()
-            line_length = self.perspective_xs_image.scene.line_item[-1].line_length
+            line_length = self.perspective_xs_image.scene.line_item[
+                -1
+            ].line_length
             self.is_cross_section_grid = True
         if self.radioButtonRectifiedImage.isChecked():
             # TODO: here, I need to project the drawn line onto the
@@ -4037,8 +4288,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.rectification_parameters["homography_matrix"]
                 )
                 line = self.rectified_xs_image.scene.line_item[-1]
-                points = np.array([(point.x(), point.y()) for point in line.m_points])
-                transformed_points = transform_points_with_homography(points, H_inv)
+                points = np.array(
+                    [(point.x(), point.y()) for point in line.m_points]
+                )
+                transformed_points = transform_points_with_homography(
+                    points, H_inv
+                )
                 self.perspective_xs_image.clearLines()
                 self.perspective_xs_image.scene.set_current_instruction(
                     Instructions.ADD_LINE_BY_POINTS,
@@ -4049,7 +4304,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
             if method == "camera matrix":
                 line = self.rectified_xs_image.scene.line_item[-1]
-                points = np.array([(point.x(), point.y()) for point in line.m_points])
+                points = np.array(
+                    [(point.x(), point.y()) for point in line.m_points]
+                )
                 # self.cam.get_inverse_top_view_point(points[0])
                 # points_h = get_homographic_coordinates_2D(points).T
                 # P = np.array(self.rectification_parameters["camera_matrix"])
@@ -4065,7 +4322,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 # )
 
             logging.debug("XS drawn on Rectified Image")
-            line_length = self.rectified_xs_image.scene.line_item[-1].line_length
+            line_length = self.rectified_xs_image.scene.line_item[
+                -1
+            ].line_length
 
         logging.debug(f"XS start bank: {self.cross_section_start_bank}")
 
@@ -4091,7 +4350,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set the line pixel length and enable the ability to draw the line
         # in the Grid Prep tab
         line_length = self.rectified_xs_image.scene.line_item[-1].line_length
-        logging.debug(f"CROSS-SECTION: The drawn XS is {line_length} " f"pixels long.")
+        logging.debug(
+            f"CROSS-SECTION: The drawn XS is {line_length} " f"pixels long."
+        )
         self.cross_section_length_pixels = line_length
         self.cross_section_line = self.rectified_xs_image.lines_ndarray()
         self.cross_section_rectified_eps = (
@@ -4100,7 +4361,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.cross_section_line_exists = True
         self.set_qwidget_state_by_name("CrossSectionPage", True)
         if self.is_area_comp_loaded:
-            self.enable_disable_tabs(self.tabWidget, "tabGridPreparation", True)
+            self.enable_disable_tabs(
+                self.tabWidget, "tabGridPreparation", True
+            )
 
     def process_stiv_results(self, thread_results):
         """Executes when the STIV thread has return results
@@ -4109,7 +4372,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             thread_results (str): the STIV results
         """
         logging.debug(f"{thread_results}")
-
 
     def process_stiv_thread_finished(self):
         """Executes when the STIV thread has completed"""
@@ -4216,17 +4478,27 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                         norm_vectors[~nan_indices, 3],
                         global_scale=self.vector_scale,
                     )
-                    plot_quivers(self.stiv.imageBrowser, vectors_draw,
-                                 "green", Qt.DotLine)
-                    plot_quivers(self.stiv.imageBrowser, norm_vectors_draw,
-                                 "yellow", Qt.SolidLine)
+                    plot_quivers(
+                        self.stiv.imageBrowser,
+                        vectors_draw,
+                        "green",
+                        Qt.DotLine,
+                    )
+                    plot_quivers(
+                        self.stiv.imageBrowser,
+                        norm_vectors_draw,
+                        "yellow",
+                        Qt.SolidLine,
+                    )
                 self.stiv.magnitude_normals_mps = np.abs(scalar_projections)
                 self.stiv_exists = True
                 self.toolButtonExportPDF.setEnabled(True)
                 self.actionSummary_Report_PDF.setEnabled(True)
                 self.set_tab_icon("tabImageVelocimetry", "good")
                 self.set_tab_icon(
-                    "tabSTIVExhaustive", "good", self.tabWidget_ImageVelocimetryMethods
+                    "tabSTIVExhaustive",
+                    "good",
+                    self.tabWidget_ImageVelocimetryMethods,
                 )
                 self.enable_disable_tabs(self.tabWidget, "tabDischarge", True)
 
@@ -4316,7 +4588,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             #     self.stiv_opt.imageBrowser.scene.load_image(save_path)
         except BaseException as e:
             logging.error(
-                "STIV THREAD: Could not parse results. Do you have" " a grid already?"
+                "STIV THREAD: Could not parse results. Do you have"
+                " a grid already?"
             )
             logging.error(e)
 
@@ -4328,8 +4601,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         manual_velocity = event.get("manual_velocity", None)
         normal_direction_geo = event.get("normal_direction_geo", None)
 
-        if (idx is not None and manual_velocity is not None and
-                normal_direction_geo) is not None:
+        if (
+            idx is not None
+            and manual_velocity is not None
+            and normal_direction_geo
+        ) is not None:
             color = "red"
             # Any of these colors
             # https://www.w3.org/TR/SVG11/types.html#ColorKeywords
@@ -4342,14 +4618,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             U, V = calculate_uv_components(
                 manual_velocity[idx], normal_direction_geo[idx]
             )
-            vectors = quiver(X, Y, U, -V, global_scale=self.vector_scale,
-                             )
+            vectors = quiver(
+                X,
+                Y,
+                U,
+                -V,
+                global_scale=self.vector_scale,
+            )
 
-            plot_quivers(self.stiv.imageBrowser, vectors,
-                         color, Qt.SolidLine)
+            plot_quivers(self.stiv.imageBrowser, vectors, color, Qt.SolidLine)
         else:
             return
-
 
     def stiv_update_search_line_visual(self):
         """Update the search line results in the STIV tab"""
@@ -4362,7 +4641,10 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 # take self.stiv_num_pixels as the line length
                 x_start, y_start = point
                 search_line = calculate_endpoint(
-                    self.stiv_phi_origin, self.stiv_num_pixels, x_start, y_start
+                    self.stiv_phi_origin,
+                    self.stiv_num_pixels,
+                    x_start,
+                    y_start,
                 )
                 search_range1 = calculate_endpoint(
                     self.stiv_phi_origin - self.stiv_phi_range,
@@ -4398,7 +4680,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def stiv_gaussian_blur_changed(self):
         """Set the STIV Gaussian blur"""
-        self.stiv_gaussian_blur_sigma = self.doublespinboxStivGaussianBlurSigma.value()
+        self.stiv_gaussian_blur_sigma = (
+            self.doublespinboxStivGaussianBlurSigma.value()
+        )
         self.stiv_update_search_line_visual()
 
     def stiv_dphi_changed(self):
@@ -4437,14 +4721,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def stiv_max_vel_threshold_changed(self):
         """Set the STIV maximum velocity threshold"""
-        new_value_m = (self.spinboxSTIVMaxVelThreshold.value() /
-                       self.survey_units["L"])
+        new_value_m = (
+            self.spinboxSTIVMaxVelThreshold.value() / self.survey_units["L"]
+        )
         self.stiv_max_vel_threshold_mps = new_value_m
         self.stiv_update_search_line_visual()
 
     def stiv_opt_max_vel_threshold_changed(self):
         """Set the STIV optimized maximum velocity thresholds"""
-        self.stiv_opt_max_vel_threshold_mps = self.spinboxSTIVOptMaxVelThreshold.value()
+        self.stiv_opt_max_vel_threshold_mps = (
+            self.spinboxSTIVOptMaxVelThreshold.value()
+        )
 
     def about_dialog(self):
         """Opens the IVyTools about dialog"""
@@ -4473,13 +4760,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             # href='http://example.com'>example.com</a></p>"
         )
 
-        QtWidgets.QMessageBox.about(self, f"About {self.__program_name__}", message)
+        QtWidgets.QMessageBox.about(
+            self, f"About {self.__program_name__}", message
+        )
 
     def check_for_updates(self):
         """Check for updates by checking the current version against the web page results"""
         version_url = "https://frank-engel.github.io/"
 
-        version_msg = compare_versions(app_version=__version__, url=version_url)
+        version_msg = compare_versions(
+            app_version=__version__, url=version_url
+        )
 
         if version_msg is None:
             version_msg = (
@@ -4502,7 +4793,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         """Custom closeEvent for IVy"""
         close = QtWidgets.QMessageBox()
         close.setWindowIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "IVy_logo.ico"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "IVy_logo.ico")
+            )
         )
 
         close.setWindowTitle("Close Image Velocimetry Tools (IVy Tools)?")
@@ -4543,8 +4836,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             logging.error("Cannot delete image stack on exit.")
 
     @staticmethod
-    def warning_dialog(title: str, message: str, style="YesCancel", icon=None,
-                       modal=True):
+    def warning_dialog(
+        title: str, message: str, style="YesCancel", icon=None, modal=True
+    ):
         """
         Display a warning dialog with customizable buttons.
 
@@ -4595,7 +4889,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             dialog.setModal(False)
             dialog.show()
             return None  # Caller must connect to dialog.buttonClicked if they care
-
 
     @staticmethod
     def custom_dialog_index(
@@ -4649,7 +4942,6 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return None
 
-
     @contextmanager
     def wait_cursor(self):
         """
@@ -4699,7 +4991,8 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             QtGui.QColor(140, 140, 140),
         )
         tab_base.setTabIcon(
-            tab_base.indexOf(tab_base.findChild(QtWidgets.QWidget, tab)), QtGui.QIcon()
+            tab_base.indexOf(tab_base.findChild(QtWidgets.QWidget, tab)),
+            QtGui.QIcon(),
         )
         # Set appropriate icon
         if status == "good":
@@ -4861,27 +5154,37 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # File Menus
         self.actionNew_Project.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "plus-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "plus-solid.svg")
+            )
         )
         self.actionNew_Project.setShortcut("Ctrl+N")
         self.actionOpen_Project.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "box-open-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "box-open-solid.svg"
+                )
             )
         )
         self.actionOpen_Project.setShortcut("Ctrl+O")
         self.actionSave_Project.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "floppy-disk-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "floppy-disk-solid.svg"
+                )
             )
         )
         self.actionSave_Project.setShortcut("Ctrl+S")
         self.actionOpen_Video.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "film-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "film-solid.svg")
+            )
         )
         self.actionOpen_Video.setShortcut("Ctrl+V")
         self.actionOpen_Image_Folder.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "image-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "image-solid.svg")
+            )
         )
         self.actionOpen_Image_Folder.setShortcut("Ctrl+I")
         self.actionOpen_Ground_Control_Image.setIcon(
@@ -4893,18 +5196,24 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.actionOpen_Ground_Control_Image.setShortcut("Ctrl+G")
         self.actionImport_Ground_Control_Points_Table.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "table-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "table-solid.svg")
+            )
         )
         self.actionImport_Ground_Control_Points_Table.setShortcut("Ctrl+T")
         self.actionImport_Bathymetry.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-cross-section.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-cross-section.svg"
+                )
             )
         )
         self.actionImport_Bathymetry.setShortcut("Ctrl+B")
         self.actionCompute_coordinates_from_4_point_distances.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-polygon-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-polygon-solid.svg"
+                )
             )
         )
         self.actionCompute_coordinates_from_4_point_distances.setShortcut(
@@ -4912,50 +5221,70 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.actionSummary_Report_PDF.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "file-pdf-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "file-pdf-solid.svg"
+                )
             )
         )
         self.actionCheck_for_Updates.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "circle-question-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "circle-question-solid.svg"
+                )
             )
         )
         self.actionAbout_IVy_Tools.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "circle-question-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "circle-question-solid.svg"
+                )
             )
         )
         self.actionOpen_Help_Documentation.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "circle-question-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "circle-question-solid.svg"
+                )
             )
         )
         self.actionOpen_Help_Documentation.setShortcut("F1")
         self.actionExit.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "door-open-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "door-open-solid.svg"
+                )
             )
         )
 
         # Toolbar
         self.toolButtonNewProject.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "plus-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "plus-solid.svg")
+            )
         )
         self.toolButtonOpenProject.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "box-open-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "box-open-solid.svg"
+                )
             )
         )
         self.toolButtonSaveProject.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "floppy-disk-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "floppy-disk-solid.svg"
+                )
             )
         )
         self.toolButtonImportVideo.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "film-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "film-solid.svg")
+            )
         )
         self.toolButtonImportFramesDirectory.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "image-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "image-solid.svg")
+            )
         )
         self.toolButtonImportGroundControlImage.setIcon(
             QtGui.QIcon(
@@ -4966,55 +5295,77 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.toolButtonImportBathymetry.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-cross-section.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-cross-section.svg"
+                )
             )
         )
         self.toolButtonImportGCPTable.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "table-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "table-solid.svg")
+            )
         )
         self.toolButtonExportPDF.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "file-pdf-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "file-pdf-solid.svg"
+                )
             )
         )
 
         ###
         self.toolButtonAddComment.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "comment-medical-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "comment-medical-solid.svg"
+                )
             )
         )
         self.toolButtonOpenSettings.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "gear-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "gear-solid.svg")
+            )
         )
         self.toolButtonOpenSettings.setEnabled(False)  # Temp disable
         self.toolButtonOpenHelp.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "circle-question-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "circle-question-solid.svg"
+                )
             )
         )
 
         # In-app Icons
         self.buttonPlay.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "play-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "play-solid.svg")
+            )
         )
         self.toolbuttonPreviousImage.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "play-backwards-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "play-backwards-solid.svg"
+                )
             )
         )
         self.toolbuttonNextImage.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "play-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "play-solid.svg")
+            )
         )
         # self.PointPage.setItemIcon(
         #     QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "draw-points.svg"))
         # )
         self.toolbuttonCreatePoint.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "draw-points.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "draw-points.svg")
+            )
         )
         self.toolbuttonClearPoints.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "clear-draw-points.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "clear-draw-points.svg"
+                )
             )
         )
         # self.SimpleLinePage.setIcon(
@@ -5022,12 +5373,16 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # )
         self.toolbuttonCreateLine.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-line-edit.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-line-edit.svg"
+                )
             )
         )
         self.toolbuttonClearLine.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "clear-draw-line-edit.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "clear-draw-line-edit.svg"
+                )
             )
         )
         # self.CrossSectionPage.setIcon(
@@ -5035,13 +5390,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # )
         self.toolbuttonCreateXsLine.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-cross-section.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-cross-section.svg"
+                )
             )
         )
         self.toolbuttonClearXsLine.setIcon(
             QtGui.QIcon(
                 resource_path(
-                    self.__icon_path__ + os.sep + "clear-draw-cross-section.svg"
+                    self.__icon_path__
+                    + os.sep
+                    + "clear-draw-cross-section.svg"
                 )
             )
         )
@@ -5054,39 +5413,53 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toolbuttonClearMask.setIcon(
             QtGui.QIcon(
                 resource_path(
-                    self.__icon_path__ + os.sep + "clear-draw-polygon-solid.svg"
+                    self.__icon_path__
+                    + os.sep
+                    + "clear-draw-polygon-solid.svg"
                 )
             )
         )
         self.toolbuttonCreateMask.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "draw-polygon-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "draw-polygon-solid.svg"
+                )
             )
         )
         # self.toolbuttonEyeDropper.setIcon(
         #     QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "eye-dropper-solid.svg"))
         # )
         self.toolbuttonOpenOrthoPointsTable.setIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "table-solid.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "table-solid.svg")
+            )
         )
         self.toolbuttonSaveOrthoPointsTable.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "floppy-disk-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "floppy-disk-solid.svg"
+                )
             )
         )
         self.toolbuttonOrthoOrigImageDigitizePoint.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "crosshairs-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "crosshairs-solid.svg"
+                )
             )
         )
         self.toolbuttonAddOrthotableRow.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "square-plus-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "square-plus-solid.svg"
+                )
             )
         )
         self.toolbuttonRemoveOrthotableRow.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "square-minus-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "square-minus-solid.svg"
+                )
             )
         )
         # self.toolbuttonCreateROI.setIcon(
@@ -5099,7 +5472,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         # )
         self.toolbuttonDrawCrossSection.setIcon(
             QtGui.QIcon(
-                resource_path(self.__icon_path__ + os.sep + "square-plus-solid.svg")
+                resource_path(
+                    self.__icon_path__ + os.sep + "square-plus-solid.svg"
+                )
             )
         )
         # self.toolButtonClearCrossSection.setIcon(
@@ -5119,7 +5494,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.icon_caution.addPixmap(
             QtGui.QPixmap(
                 resource_path(
-                    self.__icon_path__ + os.sep + "triangle-exclamation-solid.svg"
+                    self.__icon_path__
+                    + os.sep
+                    + "triangle-exclamation-solid.svg"
                 )
             ),
             QtGui.QIcon.Normal,
@@ -5130,7 +5507,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.icon_warning.addPixmap(
             QtGui.QPixmap(
                 resource_path(
-                    self.__icon_path__ + os.sep + "square-exclamation-solid.svg"
+                    self.__icon_path__
+                    + os.sep
+                    + "square-exclamation-solid.svg"
                 )
             ),
             QtGui.QIcon.Normal,
@@ -5325,16 +5704,26 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.results_grid_world = self.grid_model.results_grid_world
         self.horz_grid_size = self.grid_model.horz_grid_size
         self.vert_grid_size = self.grid_model.vert_grid_size
-        self.number_grid_points_along_line = self.grid_model.number_grid_points_along_line
-        self.number_grid_points_along_xs_line = self.grid_model.number_grid_points_along_xs_line
+        self.number_grid_points_along_line = (
+            self.grid_model.number_grid_points_along_line
+        )
+        self.number_grid_points_along_xs_line = (
+            self.grid_model.number_grid_points_along_xs_line
+        )
         self.line_mode = self.grid_model.line_mode
-        self.region_of_interest_pixels = self.grid_model.region_of_interest_pixels
+        self.region_of_interest_pixels = (
+            self.grid_model.region_of_interest_pixels
+        )
 
         # Set UI spinbox values from model
         self.spinboxHorizGridSpacing.setValue(self.grid_model.horz_grid_size)
         self.spinboxVertGridSpacing.setValue(self.grid_model.vert_grid_size)
-        self.spinboxLineNumPoints.setValue(self.grid_model.number_grid_points_along_line)
-        self.spinbocXsLineNumPoints.setValue(self.grid_model.number_grid_points_along_xs_line)
+        self.spinboxLineNumPoints.setValue(
+            self.grid_model.number_grid_points_along_line
+        )
+        self.spinbocXsLineNumPoints.setValue(
+            self.grid_model.number_grid_points_along_xs_line
+        )
 
         self.gridgenerator = GridGenerator(self)
         self.toolboxGridCreation.setCurrentIndex(0)  # Set to "Point" page
@@ -5413,9 +5802,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sticky_settings = Settings(self.ivy_settings_file)
         self.units = "English"  # TODO: remove this and use the units_label
         self.project_filename = f"{QDir.homePath()}{os.sep}New_IVy_Project.ivy"
-        self.status_message = (
-            "Open a video to begin | Drag and Drop -OR- File-->Open Video (Ctrl+O)"
-        )
+        self.status_message = "Open a video to begin | Drag and Drop -OR- File-->Open Video (Ctrl+O)"
         self.progress_percent = 0
         self.vector_scale = 40
 
@@ -5424,33 +5811,25 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialize controllers (after models and services are created)
         self.video_controller = VideoController(
-            self,
-            self.video_model,
-            self.video_service
+            self, self.video_model, self.video_service
         )
         self.project_controller = ProjectController(
-            self,
-            self.project_model,
-            self.project_service
+            self, self.project_model, self.project_service
         )
         self.ortho_controller = OrthoController(
-            self,
-            self.ortho_model,
-            self.ortho_service
+            self, self.ortho_model, self.ortho_service
         )
         self.grid_controller = GridController(
-            self,
-            self.grid_model,
-            self.grid_service
+            self, self.grid_model, self.grid_service
         )
         self.settings_controller = SettingsController(
-            self,
-            self.settings_model,
-            self.sticky_settings
+            self, self.settings_model, self.sticky_settings
         )
 
         # Initialize display units from sticky settings
-        loaded_units = self.settings_controller.initialize_units_from_settings()
+        loaded_units = (
+            self.settings_controller.initialize_units_from_settings()
+        )
         self.units_label = loaded_units
         self.display_units = loaded_units
         self.survey_units = self.settings_model.survey_units
@@ -5489,7 +5868,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionOpen_Video.triggered.connect(self.open_video)
         self.actionUnits.setText(f"Units: {self.display_units}")
         self.actionUnits.triggered.connect(self.open_settings_dialog)
-        self.actionSummary_Report_PDF.triggered.connect(self.create_summary_report)
+        self.actionSummary_Report_PDF.triggered.connect(
+            self.create_summary_report
+        )
         self.actionSummary_Report_PDF.setEnabled(False)
         self.actionOpen_Image_Folder.triggered.connect(
             self.imagebrowser.open_image_folder
@@ -5527,13 +5908,17 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toolButtonImportGroundControlImage.clicked.connect(
             self.ortho_original_load_gcp_image
         )
-        self.toolButtonImportBathymetry.clicked.connect(self.xs_survey.load_areacomp)
+        self.toolButtonImportBathymetry.clicked.connect(
+            self.xs_survey.load_areacomp
+        )
         self.toolButtonImportGCPTable.clicked.connect(self.orthotable_load_csv)
         self.toolButtonExportPDF.clicked.connect(self.create_summary_report)
         self.toolButtonExportPDF.setEnabled(False)
         self.toolButtonAddComment.clicked.connect(self.update_comments)
         self.toolButtonOpenSettings.clicked.connect(self.open_settings_dialog)
-        self.toolButtonOpenHelp.clicked.connect(self.launch_documentation_browser)
+        self.toolButtonOpenHelp.clicked.connect(
+            self.launch_documentation_browser
+        )
 
         # Video Tab - signals are connected by video_controller
         # Note: VideoController connects signals in its _connect_signals() method
@@ -5541,7 +5926,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.video_player.error.connect(self.video_error_handling)
         self.buttonCreateVideoClip.clicked.connect(self.create_video_clip)
         self.actionExit.triggered.connect(self.exit_application)
-        self.lineeditFrameStepValue.editingFinished.connect(self.frame_step_changed)
+        self.lineeditFrameStepValue.editingFinished.connect(
+            self.frame_step_changed
+        )
         self.buttonExtractVideoFrames.clicked.connect(self.extract_frames)
         self.checkboxCorrectRadialDistortion.stateChanged.connect(
             self.correct_radial_distortion
@@ -5554,7 +5941,7 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
                 "Import Video: Problem parsing video metadata",
                 message=msg,
                 style="ok",
-                icon=os.path.join(self.__icon_path__, "IVy_logo.ico")
+                icon=os.path.join(self.__icon_path__, "IVy_logo.ico"),
             )
         )
 
@@ -5566,16 +5953,26 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ffmpeg_onready_read_stdout
         )
         self.ffmpeg_process.finished.connect(self.ffmpeg_thread_finished)
-        self.signal_ffmpeg_thread.connect(self.ffmpeg_setup_stabilization_pass1)
-        self.signal_ffmpeg_thread.connect(self.ffmpeg_setup_stabilization_pass2)
-        self.image_processor_process.finished.connect(self.image_stack_process_finished)
+        self.signal_ffmpeg_thread.connect(
+            self.ffmpeg_setup_stabilization_pass1
+        )
+        self.signal_ffmpeg_thread.connect(
+            self.ffmpeg_setup_stabilization_pass2
+        )
+        self.image_processor_process.finished.connect(
+            self.image_stack_process_finished
+        )
         kill_thread_shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence("Shift+Esc"), self
         )
-        kill_thread_shortcut.activated.connect(self.stop_current_threadpool_task)
+        kill_thread_shortcut.activated.connect(
+            self.stop_current_threadpool_task
+        )
 
         # Image Browser
-        self.toolbuttonNextImage.clicked.connect(self.imagebrowser.set_next_image)
+        self.toolbuttonNextImage.clicked.connect(
+            self.imagebrowser.set_next_image
+        )
         self.toolbuttonPreviousImage.clicked.connect(
             self.imagebrowser.set_previous_image
         )
@@ -5593,8 +5990,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         # Orthorectification
-        self.signal_orthotable_changed.connect(self.ortho_original_refresh_plot)
-        self.signal_orthotable_check_units.connect(self.orthotable_change_units)
+        self.signal_orthotable_changed.connect(
+            self.ortho_original_refresh_plot
+        )
+        self.signal_orthotable_check_units.connect(
+            self.orthotable_change_units
+        )
         self.pushbuttonExportProjectedFrames.clicked.connect(
             self.orthorectify_many_thread_handler
         )
@@ -5608,29 +6009,59 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             self.orthotable_make_all_white
         )
         self.orthoPointsTable.itemClicked.connect(self.orthotable_get_item)
-        self.orthoPointsTable.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked)
-        self.orthoPointsTable.cellChanged.connect(self.orthotable_finished_edit)
-        self.orthoPointsTableLineEdit.returnPressed.connect(self.orthotable_update_cell)
-        self.toolbuttonOpenOrthoPointsTable.clicked.connect(self.orthotable_load_csv)
-        self.toolbuttonSaveOrthoPointsTable.clicked.connect(self.orthotable_save_csv)
+        self.orthoPointsTable.setEditTriggers(
+            QtWidgets.QAbstractItemView.DoubleClicked
+        )
+        self.orthoPointsTable.cellChanged.connect(
+            self.orthotable_finished_edit
+        )
+        self.orthoPointsTableLineEdit.returnPressed.connect(
+            self.orthotable_update_cell
+        )
+        self.toolbuttonOpenOrthoPointsTable.clicked.connect(
+            self.orthotable_load_csv
+        )
+        self.toolbuttonSaveOrthoPointsTable.clicked.connect(
+            self.orthotable_save_csv
+        )
         self.orthotable_add_row()
-        self.buttonRectifyCurrentImage.clicked.connect(self.rectify_single_frame)
-        self.toolbuttonAddOrthotableRow.clicked.connect(self.orthotable_add_row)
-        self.toolbuttonRemoveOrthotableRow.clicked.connect(self.orthotable_remove_row)
+        self.buttonRectifyCurrentImage.clicked.connect(
+            self.rectify_single_frame
+        )
+        self.toolbuttonAddOrthotableRow.clicked.connect(
+            self.orthotable_add_row
+        )
+        self.toolbuttonRemoveOrthotableRow.clicked.connect(
+            self.orthotable_remove_row
+        )
         self.checkBoxOrthoFlipX.stateChanged.connect(self.ortho_flip_x_changed)
         self.checkBoxOrthoFlipY.stateChanged.connect(self.ortho_flip_y_changed)
 
         # Grid Preparation
-        self.toolbuttonCreatePoint.clicked.connect(self.gridpreparation.add_point)
-        self.toolbuttonCreateLine.clicked.connect(self.gridpreparation.add_line)
+        self.toolbuttonCreatePoint.clicked.connect(
+            self.gridpreparation.add_point
+        )
+        self.toolbuttonCreateLine.clicked.connect(
+            self.gridpreparation.add_line
+        )
         self.toolbuttonCreateXsLine.clicked.connect(
             self.gridpreparation.add_line_of_given_length
         )
-        self.toolbuttonCreateMask.clicked.connect(self.gridpreparation.add_mask)
-        self.toolbuttonClearPoints.clicked.connect(self.gridpreparation.clear_point)
-        self.toolbuttonClearLine.clicked.connect(self.gridpreparation.clear_line)
-        self.toolbuttonClearXsLine.clicked.connect(self.gridpreparation.clear_line)
-        self.toolbuttonClearMask.clicked.connect(self.gridpreparation.clear_mask)
+        self.toolbuttonCreateMask.clicked.connect(
+            self.gridpreparation.add_mask
+        )
+        self.toolbuttonClearPoints.clicked.connect(
+            self.gridpreparation.clear_point
+        )
+        self.toolbuttonClearLine.clicked.connect(
+            self.gridpreparation.clear_line
+        )
+        self.toolbuttonClearXsLine.clicked.connect(
+            self.gridpreparation.clear_line
+        )
+        self.toolbuttonClearMask.clicked.connect(
+            self.gridpreparation.clear_mask
+        )
         self.gridpreparation.imageBrowser.polygonPoints.connect(
             self.gridpreparation.save_roi
         )
@@ -5641,16 +6072,26 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             lambda: self.create_line_grid(mode="cross_section")
         )
         self.buttonCreateGrid.clicked.connect(self.create_grid)
-        self.spinboxLineNumPoints.editingFinished.connect(self.change_line_num_points)
+        self.spinboxLineNumPoints.editingFinished.connect(
+            self.change_line_num_points
+        )
         self.spinbocXsLineNumPoints.editingFinished.connect(
             self.change_xs_line_num_points
         )
-        self.spinboxHorizGridSpacing.editingFinished.connect(self.change_horz_grid_size)
-        self.spinboxVertGridSpacing.editingFinished.connect(self.change_vert_grid_size)
+        self.spinboxHorizGridSpacing.editingFinished.connect(
+            self.change_horz_grid_size
+        )
+        self.spinboxVertGridSpacing.editingFinished.connect(
+            self.change_vert_grid_size
+        )
 
         # STIV
-        self.buttonSTIVProcessVelocities.clicked.connect(self.stiv_thread_handler)
-        self.buttonSTIVOptProcessVelocities.clicked.connect(self.stiv_thread_handler)
+        self.buttonSTIVProcessVelocities.clicked.connect(
+            self.stiv_thread_handler
+        )
+        self.buttonSTIVOptProcessVelocities.clicked.connect(
+            self.stiv_thread_handler
+        )
         self.doublespinboxStivGaussianBlurSigma.editingFinished.connect(
             self.stiv_gaussian_blur_changed
         )
@@ -5658,8 +6099,12 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.doublespinboxStivSearchLineDistance.editingFinished.connect(
             self.stiv_search_line_distance_changed
         )
-        self.spinboxSTIVPhiOrigin.editingFinished.connect(self.stiv_phi_origin_changed)
-        self.spinboxSTIVPhiRange.editingFinished.connect(self.stiv_phi_range_changed)
+        self.spinboxSTIVPhiOrigin.editingFinished.connect(
+            self.stiv_phi_origin_changed
+        )
+        self.spinboxSTIVPhiRange.editingFinished.connect(
+            self.stiv_phi_range_changed
+        )
         self.spinboxSTIVMaxVelThreshold.editingFinished.connect(
             self.stiv_max_vel_threshold_changed
         )
@@ -5675,17 +6120,23 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
         self.signal_manual_vectors.connect(self.plot_manual_vectors)
 
         # Cross-Section Geometry
-        self.toolbuttonDrawCrossSection.clicked.connect(self.draw_cross_section_line)
+        self.toolbuttonDrawCrossSection.clicked.connect(
+            self.draw_cross_section_line
+        )
         # self.toolButtonClearCrossSection.clicked.connect(self.clear_cross_section_line)
         self.signal_cross_section_exists.connect(self.cross_section_manager)
         self.sbLeftBankXRectifiedCoordPixels.editingFinished.connect(
-            self.cross_section_manager_eps)
+            self.cross_section_manager_eps
+        )
         self.sbLeftBankYRectifiedCoordPixels.editingFinished.connect(
-            self.cross_section_manager_eps)
+            self.cross_section_manager_eps
+        )
         self.sbRightBankRectifiedXCoordPixels.editingFinished.connect(
-            self.cross_section_manager_eps)
+            self.cross_section_manager_eps
+        )
         self.sbRightBankRectifiedYCoordPixels.editingFinished.connect(
-            self.cross_section_manager_eps)
+            self.cross_section_manager_eps
+        )
 
         # Discharge
         # All migrated to DischargeTab Class
@@ -5751,7 +6202,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             enable (bool, optional): enable if true, disable if false. Defaults to True.
         """
         return
-        tab_index = tab_base.indexOf(tab_base.findChild(QtWidgets.QWidget, tab))
+        tab_index = tab_base.indexOf(
+            tab_base.findChild(QtWidgets.QWidget, tab)
+        )
         if tab_index == -1:
             print(f"Tab '{tab}' not found.")
             return
@@ -5789,7 +6242,9 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
             current_dir = os.getcwd()
             parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
             docs_dir = "docs" + os.sep + "_build" + os.sep + "html" + os.sep
-            documentation_landing_page = current_dir + os.sep + docs_dir + "index.html"
+            documentation_landing_page = (
+                current_dir + os.sep + docs_dir + "index.html"
+            )
         else:
             # Use production-specific settings
             documentation_landing_page = (
@@ -5806,7 +6261,9 @@ if __name__ == "__main__":
         # Suppress NumbaDeprecationWarnings from areacomp3
         # These warnings are due to areacomp3's @numba.jit decorators missing 'nopython' argument
         # We can't fix them as they're in the external areacomp3 package
-        warnings.filterwarnings('ignore', category=DeprecationWarning, module='numba')
+        warnings.filterwarnings(
+            "ignore", category=DeprecationWarning, module="numba"
+        )
 
         # import cProfile, pstats
         app = QtWidgets.QApplication(sys.argv)

@@ -31,10 +31,22 @@ def sample_project_data():
     return {
         "rectification_parameters": {
             "method": "camera matrix",
-            "ground_control_points": [[0, 0, 100], [1, 0, 100], [0, 1, 100],
-                                      [1, 1, 100], [0.5, 0.5, 100], [1, 0.5, 100]],
-            "image_control_points": [[100, 100], [200, 100], [100, 200],
-                                    [200, 200], [150, 150], [200, 150]],
+            "ground_control_points": [
+                [0, 0, 100],
+                [1, 0, 100],
+                [0, 1, 100],
+                [1, 1, 100],
+                [0.5, 0.5, 100],
+                [1, 0.5, 100],
+            ],
+            "image_control_points": [
+                [100, 100],
+                [200, 100],
+                [100, 200],
+                [200, 200],
+                [150, 150],
+                [200, 150],
+            ],
             "pixel_gsd": 0.01,
         },
         "cross_section_geometry_path": "5-discharge/cross_section.mat",
@@ -74,7 +86,7 @@ def sample_scaffold_zip(temp_dir, sample_project_data):
 
     # Create project_data.json
     project_json_path = scaffold_content_dir / "project_data.json"
-    with open(project_json_path, 'w') as f:
+    with open(project_json_path, "w") as f:
         json.dump(sample_project_data, f)
 
     # Create directory structure
@@ -87,12 +99,14 @@ def sample_scaffold_zip(temp_dir, sample_project_data):
     xs_file.write_text("dummy mat file content")
 
     # Create calibration image
-    calib_image = scaffold_content_dir / "2-orthorectification" / "calibration.jpg"
+    calib_image = (
+        scaffold_content_dir / "2-orthorectification" / "calibration.jpg"
+    )
     calib_image.write_text("dummy image content")
 
     # Create ZIP archive
-    with zipfile.ZipFile(scaffold_path, 'w') as zipf:
-        for file_path in scaffold_content_dir.rglob('*'):
+    with zipfile.ZipFile(scaffold_path, "w") as zipf:
+        for file_path in scaffold_content_dir.rglob("*"):
             if file_path.is_file():
                 arcname = str(file_path.relative_to(scaffold_content_dir))
                 zipf.write(file_path, arcname=arcname)
@@ -103,13 +117,14 @@ def sample_scaffold_zip(temp_dir, sample_project_data):
 class TestScaffoldLoaderLoadScaffold:
     """Tests for load_scaffold method."""
 
-    def test_load_valid_scaffold(self, scaffold_loader, sample_scaffold_zip, temp_dir):
+    def test_load_valid_scaffold(
+        self, scaffold_loader, sample_scaffold_zip, temp_dir
+    ):
         """Test loading a valid scaffold file."""
         extract_dir = Path(temp_dir) / "extract"
 
         result = scaffold_loader.load_scaffold(
-            sample_scaffold_zip,
-            temp_extract_dir=str(extract_dir)
+            sample_scaffold_zip, temp_extract_dir=str(extract_dir)
         )
 
         assert "project_data" in result
@@ -118,31 +133,42 @@ class TestScaffoldLoaderLoadScaffold:
         assert "calibration_image_path" in result
 
         # Verify project_data loaded correctly
-        assert result["project_data"]["rectification_parameters"]["method"] == "camera matrix"
+        assert (
+            result["project_data"]["rectification_parameters"]["method"]
+            == "camera matrix"
+        )
 
         # Verify files exist
         assert Path(result["extract_dir"]).exists()
         assert Path(result["cross_section_path"]).exists()
         assert Path(result["calibration_image_path"]).exists()
 
-    def test_load_scaffold_with_temp_dir_creation(self, scaffold_loader, sample_scaffold_zip):
+    def test_load_scaffold_with_temp_dir_creation(
+        self, scaffold_loader, sample_scaffold_zip
+    ):
         """Test that scaffold loader creates temp directory if not specified."""
         result = scaffold_loader.load_scaffold(sample_scaffold_zip)
 
         assert Path(result["extract_dir"]).exists()
-        assert "scaffold_" in result["extract_dir"]  # Check temp directory naming
+        assert (
+            "scaffold_" in result["extract_dir"]
+        )  # Check temp directory naming
 
         # Cleanup
         scaffold_loader.cleanup_scaffold(result["extract_dir"])
 
-    def test_load_nonexistent_scaffold_raises_error(self, scaffold_loader, temp_dir):
+    def test_load_nonexistent_scaffold_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that loading non-existent scaffold raises InvalidScaffoldError."""
         scaffold_path = Path(temp_dir) / "does_not_exist.ivy"
 
         with pytest.raises(InvalidScaffoldError, match="does not exist"):
             scaffold_loader.load_scaffold(str(scaffold_path))
 
-    def test_load_wrong_extension_raises_error(self, scaffold_loader, temp_dir):
+    def test_load_wrong_extension_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that wrong file extension raises InvalidScaffoldError."""
         wrong_file = Path(temp_dir) / "scaffold.txt"
         wrong_file.write_text("not a zip")
@@ -158,33 +184,43 @@ class TestScaffoldLoaderLoadScaffold:
         with pytest.raises(InvalidScaffoldError, match="Failed to extract"):
             scaffold_loader.load_scaffold(str(corrupted_file))
 
-    def test_load_scaffold_missing_project_data_raises_error(self, scaffold_loader, temp_dir):
+    def test_load_scaffold_missing_project_data_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that scaffold without project_data.json raises error."""
         scaffold_path = Path(temp_dir) / "no_project_data.ivy"
 
         # Create ZIP without project_data.json
-        with zipfile.ZipFile(scaffold_path, 'w') as zipf:
+        with zipfile.ZipFile(scaffold_path, "w") as zipf:
             zipf.writestr("dummy.txt", "dummy content")
 
-        with pytest.raises(InvalidScaffoldError, match="missing project_data.json"):
+        with pytest.raises(
+            InvalidScaffoldError, match="missing project_data.json"
+        ):
             scaffold_loader.load_scaffold(str(scaffold_path))
 
-    def test_load_scaffold_invalid_json_raises_error(self, scaffold_loader, temp_dir):
+    def test_load_scaffold_invalid_json_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that invalid JSON in project_data.json raises error."""
         scaffold_path = Path(temp_dir) / "invalid_json.ivy"
 
         # Create ZIP with invalid JSON
-        with zipfile.ZipFile(scaffold_path, 'w') as zipf:
+        with zipfile.ZipFile(scaffold_path, "w") as zipf:
             zipf.writestr("project_data.json", "{invalid json")
 
-        with pytest.raises(InvalidScaffoldError, match="Failed to load project_data.json"):
+        with pytest.raises(
+            InvalidScaffoldError, match="Failed to load project_data.json"
+        ):
             scaffold_loader.load_scaffold(str(scaffold_path))
 
 
 class TestScaffoldLoaderValidateScaffold:
     """Tests for validate_scaffold_data method."""
 
-    def test_validate_valid_scaffold(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_valid_scaffold(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation of valid scaffold data."""
         # Create cross-section file that validation expects
         xs_dir = Path(temp_dir) / "5-discharge"
@@ -192,7 +228,9 @@ class TestScaffoldLoaderValidateScaffold:
         xs_file = xs_dir / "cross_section.mat"
         xs_file.write_text("dummy cross-section data")
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert errors == []
 
@@ -205,61 +243,94 @@ class TestScaffoldLoaderValidateScaffold:
             # Missing other required keys
         }
 
-        errors = scaffold_loader.validate_scaffold_data(incomplete_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            incomplete_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("Missing required key" in err for err in errors)
 
-    def test_validate_wrong_rectification_method(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_wrong_rectification_method(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation rejects non-camera-matrix methods."""
-        sample_project_data["rectification_parameters"]["method"] = "homography"
+        sample_project_data["rectification_parameters"][
+            "method"
+        ] = "homography"
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("camera matrix" in err for err in errors)
 
-    def test_validate_insufficient_gcps(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_insufficient_gcps(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation detects insufficient GCPs for camera matrix."""
         # Camera matrix needs at least 6 GCPs
-        sample_project_data["rectification_parameters"]["ground_control_points"] = [
-            [0, 0, 100], [1, 0, 100], [0, 1, 100]  # Only 3 GCPs
+        sample_project_data["rectification_parameters"][
+            "ground_control_points"
+        ] = [
+            [0, 0, 100],
+            [1, 0, 100],
+            [0, 1, 100],  # Only 3 GCPs
         ]
-        sample_project_data["rectification_parameters"]["image_control_points"] = [
-            [100, 100], [200, 100], [100, 200]
-        ]
+        sample_project_data["rectification_parameters"][
+            "image_control_points"
+        ] = [[100, 100], [200, 100], [100, 200]]
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("at least 6 GCPs" in err for err in errors)
 
-    def test_validate_mismatched_gcp_icp_count(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_mismatched_gcp_icp_count(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation detects GCP/ICP count mismatch."""
         # Different number of GCPs and ICPs
-        sample_project_data["rectification_parameters"]["image_control_points"] = [
-            [100, 100], [200, 100]  # Only 2 ICPs
+        sample_project_data["rectification_parameters"][
+            "image_control_points"
+        ] = [
+            [100, 100],
+            [200, 100],  # Only 2 ICPs
         ]
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("must match" in err for err in errors)
 
-    def test_validate_missing_stiv_parameters(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_missing_stiv_parameters(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation detects missing STIV parameters."""
         del sample_project_data["stiv_parameters"]["num_pixels"]
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("STIV parameter" in err for err in errors)
 
-    def test_validate_grid_not_on_cross_section(self, scaffold_loader, sample_project_data, temp_dir):
+    def test_validate_grid_not_on_cross_section(
+        self, scaffold_loader, sample_project_data, temp_dir
+    ):
         """Test validation requires grid along cross-section."""
-        sample_project_data["grid_parameters"]["use_cross_section_line"] = False
+        sample_project_data["grid_parameters"][
+            "use_cross_section_line"
+        ] = False
 
-        errors = scaffold_loader.validate_scaffold_data(sample_project_data, temp_dir)
+        errors = scaffold_loader.validate_scaffold_data(
+            sample_project_data, temp_dir
+        )
 
         assert len(errors) > 0
         assert any("along cross-section" in err for err in errors)
@@ -285,7 +356,9 @@ class TestScaffoldLoaderFindFiles:
         assert "Cross-Section" in result
         assert result.endswith(".mat")
 
-    def test_find_cross_section_file_not_found(self, scaffold_loader, temp_dir):
+    def test_find_cross_section_file_not_found(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that _find_cross_section_file returns None when not found."""
         extract_dir = Path(temp_dir) / "extract"
         extract_dir.mkdir()
@@ -336,7 +409,9 @@ class TestScaffoldLoaderCleanup:
 
         assert not extract_dir.exists()
 
-    def test_cleanup_nonexistent_directory_no_error(self, scaffold_loader, temp_dir):
+    def test_cleanup_nonexistent_directory_no_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test that cleanup of non-existent directory doesn't raise error."""
         extract_dir = Path(temp_dir) / "does_not_exist"
 
@@ -347,7 +422,9 @@ class TestScaffoldLoaderCleanup:
 class TestScaffoldLoaderGetScaffoldInfo:
     """Tests for get_scaffold_info method."""
 
-    def test_get_info_valid_scaffold(self, scaffold_loader, sample_scaffold_zip):
+    def test_get_info_valid_scaffold(
+        self, scaffold_loader, sample_scaffold_zip
+    ):
         """Test getting info from valid scaffold."""
         info = scaffold_loader.get_scaffold_info(sample_scaffold_zip)
 
@@ -361,7 +438,7 @@ class TestScaffoldLoaderGetScaffoldInfo:
         scaffold_path = Path(temp_dir) / "incomplete.ivy"
 
         # Create ZIP with only project_data.json (missing cross-section)
-        with zipfile.ZipFile(scaffold_path, 'w') as zipf:
+        with zipfile.ZipFile(scaffold_path, "w") as zipf:
             zipf.writestr("project_data.json", "{}")
 
         info = scaffold_loader.get_scaffold_info(str(scaffold_path))
@@ -370,14 +447,18 @@ class TestScaffoldLoaderGetScaffoldInfo:
         assert info["has_cross_section"] is False
         assert info["is_valid"] is False
 
-    def test_get_info_nonexistent_file_raises_error(self, scaffold_loader, temp_dir):
+    def test_get_info_nonexistent_file_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test get_scaffold_info raises error for non-existent file."""
         scaffold_path = Path(temp_dir) / "does_not_exist.ivy"
 
         with pytest.raises(InvalidScaffoldError, match="does not exist"):
             scaffold_loader.get_scaffold_info(str(scaffold_path))
 
-    def test_get_info_corrupted_zip_raises_error(self, scaffold_loader, temp_dir):
+    def test_get_info_corrupted_zip_raises_error(
+        self, scaffold_loader, temp_dir
+    ):
         """Test get_scaffold_info raises error for corrupted ZIP."""
         scaffold_path = Path(temp_dir) / "corrupted.ivy"
         scaffold_path.write_text("not a zip")

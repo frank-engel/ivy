@@ -8,7 +8,9 @@ from PyQt5.QtCore import pyqtSlot, QUrl, QTime, QDate
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5 import QtWidgets, QtGui
 
-from image_velocimetry_tools.gui.controllers.base_controller import BaseController
+from image_velocimetry_tools.gui.controllers.base_controller import (
+    BaseController,
+)
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.services.video_service import VideoService
 from image_velocimetry_tools.common_functions import (
@@ -38,10 +40,7 @@ class VideoController(BaseController):
     """
 
     def __init__(
-        self,
-        main_window,
-        video_model: VideoModel,
-        video_service: VideoService
+        self, main_window, video_model: VideoModel, video_service: VideoService
     ):
         """Initialize the video controller.
 
@@ -75,8 +74,12 @@ class VideoController(BaseController):
 
         # Model signals
         self.video_model.video_loaded.connect(self.on_model_video_loaded)
-        self.video_model.metadata_changed.connect(self.on_model_metadata_changed)
-        self.video_model.clip_times_changed.connect(self.on_model_clip_times_changed)
+        self.video_model.metadata_changed.connect(
+            self.on_model_metadata_changed
+        )
+        self.video_model.clip_times_changed.connect(
+            self.on_model_clip_times_changed
+        )
 
         self.logger.debug("Video controller signals connected")
 
@@ -103,10 +106,11 @@ class VideoController(BaseController):
         mw.sliderVideoPlayHead.setValue(position)
 
         # Update time label with position and frame number
-        time_str = float_seconds_to_time_string(position / 1000, precision="second")
+        time_str = float_seconds_to_time_string(
+            position / 1000, precision="second"
+        )
         frame_num = seconds_to_frame_number(
-            position / 1000,
-            self.video_model.video_frame_rate
+            position / 1000, self.video_model.video_frame_rate
         )
         mw.labelVideoPlayheadTime.setText(f"{time_str} [{frame_num}]")
 
@@ -123,10 +127,11 @@ class VideoController(BaseController):
 
         # Update duration label
         try:
-            time_str = float_seconds_to_time_string(duration / 1000, precision="second")
+            time_str = float_seconds_to_time_string(
+                duration / 1000, precision="second"
+            )
             frame_num = seconds_to_frame_number(
-                duration / 1000,
-                self.video_model.video_frame_rate
+                duration / 1000, self.video_model.video_frame_rate
             )
             mw.labelVideoDuration.setText(f"{time_str} [{frame_num}]")
         except Exception as e:
@@ -260,6 +265,7 @@ class VideoController(BaseController):
 
         # Update status
         import os as os_module
+
         message = f"Playing: {os_module.path.basename(file_path)}"
         mw.set_menu_item_color("actionOpen_Video", "good")
         mw.update_statusbar(message)
@@ -341,7 +347,9 @@ class VideoController(BaseController):
             dt = parse_creation_time(creation_time)
         else:
             # Fallback: Try to smart parse the file name
-            dt = parse_creation_time(os.path.basename(self.video_model.video_file_name))
+            dt = parse_creation_time(
+                os.path.basename(self.video_model.video_file_name)
+            )
 
         if dt is not None and duration is not None:
             # Set date
@@ -352,7 +360,9 @@ class VideoController(BaseController):
 
             # Compute and set end time
             dt_end = dt + datetime.timedelta(milliseconds=duration)
-            mw.measEndTime.setTime(QTime(dt_end.hour, dt_end.minute, dt_end.second))
+            mw.measEndTime.setTime(
+                QTime(dt_end.hour, dt_end.minute, dt_end.second)
+            )
         elif dt is None and duration is not None:
             # If no date/time found, just set duration
             mw.measEndTime.setTime(QTime(0, 0))
@@ -377,20 +387,26 @@ class VideoController(BaseController):
         mw.video_clip_end_time = end_ms
 
         # Handle end_ms == 0 case (means full video)
-        display_end_ms = end_ms if end_ms > 0 else self.video_model.video_duration
+        display_end_ms = (
+            end_ms if end_ms > 0 else self.video_model.video_duration
+        )
 
         # Check if we have video metadata loaded yet
-        if self.video_model.video_frame_rate is None or self.video_model.video_frame_rate == 0:
-            self.logger.warning("Video frame rate not available yet, skipping UI update")
+        if (
+            self.video_model.video_frame_rate is None
+            or self.video_model.video_frame_rate == 0
+        ):
+            self.logger.warning(
+                "Video frame rate not available yet, skipping UI update"
+            )
             return
 
         # Update clip start button and frame label
         if start_ms > 0:
-            start_str = seconds_to_hhmmss(start_ms / 1000, precision='high')
+            start_str = seconds_to_hhmmss(start_ms / 1000, precision="high")
             mw.buttonClipStart.setText(f"Clip Start [{start_str}]")
             start_frame = seconds_to_frame_number(
-                start_ms / 1000,
-                self.video_model.video_frame_rate
+                start_ms / 1000, self.video_model.video_frame_rate
             )
             mw.labelStartFrameValue.setText(f"{start_frame}")
         else:
@@ -401,18 +417,21 @@ class VideoController(BaseController):
         # end_ms == 0 means "use full video", > 0 means user set a specific time
         if end_ms > 0:
             # User set a specific end time
-            end_str = seconds_to_hhmmss(display_end_ms / 1000, precision='high')
+            end_str = seconds_to_hhmmss(
+                display_end_ms / 1000, precision="high"
+            )
             mw.buttonClipEnd.setText(f"Clip End [{end_str}]")
             end_frame = seconds_to_frame_number(
-                display_end_ms / 1000,
-                self.video_model.video_frame_rate
+                display_end_ms / 1000, self.video_model.video_frame_rate
             )
             mw.labelEndFrameValue.setText(f"{end_frame}")
         else:
             # Full video (end_ms was 0)
             mw.buttonClipEnd.setText("Clip End")
             if self.video_model.video_num_frames:
-                mw.labelEndFrameValue.setText(f"{self.video_model.video_num_frames}")
+                mw.labelEndFrameValue.setText(
+                    f"{self.video_model.video_num_frames}"
+                )
 
         # Show clip information in status bar and update extraction UI
         self._show_clip_information()
@@ -424,34 +443,42 @@ class VideoController(BaseController):
             return
 
         # Check if we have necessary metadata
-        if (self.video_model.video_frame_rate is None or
-            self.video_model.video_frame_rate == 0):
-            self.logger.warning("_show_clip_information: Video frame rate not available yet")
+        if (
+            self.video_model.video_frame_rate is None
+            or self.video_model.video_frame_rate == 0
+        ):
+            self.logger.warning(
+                "_show_clip_information: Video frame rate not available yet"
+            )
             return
 
         mw = self.main_window
         start_ms = self.video_model.video_clip_start_time
         end_ms = self.video_model.video_clip_end_time
 
-        self.logger.debug(f"_show_clip_information: start={start_ms}ms, end={end_ms}ms")
+        self.logger.debug(
+            f"_show_clip_information: start={start_ms}ms, end={end_ms}ms"
+        )
 
         if end_ms == 0 or end_ms is None:
             end_ms = self.video_model.video_duration
-            self.logger.debug(f"_show_clip_information: Using video duration: {end_ms}ms")
+            self.logger.debug(
+                f"_show_clip_information: Using video duration: {end_ms}ms"
+            )
 
         # Calculate start and end frames
         start_frame = seconds_to_frame_number(
-            start_ms / 1000,
-            self.video_model.video_frame_rate
+            start_ms / 1000, self.video_model.video_frame_rate
         )
         end_frame = seconds_to_frame_number(
-            end_ms / 1000,
-            self.video_model.video_frame_rate
+            end_ms / 1000, self.video_model.video_frame_rate
         )
         if end_frame == 0:
             end_frame = self.video_model.video_num_frames
 
-        self.logger.debug(f"_show_clip_information: frames {start_frame} to {end_frame}, step={mw.extraction_frame_step}")
+        self.logger.debug(
+            f"_show_clip_information: frames {start_frame} to {end_frame}, step={mw.extraction_frame_step}"
+        )
 
         # Calculate extraction parameters based on clip times
         mw.extraction_frame_rate = (
@@ -462,10 +489,14 @@ class VideoController(BaseController):
             (end_frame - start_frame) / mw.extraction_frame_step
         )
 
-        self.logger.debug(f"_show_clip_information: extraction_num_frames={mw.extraction_num_frames}")
+        self.logger.debug(
+            f"_show_clip_information: extraction_num_frames={mw.extraction_num_frames}"
+        )
 
         # Update extraction UI labels
-        mw.labelNewFrameRateValue.setText(f"{mw.extraction_frame_rate:.3f} fps")
+        mw.labelNewFrameRateValue.setText(
+            f"{mw.extraction_frame_rate:.3f} fps"
+        )
         mw.labelNewTimestepValue.setText(f"{mw.extraction_timestep_ms:.4f} ms")
         mw.labelNewNumFramesValue.setText(f"{mw.extraction_num_frames}")
 
@@ -496,7 +527,7 @@ class VideoController(BaseController):
         # Get video metadata using opencv
         metadata = opencv_get_video_metadata(
             file_path,
-            status_callback=self.main_window.signal_opencv_updates.emit
+            status_callback=self.main_window.signal_opencv_updates.emit,
         )
 
         # Add EXIF metadata from ffprobe
@@ -517,15 +548,13 @@ class VideoController(BaseController):
             last_path = mw.sticky_settings.get("last_video_file_name")
         except KeyError:
             from PyQt5.QtCore import QDir
+
             last_path = QDir.homePath()
 
         # Show file dialog
         filter_spec = "Videos (*.mp4 *.mov *.wmv *.avi *.mkv);;All files (*.*)"
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            None,
-            "Open Video File",
-            last_path,
-            filter_spec
+            None, "Open Video File", last_path, filter_spec
         )
 
         if file_path:

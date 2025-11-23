@@ -27,7 +27,7 @@ class VideoService(BaseService):
         self,
         start_time_ms: float,
         end_time_ms: float,
-        video_duration_ms: float
+        video_duration_ms: float,
     ) -> None:
         """Validate clip start and end times.
 
@@ -66,7 +66,7 @@ class VideoService(BaseService):
         flip: str = "none",
         normalize_luma: bool = False,
         curve_preset: str = "none",
-        stabilize: bool = False
+        stabilize: bool = False,
     ) -> str:
         """Generate output filename for video clip based on processing parameters.
 
@@ -124,7 +124,11 @@ class VideoService(BaseService):
         file_str_middle = "_".join(map(str, file_meta))
 
         # Extract basename and extension from input video
-        basename = os.path.basename(input_video_path) if input_video_path else "video.mp4"
+        basename = (
+            os.path.basename(input_video_path)
+            if input_video_path
+            else "video.mp4"
+        )
 
         # Ensure basename has a valid file extension
         if "." in basename:
@@ -162,7 +166,7 @@ class VideoService(BaseService):
         cx: float = 0.0,
         cy: float = 0.0,
         k1: float = 0.0,
-        k2: float = 0.0
+        k2: float = 0.0,
     ) -> dict:
         """Build FFmpeg parameters dictionary.
 
@@ -194,7 +198,9 @@ class VideoService(BaseService):
             Dictionary of FFmpeg parameters
         """
         # Convert times from milliseconds to HH:MM:SS.mmm format
-        start_time_str = seconds_to_hhmmss(start_time_ms / 1000, precision="high")
+        start_time_str = seconds_to_hhmmss(
+            start_time_ms / 1000, precision="high"
+        )
         end_time_str = seconds_to_hhmmss(end_time_ms / 1000, precision="high")
 
         # Build parameters dictionary

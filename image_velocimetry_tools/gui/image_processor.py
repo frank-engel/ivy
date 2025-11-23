@@ -31,7 +31,9 @@ class ImageProcessorThread(QThread):
     def run(self):
         """Run the thread using the method specified"""
         try:
-            logging.debug("ImageProcessorThread: Thread is starting its execution")
+            logging.debug(
+                "ImageProcessorThread: Thread is starting its execution"
+            )
             # Check if the method exists in the ImageProcessor class
             if hasattr(self.image_processor, self.method_name):
                 logging.debug(f"Executing method '{self.method_name}'")

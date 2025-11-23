@@ -28,9 +28,7 @@ class ProjectService:
         self.logger = logging.getLogger(__name__)
 
     def save_project_to_json(
-        self,
-        project_dict: Dict[str, Any],
-        json_path: str
+        self, project_dict: Dict[str, Any], json_path: str
     ) -> bool:
         """Save project dictionary to JSON file.
 
@@ -71,7 +69,7 @@ class ProjectService:
         source_directory: str,
         output_zip_path: str,
         progress_callback: Optional[Callable[[int, int], None]] = None,
-        exclude_extensions: Optional[List[str]] = None
+        exclude_extensions: Optional[List[str]] = None,
     ) -> bool:
         """Create a ZIP archive of the project directory.
 
@@ -104,17 +102,23 @@ class ProjectService:
             for root, _, files in os.walk(source_directory):
                 for file in files:
                     # Check if file should be excluded
-                    if not any(file.endswith(ext) for ext in exclude_extensions):
+                    if not any(
+                        file.endswith(ext) for ext in exclude_extensions
+                    ):
                         file_count += 1
 
             items_processed = 0
 
             # Create ZIP archive
-            with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            with zipfile.ZipFile(
+                output_zip_path, "w", zipfile.ZIP_DEFLATED
+            ) as zipf:
                 for root, _, files in os.walk(source_directory):
                     for file in files:
                         # Skip excluded extensions
-                        if any(file.endswith(ext) for ext in exclude_extensions):
+                        if any(
+                            file.endswith(ext) for ext in exclude_extensions
+                        ):
                             continue
 
                         file_path = os.path.join(root, file)
@@ -139,9 +143,7 @@ class ProjectService:
             raise IOError(f"Could not create project archive: {e}")
 
     def extract_project_archive(
-        self,
-        zip_path: str,
-        extract_to_directory: str
+        self, zip_path: str, extract_to_directory: str
     ) -> bool:
         """Extract a project ZIP archive.
 
@@ -171,7 +173,9 @@ class ProjectService:
             with zipfile.ZipFile(zip_path, "r") as zipf:
                 zipf.extractall(extract_to_directory)
 
-            self.logger.info(f"Extracted project archive to: {extract_to_directory}")
+            self.logger.info(
+                f"Extracted project archive to: {extract_to_directory}"
+            )
             return True
 
         except zipfile.BadZipFile as e:
@@ -197,7 +201,9 @@ class ProjectService:
             ValueError: If JSON is invalid
         """
         if not os.path.exists(json_path):
-            raise FileNotFoundError(f"Project JSON file does not exist: {json_path}")
+            raise FileNotFoundError(
+                f"Project JSON file does not exist: {json_path}"
+            )
 
         try:
             with open(json_path, "r") as fp:

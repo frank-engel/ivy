@@ -18,10 +18,12 @@ def discharge_service():
 def mock_xs_survey():
     """Create a mock cross-section survey object."""
     mock = Mock()
-    mock.get_pixel_xs = Mock(return_value=(
-        np.array([0.0, 5.0, 10.0, 15.0, 20.0]),  # stations
-        np.array([10.0, 8.0, 7.5, 8.5, 10.0])    # elevations
-    ))
+    mock.get_pixel_xs = Mock(
+        return_value=(
+            np.array([0.0, 5.0, 10.0, 15.0, 20.0]),  # stations
+            np.array([10.0, 8.0, 7.5, 8.5, 10.0]),  # elevations
+        )
+    )
     return mock
 
 
@@ -55,15 +57,17 @@ def sample_discharge_dataframe():
 class TestGetStationAndDepth:
     """Tests for get_station_and_depth method."""
 
-    def test_basic_station_depth_extraction(self, discharge_service, mock_xs_survey):
+    def test_basic_station_depth_extraction(
+        self, discharge_service, mock_xs_survey
+    ):
         """Test basic extraction of station and depth."""
-        grid_points = np.array([[10, 20], [30, 40], [50, 60], [70, 80], [90, 100]])
+        grid_points = np.array(
+            [[10, 20], [30, 40], [50, 60], [70, 80], [90, 100]]
+        )
         wse = 10.0  # meters
 
         stations, depths = discharge_service.get_station_and_depth(
-            mock_xs_survey,
-            grid_points,
-            wse
+            mock_xs_survey, grid_points, wse
         )
 
         # Verify get_pixel_xs was called with correct arguments
@@ -74,21 +78,23 @@ class TestGetStationAndDepth:
         # Check returned values
         assert len(stations) == 5
         assert len(depths) == 5
-        np.testing.assert_array_equal(stations, np.array([0.0, 5.0, 10.0, 15.0, 20.0]))
+        np.testing.assert_array_equal(
+            stations, np.array([0.0, 5.0, 10.0, 15.0, 20.0])
+        )
 
         # Depths should be WSE - elevations
         expected_depths = np.array([0.0, 2.0, 2.5, 1.5, 0.0])
         np.testing.assert_array_almost_equal(depths, expected_depths)
 
-    def test_negative_depths_when_wse_below_elevation(self, discharge_service, mock_xs_survey):
+    def test_negative_depths_when_wse_below_elevation(
+        self, discharge_service, mock_xs_survey
+    ):
         """Test that negative depths are computed when WSE is below elevation."""
         grid_points = np.array([[10, 20]])
         wse = 5.0  # Below some elevations
 
         stations, depths = discharge_service.get_station_and_depth(
-            mock_xs_survey,
-            grid_points,
-            wse
+            mock_xs_survey, grid_points, wse
         )
 
         # Should have negative depths where elevation > wse
@@ -98,11 +104,12 @@ class TestGetStationAndDepth:
 class TestExtractVelocityFromStiv:
     """Tests for extract_velocity_from_stiv method."""
 
-    def test_extract_with_normal_magnitudes(self, discharge_service, mock_stiv_results):
+    def test_extract_with_normal_magnitudes(
+        self, discharge_service, mock_stiv_results
+    ):
         """Test velocity extraction when normal magnitudes are available."""
         velocities = discharge_service.extract_velocity_from_stiv(
-            mock_stiv_results,
-            add_edge_zeros=True
+            mock_stiv_results, add_edge_zeros=True
         )
 
         # Should use magnitude_normals_mps when available
@@ -110,8 +117,7 @@ class TestExtractVelocityFromStiv:
         assert velocities[0] == 0.0  # Left edge
         assert velocities[-1] == 0.0  # Right edge
         np.testing.assert_array_almost_equal(
-            velocities[1:-1],
-            mock_stiv_results.magnitude_normals_mps
+            velocities[1:-1], mock_stiv_results.magnitude_normals_mps
         )
 
     def test_extract_without_normal_magnitudes(self, discharge_service):
@@ -122,28 +128,29 @@ class TestExtractVelocityFromStiv:
         mock_stiv.magnitude_normals_mps = None
 
         velocities = discharge_service.extract_velocity_from_stiv(
-            mock_stiv,
-            add_edge_zeros=True
+            mock_stiv, add_edge_zeros=True
         )
 
         # Should compute from U and V components
         assert len(velocities) == 4  # 2 + 2 edge zeros
         # For 0°: U=2*cos(0)=2, V=2*sin(0)=0, M=sqrt(4+0)=2
         # For 90°: U=3*cos(90)≈0, V=3*sin(90)=3, M=sqrt(0+9)=3
-        np.testing.assert_array_almost_equal(velocities[1:-1], [2.0, 3.0], decimal=5)
+        np.testing.assert_array_almost_equal(
+            velocities[1:-1], [2.0, 3.0], decimal=5
+        )
 
-    def test_extract_without_edge_zeros(self, discharge_service, mock_stiv_results):
+    def test_extract_without_edge_zeros(
+        self, discharge_service, mock_stiv_results
+    ):
         """Test velocity extraction without adding edge zeros."""
         velocities = discharge_service.extract_velocity_from_stiv(
-            mock_stiv_results,
-            add_edge_zeros=False
+            mock_stiv_results, add_edge_zeros=False
         )
 
         # Should not add edge zeros
         assert len(velocities) == 3
         np.testing.assert_array_almost_equal(
-            velocities,
-            mock_stiv_results.magnitude_normals_mps
+            velocities, mock_stiv_results.magnitude_normals_mps
         )
 
 
@@ -248,7 +255,9 @@ class TestCreateDischargeDataframe:
 
         # Unit discharge = Area * Surface Velocity * alpha
         for idx in df.index:
-            expected = df.loc[idx, "Area"] * df.loc[idx, "Surface Velocity"] * alpha
+            expected = (
+                df.loc[idx, "Area"] * df.loc[idx, "Surface Velocity"] * alpha
+            )
             assert abs(df.loc[idx, "Unit Discharge"] - expected) < 0.01
 
     def test_nan_velocity_handling(self, discharge_service):
@@ -281,9 +290,13 @@ class TestCreateDischargeDataframe:
 class TestComputeDischarge:
     """Tests for compute_discharge method."""
 
-    def test_compute_discharge_all_used(self, discharge_service, sample_discharge_dataframe):
+    def test_compute_discharge_all_used(
+        self, discharge_service, sample_discharge_dataframe
+    ):
         """Test discharge computation with all stations used."""
-        result = discharge_service.compute_discharge(sample_discharge_dataframe)
+        result = discharge_service.compute_discharge(
+            sample_discharge_dataframe
+        )
 
         assert "total_discharge" in result
         assert "total_area" in result
@@ -297,16 +310,22 @@ class TestComputeDischarge:
         expected_area = sample_discharge_dataframe["Area"].sum()
         assert abs(result["total_area"] - expected_area) < 0.01
 
-    def test_compute_discharge_some_not_used(self, discharge_service, sample_discharge_dataframe):
+    def test_compute_discharge_some_not_used(
+        self, discharge_service, sample_discharge_dataframe
+    ):
         """Test discharge computation with some stations marked as 'Not Used'."""
         # Mark some stations as "Not Used"
         sample_discharge_dataframe.loc[1, "Status"] = "Not Used"
         sample_discharge_dataframe.loc[3, "Status"] = "Not Used"
 
-        result = discharge_service.compute_discharge(sample_discharge_dataframe)
+        result = discharge_service.compute_discharge(
+            sample_discharge_dataframe
+        )
 
         # Should only use stations marked as "Used"
-        used_df = sample_discharge_dataframe[sample_discharge_dataframe["Status"] == "Used"]
+        used_df = sample_discharge_dataframe[
+            sample_discharge_dataframe["Status"] == "Used"
+        ]
         # Can't directly compare discharge since it's recomputed with Rantz conversion
         # Just verify we got results
         assert result["total_discharge"] > 0
@@ -314,17 +333,19 @@ class TestComputeDischarge:
 
     def test_compute_discharge_empty_dataframe(self, discharge_service):
         """Test discharge computation with empty dataframe."""
-        empty_df = pd.DataFrame({
-            "ID": [],
-            "Status": [],
-            "Station Distance": [],
-            "Width": [],
-            "Depth": [],
-            "Area": [],
-            "Surface Velocity": [],
-            "α (alpha)": [],
-            "Unit Discharge": [],
-        })
+        empty_df = pd.DataFrame(
+            {
+                "ID": [],
+                "Status": [],
+                "Station Distance": [],
+                "Width": [],
+                "Depth": [],
+                "Area": [],
+                "Surface Velocity": [],
+                "α (alpha)": [],
+                "Unit Discharge": [],
+            }
+        )
 
         result = discharge_service.compute_discharge(empty_df)
 
@@ -332,11 +353,15 @@ class TestComputeDischarge:
         assert result["total_area"] == 0.0
         assert result["discharge_results"] == {}
 
-    def test_compute_discharge_no_used_stations(self, discharge_service, sample_discharge_dataframe):
+    def test_compute_discharge_no_used_stations(
+        self, discharge_service, sample_discharge_dataframe
+    ):
         """Test discharge computation when no stations are marked as 'Used'."""
         sample_discharge_dataframe["Status"] = "Not Used"
 
-        result = discharge_service.compute_discharge(sample_discharge_dataframe)
+        result = discharge_service.compute_discharge(
+            sample_discharge_dataframe
+        )
 
         assert result["total_discharge"] == 0.0
         assert result["total_area"] == 0.0
@@ -358,7 +383,7 @@ class TestComputeUncertainty:
                 "Area": 10.0,
                 "Surface Velocity": 1.5,
                 "α (alpha)": 0.85,
-                "Unit Discharge": 12.75
+                "Unit Discharge": 12.75,
             }
         }
         total_discharge = 12.75
@@ -366,10 +391,7 @@ class TestComputeUncertainty:
         scene_width = 20.0
 
         result = discharge_service.compute_uncertainty(
-            discharge_results,
-            total_discharge,
-            rectification_rmse,
-            scene_width
+            discharge_results, total_discharge, rectification_rmse, scene_width
         )
 
         assert "u_iso" in result
@@ -385,7 +407,9 @@ class TestComputeUncertainty:
         assert result["u_iso"]["u95_q"] >= 0
         assert result["u_ive"]["u95_q"] >= 0
 
-    def test_compute_uncertainty_multiple_stations(self, discharge_service, sample_discharge_dataframe):
+    def test_compute_uncertainty_multiple_stations(
+        self, discharge_service, sample_discharge_dataframe
+    ):
         """Test uncertainty computation with multiple stations."""
         discharge_results = sample_discharge_dataframe.to_dict(orient="index")
         total_discharge = sample_discharge_dataframe["Unit Discharge"].sum()
@@ -394,7 +418,7 @@ class TestComputeUncertainty:
             discharge_results,
             total_discharge,
             rectification_rmse=0.15,
-            scene_width=25.0
+            scene_width=25.0,
         )
 
         # Should complete without errors
@@ -416,9 +440,7 @@ class TestComputeSummaryStatistics:
         total_area = 5.0
 
         stats = discharge_service.compute_summary_statistics(
-            discharge_results,
-            total_discharge,
-            total_area
+            discharge_results, total_discharge, total_area
         )
 
         assert "average_velocity" in stats
@@ -451,9 +473,7 @@ class TestComputeSummaryStatistics:
         total_area = 5.0
 
         stats = discharge_service.compute_summary_statistics(
-            discharge_results,
-            total_discharge,
-            total_area
+            discharge_results, total_discharge, total_area
         )
 
         # Should handle NaN gracefully
@@ -470,9 +490,7 @@ class TestComputeSummaryStatistics:
         total_area = 0.0
 
         stats = discharge_service.compute_summary_statistics(
-            discharge_results,
-            total_discharge,
-            total_area
+            discharge_results, total_discharge, total_area
         )
 
         # Should handle zero area without division error

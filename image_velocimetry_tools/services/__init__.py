@@ -11,13 +11,13 @@ from .stiv_service import STIVService
 from .cross_section_service import CrossSectionService
 
 __all__ = [
-    'BaseService',
-    'VideoService',
-    'ProjectService',
-    'OrthorectificationService',
-    'GridService',
-    'ImageStackService',
-    'DischargeService',
-    'STIVService',
-    'CrossSectionService'
+    "BaseService",
+    "VideoService",
+    "ProjectService",
+    "OrthorectificationService",
+    "GridService",
+    "ImageStackService",
+    "DischargeService",
+    "STIVService",
+    "CrossSectionService",
 ]

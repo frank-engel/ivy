@@ -129,7 +129,9 @@ videos/test2.mp4,318.6
         with pytest.raises(InvalidBatchCSVError, match="empty"):
             csv_parser.parse_csv(str(csv_path))
 
-    def test_parse_missing_required_column_raises_error(self, csv_parser, temp_dir):
+    def test_parse_missing_required_column_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that missing required columns raises InvalidBatchCSVError."""
         csv_path = Path(temp_dir) / "missing_column.csv"
         csv_content = """video_path
@@ -137,10 +139,14 @@ videos/test1.mp4
 """
         csv_path.write_text(csv_content)
 
-        with pytest.raises(InvalidBatchCSVError, match="missing required columns"):
+        with pytest.raises(
+            InvalidBatchCSVError, match="missing required columns"
+        ):
             csv_parser.parse_csv(str(csv_path))
 
-    def test_parse_invalid_numeric_field_raises_error(self, csv_parser, temp_dir):
+    def test_parse_invalid_numeric_field_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that invalid numeric values raise InvalidBatchCSVError."""
         csv_path = Path(temp_dir) / "invalid_numeric.csv"
         csv_content = """video_path,water_surface_elevation
@@ -159,10 +165,14 @@ videos/test1.mp4,318.211,1.5
 """
         csv_path.write_text(csv_content)
 
-        with pytest.raises(InvalidBatchCSVError, match="alpha must be between 0 and 1"):
+        with pytest.raises(
+            InvalidBatchCSVError, match="alpha must be between 0 and 1"
+        ):
             csv_parser.parse_csv(str(csv_path))
 
-    def test_parse_invalid_time_format_raises_error(self, csv_parser, temp_dir):
+    def test_parse_invalid_time_format_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that invalid time format raises InvalidBatchCSVError."""
         csv_path = Path(temp_dir) / "invalid_time.csv"
         csv_content = """video_path,water_surface_elevation,start_time
@@ -173,7 +183,9 @@ videos/test1.mp4,318.211,invalid_time
         with pytest.raises(InvalidBatchCSVError, match="has invalid format"):
             csv_parser.parse_csv(str(csv_path))
 
-    def test_parse_end_time_before_start_time_raises_error(self, csv_parser, temp_dir):
+    def test_parse_end_time_before_start_time_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that end_time < start_time raises InvalidBatchCSVError."""
         csv_path = Path(temp_dir) / "invalid_time_order.csv"
         csv_content = """video_path,water_surface_elevation,start_time,end_time
@@ -251,7 +263,9 @@ videos/test1.mp4
         assert info["has_required_columns"] is False
         assert "water_surface_elevation" in info["missing_columns"]
 
-    def test_get_info_nonexistent_file_raises_error(self, csv_parser, temp_dir):
+    def test_get_info_nonexistent_file_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that get_csv_info raises error for non-existent file."""
         csv_path = Path(temp_dir) / "does_not_exist.csv"
 
@@ -288,7 +302,9 @@ videos/test1.mp4,318.211,318.5
         assert jobs[0].gage_height == 318.5
         assert isinstance(jobs[0].gage_height, float)
 
-    def test_parse_with_negative_measurement_number_raises_error(self, csv_parser, temp_dir):
+    def test_parse_with_negative_measurement_number_raises_error(
+        self, csv_parser, temp_dir
+    ):
         """Test that negative measurement_number raises error."""
         csv_path = Path(temp_dir) / "negative_measurement.csv"
         csv_content = """video_path,water_surface_elevation,measurement_number

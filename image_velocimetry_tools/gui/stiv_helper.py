@@ -1,14 +1,16 @@
 """IVy module used to manage the STIV helper dialog
 
-The STIV Helper tool applies the logic described in the 
+The STIV Helper tool applies the logic described in the
 discussion of our paper (Legleiter et al., 2024) and attempts
 to recommend the best STIV parameterization that optimizes the
-algorithm. 
+algorithm.
 """
 
 from PyQt5 import QtGui, QtWidgets
 
-from image_velocimetry_tools.gui.dialogs.estimateStivSampleRate_ui import Ui_Dialog
+from image_velocimetry_tools.gui.dialogs.estimateStivSampleRate_ui import (
+    Ui_Dialog,
+)
 from image_velocimetry_tools.stiv import optimum_stiv_sample_time
 from image_velocimetry_tools.services.stiv_service import STIVService
 
@@ -54,7 +56,9 @@ class StivHelper(QtWidgets.QDialog, Ui_Dialog):
 
         # Connections
         self.doubleSpinBoxFrameRate.editingFinished.connect(self.frame_rate)
-        self.doubleSpinBoxRiverVelocity.editingFinished.connect(self.flow_velocity)
+        self.doubleSpinBoxRiverVelocity.editingFinished.connect(
+            self.flow_velocity
+        )
         self.doubleSpinBoxPixelGSD.editingFinished.connect(self.ground_scale)
         self.buttonBox.accepted.connect(self.accept)
 

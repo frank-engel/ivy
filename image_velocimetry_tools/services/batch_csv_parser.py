@@ -36,10 +36,7 @@ class BatchCSVParser(BaseService):
     """
 
     # Required columns that must exist in CSV
-    REQUIRED_COLUMNS = [
-        "video_path",
-        "water_surface_elevation"
-    ]
+    REQUIRED_COLUMNS = ["video_path", "water_surface_elevation"]
 
     # Optional columns with their default values
     OPTIONAL_COLUMNS = {
@@ -58,9 +55,7 @@ class BatchCSVParser(BaseService):
         super().__init__()
 
     def parse_csv(
-        self,
-        csv_path: str,
-        validate_video_paths: bool = True
+        self, csv_path: str, validate_video_paths: bool = True
     ) -> List[BatchJob]:
         """Parse batch CSV file and create BatchJob objects.
 
@@ -117,7 +112,7 @@ class BatchCSVParser(BaseService):
         self._validate_csv_structure(df, csv_path)
 
         # Remove completely empty rows
-        df = df.dropna(how='all')
+        df = df.dropna(how="all")
 
         if len(df) == 0:
             raise InvalidBatchCSVError(
@@ -133,7 +128,9 @@ class BatchCSVParser(BaseService):
                 job = self._parse_row_to_job(row, idx, csv_path)
                 jobs.append(job)
             except Exception as e:
-                error_msg = f"Row {idx + 2}: {str(e)}"  # +2 for header and 0-indexing
+                error_msg = (
+                    f"Row {idx + 2}: {str(e)}"  # +2 for header and 0-indexing
+                )
                 errors.append(error_msg)
                 self.logger.warning(f"Failed to parse row {idx + 2}: {e}")
 
@@ -167,8 +164,7 @@ class BatchCSVParser(BaseService):
         """
         # Check for required columns
         missing_columns = [
-            col for col in self.REQUIRED_COLUMNS
-            if col not in df.columns
+            col for col in self.REQUIRED_COLUMNS if col not in df.columns
         ]
 
         if missing_columns:
@@ -182,10 +178,7 @@ class BatchCSVParser(BaseService):
         )
 
     def _parse_row_to_job(
-        self,
-        row: pd.Series,
-        row_index: int,
-        csv_path: str
+        self, row: pd.Series, row_index: int, csv_path: str
     ) -> BatchJob:
         """Parse a single CSV row into a BatchJob.
 
@@ -248,10 +241,7 @@ class BatchCSVParser(BaseService):
             raise ValueError(f"Invalid data: {e}")
 
     def _get_string_field(
-        self,
-        row: pd.Series,
-        field_name: str,
-        required: bool = False
+        self, row: pd.Series, field_name: str, required: bool = False
     ) -> str:
         """Extract string field from row.
 
@@ -300,7 +290,7 @@ class BatchCSVParser(BaseService):
         row: pd.Series,
         field_name: str,
         required: bool = False,
-        default: float = None
+        default: float = None,
     ) -> float:
         """Extract numeric field from row.
 
@@ -351,7 +341,7 @@ class BatchCSVParser(BaseService):
         row: pd.Series,
         field_name: str,
         required: bool = False,
-        default: int = None
+        default: int = None,
     ) -> int:
         """Extract integer field from row.
 
@@ -421,11 +411,10 @@ class BatchCSVParser(BaseService):
         """
         try:
             df = pd.read_csv(csv_path)
-            df = df.dropna(how='all')  # Remove empty rows
+            df = df.dropna(how="all")  # Remove empty rows
 
             missing_columns = [
-                col for col in self.REQUIRED_COLUMNS
-                if col not in df.columns
+                col for col in self.REQUIRED_COLUMNS if col not in df.columns
             ]
 
             return {

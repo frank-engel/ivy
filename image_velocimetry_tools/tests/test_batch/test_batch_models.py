@@ -5,7 +5,11 @@ import tempfile
 import os
 from pathlib import Path
 
-from image_velocimetry_tools.batch.models import BatchJob, JobStatus, BatchConfig
+from image_velocimetry_tools.batch.models import (
+    BatchJob,
+    JobStatus,
+    BatchConfig,
+)
 from image_velocimetry_tools.batch.exceptions import BatchValidationError
 
 
@@ -17,7 +21,7 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test_001",
             video_path="/path/to/video.mp4",
-            water_surface_elevation=318.211
+            water_surface_elevation=318.211,
         )
 
         assert job.job_id == "test_001"
@@ -41,7 +45,7 @@ class TestBatchJob:
             measurement_date="2025-04-06",
             measurement_time="10:35:00",
             gage_height=318.6,
-            comments="Test measurement"
+            comments="Test measurement",
         )
 
         assert job.alpha == 0.88
@@ -55,7 +59,7 @@ class TestBatchJob:
             video_path="/test.mp4",
             water_surface_elevation=100.0,
             start_time="15",
-            end_time="20"
+            end_time="20",
         )
 
         assert job.start_time_seconds == 15.0
@@ -68,7 +72,7 @@ class TestBatchJob:
             video_path="/test.mp4",
             water_surface_elevation=100.0,
             start_time="15.5",
-            end_time="20.75"
+            end_time="20.75",
         )
 
         assert job.start_time_seconds == 15.5
@@ -81,7 +85,7 @@ class TestBatchJob:
             video_path="/test.mp4",
             water_surface_elevation=100.0,
             start_time="01:30",
-            end_time="02:45"
+            end_time="02:45",
         )
 
         assert job.start_time_seconds == 90.0  # 1*60 + 30
@@ -94,7 +98,7 @@ class TestBatchJob:
             video_path="/test.mp4",
             water_surface_elevation=100.0,
             start_time="00:01:30",
-            end_time="00:02:45.5"
+            end_time="00:02:45.5",
         )
 
         assert job.start_time_seconds == 90.0  # 0*3600 + 1*60 + 30
@@ -108,7 +112,7 @@ class TestBatchJob:
                 video_path="/test.mp4",
                 water_surface_elevation=100.0,
                 start_time="20",
-                end_time="15"
+                end_time="15",
             )
 
     def test_invalid_time_format_raises_error(self):
@@ -118,7 +122,7 @@ class TestBatchJob:
                 job_id="test",
                 video_path="/test.mp4",
                 water_surface_elevation=100.0,
-                start_time="1:2:3:4"  # Too many colons
+                start_time="1:2:3:4",  # Too many colons
             )
 
     def test_empty_job_id_raises_error(self):
@@ -127,16 +131,14 @@ class TestBatchJob:
             BatchJob(
                 job_id="",
                 video_path="/test.mp4",
-                water_surface_elevation=100.0
+                water_surface_elevation=100.0,
             )
 
     def test_empty_video_path_raises_error(self):
         """Test that empty video_path raises ValueError."""
         with pytest.raises(ValueError, match="video_path cannot be empty"):
             BatchJob(
-                job_id="test",
-                video_path="",
-                water_surface_elevation=100.0
+                job_id="test", video_path="", water_surface_elevation=100.0
             )
 
     def test_invalid_alpha_raises_error(self):
@@ -146,7 +148,7 @@ class TestBatchJob:
                 job_id="test",
                 video_path="/test.mp4",
                 water_surface_elevation=100.0,
-                alpha=1.5
+                alpha=1.5,
             )
 
         with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
@@ -154,17 +156,19 @@ class TestBatchJob:
                 job_id="test",
                 video_path="/test.mp4",
                 water_surface_elevation=100.0,
-                alpha=0.0
+                alpha=0.0,
             )
 
     def test_negative_measurement_number_raises_error(self):
         """Test that negative measurement_number raises ValueError."""
-        with pytest.raises(ValueError, match="measurement_number must be non-negative"):
+        with pytest.raises(
+            ValueError, match="measurement_number must be non-negative"
+        ):
             BatchJob(
                 job_id="test",
                 video_path="/test.mp4",
                 water_surface_elevation=100.0,
-                measurement_number=-1
+                measurement_number=-1,
             )
 
     def test_mark_processing(self):
@@ -172,7 +176,7 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test",
             video_path="/test.mp4",
-            water_surface_elevation=100.0
+            water_surface_elevation=100.0,
         )
 
         job.mark_processing()
@@ -183,7 +187,7 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test",
             video_path="/test.mp4",
-            water_surface_elevation=100.0
+            water_surface_elevation=100.0,
         )
 
         job.mark_completed(discharge_value=5.32, processing_time=120.5)
@@ -198,10 +202,12 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test",
             video_path="/test.mp4",
-            water_surface_elevation=100.0
+            water_surface_elevation=100.0,
         )
 
-        job.mark_failed(error_message="Video file not found", processing_time=5.0)
+        job.mark_failed(
+            error_message="Video file not found", processing_time=5.0
+        )
 
         assert job.status == JobStatus.FAILED
         assert job.error_message == "Video file not found"
@@ -217,7 +223,7 @@ class TestBatchJob:
             start_time="15",
             end_time="20",
             alpha=0.88,
-            comments="Test"
+            comments="Test",
         )
 
         job_dict = job.to_dict()
@@ -236,7 +242,7 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test",
             video_path="/path/to/my_video.mp4",
-            water_surface_elevation=100.0
+            water_surface_elevation=100.0,
         )
 
         assert job.get_video_filename() == "my_video"
@@ -246,7 +252,7 @@ class TestBatchJob:
         job = BatchJob(
             job_id="test_004",
             video_path="/path/to/video.mp4",
-            water_surface_elevation=100.0
+            water_surface_elevation=100.0,
         )
 
         repr_str = repr(job)
@@ -277,7 +283,7 @@ class TestBatchConfig:
                 "scaffold": str(scaffold_file),
                 "csv": str(csv_file),
                 "output": str(output_dir),
-                "tmpdir": tmpdir_path
+                "tmpdir": tmpdir_path,
             }
 
     def test_create_config(self, temp_files):
@@ -285,7 +291,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         assert config.scaffold_path == temp_files["scaffold"]
@@ -299,7 +305,7 @@ class TestBatchConfig:
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
             output_dir=temp_files["output"],
-            stop_on_first_failure=True
+            stop_on_first_failure=True,
         )
 
         assert config.stop_on_first_failure is True
@@ -309,7 +315,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         errors = config.validate()
@@ -320,7 +326,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path="/nonexistent/scaffold.ivy",
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         errors = config.validate()
@@ -332,7 +338,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path="/nonexistent/batch.csv",
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         errors = config.validate()
@@ -347,7 +353,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=str(wrong_file),
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         errors = config.validate()
@@ -362,7 +368,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=str(wrong_file),
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         errors = config.validate()
@@ -372,9 +378,7 @@ class TestBatchConfig:
     def test_validate_empty_paths(self):
         """Test validation fails for empty paths."""
         config = BatchConfig(
-            scaffold_path="",
-            batch_csv_path="",
-            output_dir=""
+            scaffold_path="", batch_csv_path="", output_dir=""
         )
 
         errors = config.validate()
@@ -388,7 +392,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         assert not config.output_dir_resolved.exists()
@@ -401,7 +405,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         job_dir = config.get_job_output_dir("test_001")
@@ -413,7 +417,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         job_dir = config.get_job_output_dir("test/with:special*chars")
@@ -427,7 +431,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         summary_path = config.get_batch_summary_path()
@@ -439,7 +443,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         log_path = config.get_batch_log_path()
@@ -451,7 +455,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         video_path = "/absolute/path/to/video.mp4"
@@ -465,7 +469,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         # Create a video file relative to CSV
@@ -482,7 +486,7 @@ class TestBatchConfig:
         config = BatchConfig(
             scaffold_path=temp_files["scaffold"],
             batch_csv_path=temp_files["csv"],
-            output_dir=temp_files["output"]
+            output_dir=temp_files["output"],
         )
 
         repr_str = repr(config)

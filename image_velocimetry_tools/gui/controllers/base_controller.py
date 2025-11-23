@@ -30,7 +30,7 @@ class BaseController(QObject):
         main_window,
         model: Optional[QObject] = None,
         service: Optional[object] = None,
-        logger_name: Optional[str] = None
+        logger_name: Optional[str] = None,
     ):
         """Initialize the base controller.
 

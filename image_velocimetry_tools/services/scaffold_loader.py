@@ -67,9 +67,7 @@ class ScaffoldLoader(BaseService):
         self.project_service = ProjectService()
 
     def load_scaffold(
-        self,
-        scaffold_path: str,
-        temp_extract_dir: str = None
+        self, scaffold_path: str, temp_extract_dir: str = None
     ) -> Dict[str, Any]:
         """Load and validate a scaffold project file.
 
@@ -124,8 +122,7 @@ class ScaffoldLoader(BaseService):
         # Extract the .ivy archive
         try:
             self.project_service.extract_project_archive(
-                zip_path=scaffold_path,
-                extract_to_directory=temp_extract_dir
+                zip_path=scaffold_path, extract_to_directory=temp_extract_dir
             )
         except Exception as e:
             raise InvalidScaffoldError(
@@ -149,7 +146,9 @@ class ScaffoldLoader(BaseService):
             ) from e
 
         # Validate scaffold data
-        validation_errors = self.validate_scaffold_data(project_data, temp_extract_dir)
+        validation_errors = self.validate_scaffold_data(
+            project_data, temp_extract_dir
+        )
         if validation_errors:
             error_summary = "\n".join(validation_errors)
             raise InvalidScaffoldError(
@@ -166,9 +165,7 @@ class ScaffoldLoader(BaseService):
         # Find calibration image (optional)
         calibration_image_path = self._find_calibration_image(temp_extract_dir)
 
-        self.logger.info(
-            f"Successfully loaded scaffold from: {scaffold_path}"
-        )
+        self.logger.info(f"Successfully loaded scaffold from: {scaffold_path}")
 
         return {
             "project_data": project_data,
@@ -178,9 +175,7 @@ class ScaffoldLoader(BaseService):
         }
 
     def validate_scaffold_data(
-        self,
-        project_data: Dict[str, Any],
-        extract_dir: str
+        self, project_data: Dict[str, Any], extract_dir: str
     ) -> List[str]:
         """Validate that scaffold contains all required data for batch processing.
 
@@ -239,16 +234,12 @@ class ScaffoldLoader(BaseService):
         # Validate STIV parameters (flat keys in real .ivy files)
         for key in self.REQUIRED_STIV_KEYS:
             if key not in project_data:
-                errors.append(
-                    f"Missing required STIV parameter: '{key}'"
-                )
+                errors.append(f"Missing required STIV parameter: '{key}'")
 
         # Validate grid parameters (flat keys in real .ivy files)
         for key in self.REQUIRED_GRID_KEYS:
             if key not in project_data:
-                errors.append(
-                    f"Missing required grid parameter: '{key}'"
-                )
+                errors.append(f"Missing required grid parameter: '{key}'")
 
         # Note: We don't validate the bathymetry_ac3_filename path here
         # because it contains an absolute path from when the scaffold was created.
@@ -302,7 +293,7 @@ class ScaffoldLoader(BaseService):
         ortho_dir = os.path.join(extract_dir, "2-orthorectification")
         if os.path.exists(ortho_dir):
             for file in os.listdir(ortho_dir):
-                if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                if file.lower().endswith((".jpg", ".jpeg", ".png")):
                     return os.path.join(ortho_dir, file)
 
         return None
@@ -323,7 +314,9 @@ class ScaffoldLoader(BaseService):
         if os.path.exists(extract_dir):
             try:
                 shutil.rmtree(extract_dir)
-                self.logger.debug(f"Cleaned up scaffold directory: {extract_dir}")
+                self.logger.debug(
+                    f"Cleaned up scaffold directory: {extract_dir}"
+                )
             except Exception as e:
                 self.logger.warning(
                     f"Failed to cleanup scaffold directory {extract_dir}: {e}"
@@ -368,7 +361,7 @@ class ScaffoldLoader(BaseService):
         }
 
         try:
-            with zipfile.ZipFile(scaffold_path, 'r') as zipf:
+            with zipfile.ZipFile(scaffold_path, "r") as zipf:
                 namelist = zipf.namelist()
 
                 # Check for project_data.json

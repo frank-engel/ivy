@@ -26,35 +26,44 @@ class Ui_Dialog(object):
         self.formLayout.setObjectName("formLayout")
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setObjectName("label")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.label
+        )
         self.units_cb = QtWidgets.QComboBox(Dialog)
         self.units_cb.setObjectName("units_cb")
         self.units_cb.addItem("")
         self.units_cb.addItem("")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.units_cb)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.units_cb
+        )
         self.verticalLayout.addLayout(self.formLayout)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(Dialog.reject) # type: ignore
+        self.buttonBox.accepted.connect(Dialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(Dialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Settings"))
         self.label.setText(_translate("Dialog", "Display Units:"))
-        self.units_cb.setToolTip(_translate("Dialog", "Units to be used in displays"))
+        self.units_cb.setToolTip(
+            _translate("Dialog", "Units to be used in displays")
+        )
         self.units_cb.setItemText(0, _translate("Dialog", "English"))
         self.units_cb.setItemText(1, _translate("Dialog", "Metric"))
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()

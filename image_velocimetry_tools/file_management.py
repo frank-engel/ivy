@@ -207,16 +207,22 @@ def locate_video_file(project_dict):
     # Try finding the video base name in the project directory
     project_file_path = project_dict.get("project_file_path", None)
     if not project_file_path:
-        logging.error("Project file path is not specified in the project dictionary.")
+        logging.error(
+            "Project file path is not specified in the project dictionary."
+        )
         return None
 
     project_dir = os.path.dirname(project_file_path)
-    video_base_name = os.path.basename(video_file_path) if video_file_path else None
+    video_base_name = (
+        os.path.basename(video_file_path) if video_file_path else None
+    )
 
     if video_base_name:
         potential_match = os.path.join(project_dir, video_base_name)
         if os.path.isfile(potential_match):
-            logging.info(f"Video file located in project directory: {potential_match}")
+            logging.info(
+                f"Video file located in project directory: {potential_match}"
+            )
             return potential_match
         else:
             logging.warning(
@@ -263,11 +269,15 @@ def set_date(date_str, date_edit):
     if date_str is not None:
         if date_str == "":
             date_object = datetime.datetime.strptime("10/1/2023", "%m/%d/%Y")
-            q_date = QtCore.QDate(date_object.year, date_object.month, date_object.day)
+            q_date = QtCore.QDate(
+                date_object.year, date_object.month, date_object.day
+            )
             date_edit.setDate(q_date)
         else:
             date_object = datetime.datetime.strptime(date_str, "%m/%d/%Y")
-            q_date = QtCore.QDate(date_object.year, date_object.month, date_object.day)
+            q_date = QtCore.QDate(
+                date_object.year, date_object.month, date_object.day
+            )
             date_edit.setDate(q_date)
 
 
@@ -453,10 +463,14 @@ def load_and_parse_gcp_csv(file_name, swap_ortho_path, unit_prompt_callback):
     )
 
     if not units_in_header:
-        if os.path.normpath(file_name) == os.path.normpath(os.path.join(swap_ortho_path, "ground_control_points.csv")):
+        if os.path.normpath(file_name) == os.path.normpath(
+            os.path.join(swap_ortho_path, "ground_control_points.csv")
+        ):
             survey_units = "Metric"
         else:
-            user_choice = unit_prompt_callback()  # returns "Metric" or "English"
+            user_choice = (
+                unit_prompt_callback()
+            )  # returns "Metric" or "English"
             survey_units = user_choice
     else:
         for label in ["X (m)", "Y (m)", "Z (m)", "X (ft)", "Y (ft)", "Z (ft)"]:
@@ -480,7 +494,13 @@ def load_and_parse_gcp_csv(file_name, swap_ortho_path, unit_prompt_callback):
         df["Tot. Error (pixel)"] = "N/A"
         df["Use in Rectification"] = "Yes"
         df["Use in Validation"] = "No"
-        columns_to_convert = [f"X{unit_str}", f"Y{unit_str}", f"Z{unit_str}", "X (pixel)", "Y (pixel)"]
+        columns_to_convert = [
+            f"X{unit_str}",
+            f"Y{unit_str}",
+            f"Z{unit_str}",
+            "X (pixel)",
+            "Y (pixel)",
+        ]
     elif col_count == 4:
         df["X (pixel)"] = "N/A"
         df["Y (pixel)"] = "N/A"
@@ -501,7 +521,16 @@ def load_and_parse_gcp_csv(file_name, swap_ortho_path, unit_prompt_callback):
         df["Use in Validation"] = "No"
         columns_to_convert = [f"X{unit_str}", f"Y{unit_str}", f"Z{unit_str}"]
     elif col_count == 11:
-        columns_to_convert = [f"X{unit_str}", f"Y{unit_str}", f"Z{unit_str}", "X (pixel)", "Y (pixel)", "Error X (pixel)", "Error Y (pixel)", "Tot. Error (pixel)"]
+        columns_to_convert = [
+            f"X{unit_str}",
+            f"Y{unit_str}",
+            f"Z{unit_str}",
+            "X (pixel)",
+            "Y (pixel)",
+            "Error X (pixel)",
+            "Error Y (pixel)",
+            "Tot. Error (pixel)",
+        ]
     else:
         raise ValueError("Unsupported column configuration in GCP CSV.")
 
@@ -516,6 +545,13 @@ def load_and_parse_gcp_csv(file_name, swap_ortho_path, unit_prompt_callback):
             df[col] = pd.to_numeric(df[col], errors="coerce") * factor
 
     # Rename columns
-    df.rename(columns={f"X{unit_str}": "X", f"Y{unit_str}": "Y", f"Z{unit_str}": "Z"}, inplace=True)
+    df.rename(
+        columns={
+            f"X{unit_str}": "X",
+            f"Y{unit_str}": "Y",
+            f"Z{unit_str}": "Z",
+        },
+        inplace=True,
+    )
 
     return df, survey_units

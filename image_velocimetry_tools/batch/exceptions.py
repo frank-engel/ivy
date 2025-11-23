@@ -7,6 +7,7 @@ class BatchProcessingError(Exception):
     This is the parent exception class for all batch-related errors.
     Catching this exception will catch all batch processing errors.
     """
+
     pass
 
 
@@ -19,6 +20,7 @@ class InvalidScaffoldError(BatchProcessingError):
     - Scaffold file is corrupted
     - Required configuration missing (GCPs, cross-section, etc.)
     """
+
     pass
 
 
@@ -32,6 +34,7 @@ class InvalidBatchCSVError(BatchProcessingError):
     - Invalid data types or values
     - Malformed time strings
     """
+
     pass
 
 
@@ -41,6 +44,7 @@ class JobExecutionError(BatchProcessingError):
     This exception is used for runtime errors during job processing,
     such as video processing failures, STIV computation errors, etc.
     """
+
     pass
 
 
@@ -53,4 +57,5 @@ class BatchValidationError(BatchProcessingError):
     - Invalid file paths
     - Conflicting configuration options
     """
+
     pass

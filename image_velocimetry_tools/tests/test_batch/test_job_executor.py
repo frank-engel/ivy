@@ -11,7 +11,10 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import numpy as np
 
-from image_velocimetry_tools.services.job_executor import JobExecutor, STIVResults
+from image_velocimetry_tools.services.job_executor import (
+    JobExecutor,
+    STIVResults,
+)
 from image_velocimetry_tools.batch.models import BatchJob, JobStatus
 from image_velocimetry_tools.batch.exceptions import JobExecutionError
 
@@ -39,7 +42,7 @@ def sample_job():
         water_surface_elevation=318.211,
         start_time="15",
         end_time="20",
-        alpha=0.88
+        alpha=0.88,
     )
 
 
@@ -114,7 +117,9 @@ class TestJobExecutorCreateJobDirectory:
 class TestJobExecutorGenerateGrid:
     """Tests for _generate_grid method."""
 
-    def test_generate_grid_from_cross_section_line(self, job_executor, temp_dir, sample_scaffold_config):
+    def test_generate_grid_from_cross_section_line(
+        self, job_executor, temp_dir, sample_scaffold_config
+    ):
         """Test generating grid along cross-section line."""
         project_data = sample_scaffold_config["project_data"]
 
@@ -163,7 +168,7 @@ class TestSTIVResults:
             directions=directions,
             magnitude_normals_mps=magnitudes,
             stis=stis,
-            thetas=thetas
+            thetas=thetas,
         )
 
         assert np.array_equal(results.magnitudes_mps, magnitudes)
@@ -174,13 +179,15 @@ class TestSTIVResults:
 class TestJobExecutorExecuteJob:
     """Tests for execute_job method (integration-style with mocks)."""
 
-    @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
-    @patch('subprocess.run')
-    @patch('glob.glob')
-    @patch('image_velocimetry_tools.orthorectification.CameraHelper')
-    @patch('image_velocimetry_tools.orthorectification.rectify_many_camera')
-    @patch('image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive')
-    @patch('image_velocimetry_tools.services.job_executor.CrossSectionGeometry')
+    @patch("image_velocimetry_tools.opencv_tools.opencv_get_video_metadata")
+    @patch("subprocess.run")
+    @patch("glob.glob")
+    @patch("image_velocimetry_tools.orthorectification.CameraHelper")
+    @patch("image_velocimetry_tools.orthorectification.rectify_many_camera")
+    @patch("image_velocimetry_tools.stiv.two_dimensional_stiv_exhaustive")
+    @patch(
+        "image_velocimetry_tools.services.job_executor.CrossSectionGeometry"
+    )
     def test_execute_job_success(
         self,
         mock_xs_geometry,
@@ -193,14 +200,14 @@ class TestJobExecutorExecuteJob:
         job_executor,
         sample_job,
         sample_scaffold_config,
-        temp_dir
+        temp_dir,
     ):
         """Test successful job execution with mocked services."""
         # Mock video metadata
         mock_opencv.return_value = {
             "duration_ms": 30000,
             "frame_count": 300,
-            "fps": 10
+            "fps": 10,
         }
 
         # Mock subprocess (FFmpeg)
@@ -209,19 +216,22 @@ class TestJobExecutorExecuteJob:
         # Mock CameraHelper to return a valid dummy projection matrix
         mock_camera_helper = Mock()
         # Return a dummy 3x4 projection matrix and RMSE
-        dummy_projection_matrix = np.array([
-            [1000, 0, 500, 0],
-            [0, 1000, 500, 0],
-            [0, 0, 1, 0]
-        ], dtype=float)
-        mock_camera_helper.get_camera_matrix.return_value = (dummy_projection_matrix, 0.5)
+        dummy_projection_matrix = np.array(
+            [[1000, 0, 500, 0], [0, 1000, 500, 0], [0, 0, 1, 0]], dtype=float
+        )
+        mock_camera_helper.get_camera_matrix.return_value = (
+            dummy_projection_matrix,
+            0.5,
+        )
         mock_camera_helper_class.return_value = mock_camera_helper
 
         # Mock glob to return frame files
         frames_dir = Path(temp_dir) / "job_test_001" / "1-images"
         frames_dir.mkdir(parents=True, exist_ok=True)
         frame_files = [str(frames_dir / f"f{i:04d}.jpg") for i in range(1, 11)]
-        rectified_files = [str(frames_dir / f"t{i:04d}.jpg") for i in range(1, 11)]
+        rectified_files = [
+            str(frames_dir / f"t{i:04d}.jpg") for i in range(1, 11)
+        ]
 
         # Create dummy frame files
         for f in frame_files + rectified_files:
@@ -241,17 +251,17 @@ class TestJobExecutorExecuteJob:
         num_grid_points = 50
         mock_stiv.return_value = (
             np.linspace(1.0, 2.5, num_grid_points),  # magnitudes (m/s)
-            np.full(num_grid_points, 90.0),          # directions (degrees)
+            np.full(num_grid_points, 90.0),  # directions (degrees)
             np.random.rand(100, 100, num_grid_points),  # stis (dummy 3D array)
-            np.linspace(30, 150, num_grid_points)    # thetas (degrees)
+            np.linspace(30, 150, num_grid_points),  # thetas (degrees)
         )
 
         # Mock cross-section geometry (must match num_points)
         # Returns station distances and elevations for each grid point
         mock_xs = Mock()
         mock_xs.get_pixel_xs.return_value = (
-            np.linspace(0, 40, num_grid_points),     # stations (m)
-            np.full(num_grid_points, 315.0)          # elevations (m)
+            np.linspace(0, 40, num_grid_points),  # stations (m)
+            np.full(num_grid_points, 315.0),  # elevations (m)
         )
         mock_xs_geometry.return_value = mock_xs
 
@@ -265,7 +275,7 @@ class TestJobExecutorExecuteJob:
         result = job_executor.execute_job(
             job=sample_job,
             scaffold_config=sample_scaffold_config,
-            output_dir=temp_dir
+            output_dir=temp_dir,
         )
 
         # Verify result
@@ -284,11 +294,13 @@ class TestJobExecutorExecuteJob:
         # Job starts as PENDING
         assert sample_job.status == JobStatus.PENDING
 
-        with pytest.raises(Exception):  # Will fail due to unmocked dependencies
+        with pytest.raises(
+            Exception
+        ):  # Will fail due to unmocked dependencies
             job_executor.execute_job(
                 job=sample_job,
                 scaffold_config=sample_scaffold_config,
-                output_dir=temp_dir
+                output_dir=temp_dir,
             )
 
         # Job should have been marked as FAILED after execution failure
@@ -309,21 +321,28 @@ class TestJobExecutorErrorHandling:
             job_executor.execute_job(
                 job=sample_job,
                 scaffold_config=sample_scaffold_config,
-                output_dir="/invalid/nonexistent/path"
+                output_dir="/invalid/nonexistent/path",
             )
 
-    @patch('image_velocimetry_tools.opencv_tools.opencv_get_video_metadata')
+    @patch("image_velocimetry_tools.opencv_tools.opencv_get_video_metadata")
     def test_video_metadata_failure_raises_error(
-        self, mock_opencv, job_executor, sample_job, sample_scaffold_config, temp_dir
+        self,
+        mock_opencv,
+        job_executor,
+        sample_job,
+        sample_scaffold_config,
+        temp_dir,
     ):
         """Test that video metadata read failure is handled."""
         mock_opencv.side_effect = Exception("Failed to read video")
 
-        with pytest.raises(JobExecutionError, match="Failed to read video metadata"):
+        with pytest.raises(
+            JobExecutionError, match="Failed to read video metadata"
+        ):
             job_executor.execute_job(
                 job=sample_job,
                 scaffold_config=sample_scaffold_config,
-                output_dir=temp_dir
+                output_dir=temp_dir,
             )
 
 
@@ -338,14 +357,14 @@ class TestJobExecutorSaveResults:
         discharge_result = {
             "total_discharge": 5.32,
             "total_area": 12.5,
-            "discharge_results": {}
+            "discharge_results": {},
         }
 
         job_executor._save_job_results(
             job_dir=str(job_dir),
             job=sample_job,
             discharge_result=discharge_result,
-            processing_time=120.5
+            processing_time=120.5,
         )
 
         # Verify file was created
@@ -354,6 +373,7 @@ class TestJobExecutorSaveResults:
 
         # Verify content
         import json
+
         with open(results_file) as f:
             saved_results = json.load(f)
 
@@ -367,11 +387,11 @@ class TestJobExecutorServiceInitialization:
 
     def test_executor_initializes_services(self, job_executor):
         """Test that JobExecutor initializes all required services."""
-        assert hasattr(job_executor, 'video_service')
-        assert hasattr(job_executor, 'ortho_service')
-        assert hasattr(job_executor, 'grid_service')
-        assert hasattr(job_executor, 'image_stack_service')
-        assert hasattr(job_executor, 'discharge_service')
+        assert hasattr(job_executor, "video_service")
+        assert hasattr(job_executor, "ortho_service")
+        assert hasattr(job_executor, "grid_service")
+        assert hasattr(job_executor, "image_stack_service")
+        assert hasattr(job_executor, "discharge_service")
 
         # Verify they are actual service instances
         assert job_executor.video_service is not None

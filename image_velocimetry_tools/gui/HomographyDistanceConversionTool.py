@@ -7,7 +7,9 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui
 
 from image_velocimetry_tools.common_functions import resource_path
-from image_velocimetry_tools.gui.dialogs import wHomographyDistanceConversionTool
+from image_velocimetry_tools.gui.dialogs import (
+    wHomographyDistanceConversionTool,
+)
 from image_velocimetry_tools.orthorectification import FourPointSolution
 
 
@@ -39,7 +41,9 @@ class HomographyDistanceConversionTool(
             QtGui.QIcon(resource_path(icon_path + os.sep + "IVy_logo.svg"))
         )
         self.backgroundImage.setPixmap(
-            QtGui.QPixmap(resource_path(icon_path + os.sep + "4-point-diagram.png"))
+            QtGui.QPixmap(
+                resource_path(icon_path + os.sep + "4-point-diagram.png")
+            )
         )
 
         self.p = None
@@ -87,7 +91,9 @@ class HomographyDistanceConversionTool(
         """Solve the linear system of equations describing the homography coordinates."""
         distances = [self.p, self.q, self.r, self.s, self.t, self.u]
         if all(i is not None for i in distances):
-            self.coordinates = FourPointSolution(distances).get_world_coordinates()
+            self.coordinates = FourPointSolution(
+                distances
+            ).get_world_coordinates()
             logging.debug(f"Coordinates computed:\n{self.coordinates}")
             i = 0
             self.labelX1Y1value.setText(
@@ -118,7 +124,11 @@ class HomographyDistanceConversionTool(
                 # Save file
                 points = np.hstack((labels, self.coordinates))
                 np.savetxt(
-                    points_file, points, delimiter=",", header="ID,X,Y,Z", fmt="%s"
+                    points_file,
+                    points,
+                    delimiter=",",
+                    header="ID,X,Y,Z",
+                    fmt="%s",
                 )
                 logging.info(
                     f"CSV file with point coordinates saved here: {points_file}"

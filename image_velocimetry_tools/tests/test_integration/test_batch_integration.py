@@ -22,6 +22,7 @@ from image_velocimetry_tools.services.batch_processor import BatchProcessor
 # Fixtures
 # ============================================================================
 
+
 @pytest.fixture(scope="module")
 def test_data_dir():
     """Get the batch test data directory."""
@@ -60,7 +61,7 @@ def videos_dir(inputs_dir):
     video_files = [
         "03337000_bullet_20170630-115500.mp4",
         "03337000_bullet_20170630-120000.mp4",
-        "03337000_bullet_20170711-103500.mp4"
+        "03337000_bullet_20170711-103500.mp4",
     ]
 
     is_windows = platform.system() == "Windows"
@@ -99,7 +100,7 @@ def batch_processor(inputs_dir, output_dir, videos_dir):
         batch_csv_path=str(batch_csv_path),
         output_dir=str(output_dir),
         stop_on_first_failure=False,
-        save_ivy_projects=False  # Set to True to test .ivy archiving
+        save_ivy_projects=False,  # Set to True to test .ivy archiving
     )
 
     # Run batch processing
@@ -118,6 +119,7 @@ def usgs_results_file(inputs_dir):
 # Helper Functions
 # ============================================================================
 
+
 def parse_video_timestamp(video_filename):
     """Parse timestamp from video filename.
 
@@ -128,7 +130,7 @@ def parse_video_timestamp(video_filename):
         datetime object in CST timezone (video is in CDT)
     """
     # Extract timestamp from filename: YYYYMMDD-HHMMSS
-    parts = video_filename.split('_')
+    parts = video_filename.split("_")
     timestamp_str = parts[-1]  # e.g., "20170630-115500"
 
     # Parse datetime (this is in CDT - Central Daylight Time)
@@ -154,7 +156,7 @@ def load_true_discharge(results_file, video_filename):
     dt_cst = parse_video_timestamp(video_filename)
 
     # Read results file and find closest timestamp
-    with open(results_file, 'r') as f:
+    with open(results_file, "r") as f:
         lines = f.readlines()
 
     # Skip header
@@ -164,7 +166,7 @@ def load_true_discharge(results_file, video_filename):
     closest_time_diff = None
 
     for line in lines:
-        parts = line.strip().split('\t')
+        parts = line.strip().split("\t")
         if len(parts) < 5:
             continue
 
@@ -189,12 +191,15 @@ def load_true_discharge(results_file, video_filename):
 # Tests
 # ============================================================================
 
+
 def test_batch_processor_initialization(inputs_dir, output_dir, videos_dir):
     """Test that batch processor can be initialized with valid inputs."""
     scaffold_path = inputs_dir / "scaffold_project.ivy"
     batch_csv_path = inputs_dir / "batch_boneyard.csv"
 
-    assert scaffold_path.exists(), f"Scaffold project not found: {scaffold_path}"
+    assert (
+        scaffold_path.exists()
+    ), f"Scaffold project not found: {scaffold_path}"
     assert batch_csv_path.exists(), f"Batch CSV not found: {batch_csv_path}"
 
     processor = BatchProcessor(
@@ -202,7 +207,7 @@ def test_batch_processor_initialization(inputs_dir, output_dir, videos_dir):
         batch_csv_path=str(batch_csv_path),
         output_dir=str(output_dir),
         stop_on_first_failure=False,
-        save_ivy_projects=False
+        save_ivy_projects=False,
     )
 
     assert processor is not None
@@ -242,17 +247,21 @@ def test_discharge_values_exist(batch_processor):
     completed = [j for j in jobs if j.status.value == "completed"]
 
     for job in completed:
-        assert job.discharge_value is not None, \
-            f"Job {job.job_id} completed but has no discharge value"
-        assert job.discharge_value > 0, \
-            f"Job {job.job_id} has invalid discharge value: {job.discharge_value}"
+        assert (
+            job.discharge_value is not None
+        ), f"Job {job.job_id} completed but has no discharge value"
+        assert (
+            job.discharge_value > 0
+        ), f"Job {job.job_id} has invalid discharge value: {job.discharge_value}"
 
 
 def test_discharge_accuracy_vs_usgs(batch_processor, usgs_results_file):
     """Test that computed discharge values match USGS reference data within 10%."""
     processor, jobs = batch_processor
 
-    assert usgs_results_file.exists(), f"USGS results file not found: {usgs_results_file}"
+    assert (
+        usgs_results_file.exists()
+    ), f"USGS results file not found: {usgs_results_file}"
 
     completed = [j for j in jobs if j.status.value == "completed"]
     assert len(completed) > 0, "No completed jobs to validate"
@@ -267,7 +276,9 @@ def test_discharge_accuracy_vs_usgs(batch_processor, usgs_results_file):
             actual_discharge = job.discharge_value
 
             if true_discharge is not None:
-                error_percent = ((actual_discharge - true_discharge) / true_discharge) * 100
+                error_percent = (
+                    (actual_discharge - true_discharge) / true_discharge
+                ) * 100
 
                 # Accept within 10% as specified
                 if abs(error_percent) > 10.0:
@@ -314,8 +325,9 @@ def test_discharge_output_files_created(batch_processor, output_dir):
 
         # Check for discharge CSV file in 5-discharge subdirectory
         discharge_files = list(job_dir.glob("**/discharge_*.csv"))
-        assert len(discharge_files) > 0, \
-            f"No discharge CSV files found for job {job.job_id} in {job_dir}"
+        assert (
+            len(discharge_files) > 0
+        ), f"No discharge CSV files found for job {job.job_id} in {job_dir}"
 
 
 @pytest.mark.parametrize("save_projects", [True, False])
@@ -340,13 +352,14 @@ def test_ivy_project_archiving(inputs_dir, test_data_dir, save_projects):
             batch_csv_path=str(batch_csv_path),
             output_dir=str(output_dir),
             stop_on_first_failure=False,
-            save_ivy_projects=save_projects
+            save_ivy_projects=save_projects,
         )
 
         jobs = processor.run()
 
         # Close all logging handlers to release file locks (Windows issue)
         import logging
+
         for handler in processor.logger.handlers[:]:
             handler.close()
             processor.logger.removeHandler(handler)
@@ -355,19 +368,25 @@ def test_ivy_project_archiving(inputs_dir, test_data_dir, save_projects):
         ivy_files = list(output_dir.glob("**/*.ivy"))
 
         if save_projects:
-            assert len(ivy_files) > 0, ".ivy project saving enabled but no .ivy files created"
+            assert (
+                len(ivy_files) > 0
+            ), ".ivy project saving enabled but no .ivy files created"
 
             # Verify .ivy files are valid zip archives
             for ivy_file in ivy_files:
-                assert ivy_file.stat().st_size > 0, f".ivy file is empty: {ivy_file}"
+                assert (
+                    ivy_file.stat().st_size > 0
+                ), f".ivy file is empty: {ivy_file}"
         else:
-            assert len(ivy_files) == 0, \
-                f".ivy project saving disabled but {len(ivy_files)} .ivy files were created"
+            assert (
+                len(ivy_files) == 0
+            ), f".ivy project saving disabled but {len(ivy_files)} .ivy files were created"
 
     finally:
         # Cleanup - with retry for Windows file locks
         if output_dir.exists():
             import time
+
             max_retries = 3
             for attempt in range(max_retries):
                 try:
@@ -379,6 +398,7 @@ def test_ivy_project_archiving(inputs_dir, test_data_dir, save_projects):
                     else:
                         # Last attempt failed, log warning but don't fail test
                         import warnings
+
                         warnings.warn(f"Could not clean up {output_dir}: {e}")
 
 
@@ -393,11 +413,15 @@ def test_job_metadata(batch_processor):
         assert job.job_id is not None, "Job missing job_id"
         assert job.video_path is not None, "Job missing video_path"
         assert job.status is not None, "Job missing status"
-        assert job.discharge_value is not None, "Completed job missing discharge_value"
+        assert (
+            job.discharge_value is not None
+        ), "Completed job missing discharge_value"
 
         # Check that video path points to actual video
         video_path = Path(job.video_path)
-        assert video_path.suffix == ".mp4", f"Unexpected video format: {video_path.suffix}"
+        assert (
+            video_path.suffix == ".mp4"
+        ), f"Unexpected video format: {video_path.suffix}"
 
 
 def test_timestamp_parsing():

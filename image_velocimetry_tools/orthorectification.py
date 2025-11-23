@@ -25,7 +25,9 @@ from image_velocimetry_tools.common_functions import (
 class CameraHelper:
     """A helper class based on the cameratransform package modified to help prepare inputs from IVy"""
 
-    def __init__(self, image=None, world_points=None, image_points=None, elevation=None):
+    def __init__(
+        self, image=None, world_points=None, image_points=None, elevation=None
+    ):
         self.image_path = None
         self.image = None
         self.image_ndarray = None
@@ -59,7 +61,10 @@ class CameraHelper:
         """Add image (from a file path) as a PIL Image to Class instance"""
         self.image = Image.open(image_path)
         self.image_ndarray = pillow_image_to_numpy_array(self.image)
-        self.image_width_px, self.image_height_px = self.image.width, self.image.height
+        self.image_width_px, self.image_height_px = (
+            self.image.width,
+            self.image.height,
+        )
 
     def add_image(self, image: np.ndarray):
         """Add image ndarray to Class instance"""
@@ -103,16 +108,38 @@ class CameraHelper:
         # Construct the A matrix without the Z multiplier
         A = []
         for p in range(N):
-            A.append([
-                x[p], y[p], z[p], 1,
-                0, 0, 0, 0,
-                -u[p] * x[p], -u[p] * y[p], -u[p] * z[p], -u[p]
-            ])
-            A.append([
-                0, 0, 0, 0,
-                x[p], y[p], z[p], 1,
-                -v[p] * x[p], -v[p] * y[p], -v[p] * z[p], -v[p]
-            ])
+            A.append(
+                [
+                    x[p],
+                    y[p],
+                    z[p],
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -u[p] * x[p],
+                    -u[p] * y[p],
+                    -u[p] * z[p],
+                    -u[p],
+                ]
+            )
+            A.append(
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    x[p],
+                    y[p],
+                    z[p],
+                    1,
+                    -v[p] * x[p],
+                    -v[p] * y[p],
+                    -v[p] * z[p],
+                    -v[p],
+                ]
+            )
         A = np.asarray(A)
 
         # Solve via SVD
@@ -128,7 +155,8 @@ class CameraHelper:
         # Compute reprojection error (use elevation if available)
         if self.elevation is not None:
             rmse_r, rmse_x, rmse_y = self.get_horizontal_reprojection_error(
-                Z=self.elevation)
+                Z=self.elevation
+            )
         else:
             rmse_r, rmse_x, rmse_y = self.get_horizontal_reprojection_error()
 
@@ -246,7 +274,9 @@ class CameraHelper:
         )
         # convert it to a list of points Nx2
         mesh_points = mesh.reshape(2, mesh.shape[1] * mesh.shape[2]).T
-        mesh_points = np.hstack((mesh_points, Z * np.ones((mesh_points.shape[0], 1))))
+        mesh_points = np.hstack(
+            (mesh_points, Z * np.ones((mesh_points.shape[0], 1)))
+        )
 
         # transform the space points to the image
         # mesh_points_shape = self.spaceToImage(mesh_points, camera_matrix=self.camera_matrix)
@@ -290,13 +320,16 @@ class CameraHelper:
         # Generate meshgrid for the original image coordinates
         mesh = np.array(
             np.meshgrid(
-                np.arange(original_image_shape[1]), np.arange(original_image_shape[0])
+                np.arange(original_image_shape[1]),
+                np.arange(original_image_shape[0]),
             )
         )
         mesh_points = mesh.reshape(2, mesh.shape[1] * mesh.shape[2]).T
 
         # Perform inverse transformation from image to space
-        inverse_points, _ = image_to_space(mesh_points, self.camera_matrix, Z=Z)
+        inverse_points, _ = image_to_space(
+            mesh_points, self.camera_matrix, Z=Z
+        )
 
         # Reshape the inverse points to match the original image shape
         inverse_x = inverse_points[:, 0].reshape(original_image_shape)
@@ -375,9 +408,13 @@ class CameraHelper:
         # get the mapping
         x, y = self.__get_map(extent=extent, scaling=scaling, Z=Z)
 
-       # Transform the image
+        # Transform the image
         image = cv2.remap(
-            image, x, y, interpolation=cv2.INTER_NEAREST, borderValue=[0, 1, 0, 0]
+            image,
+            x,
+            y,
+            interpolation=cv2.INTER_NEAREST,
+            borderValue=[0, 1, 0, 0],
         )  # , borderMode=cv2.BORDER_TRANSPARENT)
         self.pixel_ground_scale_distance = np.mean(
             (
@@ -385,7 +422,6 @@ class CameraHelper:
                 np.diff(self.last_extent)[-1] / image.shape[0],
             )
         )
-
 
         if do_plot:
             import matplotlib.pyplot as plt
@@ -423,7 +459,9 @@ class CameraHelper:
             inverse_y[:, int(transformed_point[1])],
         )
         z = 1
-        new_position = space_to_image(np.array([[x, y, z, 1]]), self.camera_matrix)
+        new_position = space_to_image(
+            np.array([[x, y, z, 1]]), self.camera_matrix
+        )
 
         return new_position[:, 0], new_position[:, 1]
 
@@ -677,7 +715,9 @@ class FourPointSolution:
     def solve(self):
         """Optimization solver to estimate unknowns given the quadrilateral equations"""
         # Perform optimization with constraints
-        solution = root(self.quadrilateral, np.array([1, 1, 1, 1]), method="lm")
+        solution = root(
+            self.quadrilateral, np.array([1, 1, 1, 1]), method="lm"
+        )
 
         # Ensure p is parallel to x-axis
         self.x = np.array([0, self.p, solution.x[0], solution.x[2]])
@@ -716,7 +756,9 @@ def find_homography_matrix(source_points, destination_points):
     if source_points.shape[1] != 2 or destination_points.shape[1] != 2:
         raise ValueError("Point arrays must have shape (N, 2)")
 
-    homography_matrix, status = cv2.findHomography(source_points, destination_points)
+    homography_matrix, status = cv2.findHomography(
+        source_points, destination_points
+    )
 
     # submatrix = homography_matrix[:2, :2]
     # determinant = np.linalg.det(submatrix)
@@ -767,7 +809,9 @@ def rectify_homography(
     # Compute world and image scale, using the diagonal of the ROI quadrilateral,
     # then scale the world_points so that they "fit" into a box the same size as
     # the input image.
-    world_scale = distance(points_world_coordinates[0], points_world_coordinates[2])
+    world_scale = distance(
+        points_world_coordinates[0], points_world_coordinates[2]
+    )
     original_world_bounding_box = bounding_box_naive(points_world_coordinates)
     padding = 0.0  # percent padding per side
     scale_factor = image.shape[1] / (
@@ -786,7 +830,11 @@ def rectify_homography(
     # request padding in x and y, then recompute the bounding box
     cx = (
         np.abs(0 - min_x)
-        + (image.shape[1] - np.max([p[0] for p in scaled_destination_image_points])) / 2
+        + (
+            image.shape[1]
+            - np.max([p[0] for p in scaled_destination_image_points])
+        )
+        / 2
     )
     cy = np.abs(0 - min_y)
     scaled_destination_image_points = translate_coordinates(
@@ -798,7 +846,10 @@ def rectify_homography(
     # ROI will definitely be in the canvas
     dst_size = np.ceil(
         np.max(
-            [image.shape[1] + pad_x * 2, np.ceil((bbox[1][1] - bbox[0][1])) + pad_y * 2]
+            [
+                image.shape[1] + pad_x * 2,
+                np.ceil((bbox[1][1] - bbox[0][1])) + pad_y * 2,
+            ]
         )
     )
     width = dst_size
@@ -808,7 +859,8 @@ def rectify_homography(
     # If the homography and transformed ROI are already calculated, we don't need to do it again.
     if homography_matrix is None and transformed_roi is None:
         homography_matrix = find_homography_matrix(
-            points_perspective_image_coordinates, scaled_destination_image_points
+            points_perspective_image_coordinates,
+            scaled_destination_image_points,
         )
     # transformed_image = warp_image_homography(image, homography_matrix, (height, width), clip=True)
     transformed_image = cv2.warpPerspective(
@@ -872,7 +924,9 @@ def rectify_many_homography(
     # Initial call to print 0% progress
     num_frames = len(images)
     print(
-        "Writing {} transformed image frames to {}".format(num_frames, output_location)
+        "Writing {} transformed image frames to {}".format(
+            num_frames, output_location
+        )
     )
 
     count = 0
@@ -884,7 +938,9 @@ def rectify_many_homography(
         transformed_images.append(t)
         if save_output:
             img = Image.fromarray(t)
-            img.save(output_location + "/t{:05d}.jpg".format(start_frame + count))
+            img.save(
+                output_location + "/t{:05d}.jpg".format(start_frame + count)
+            )
         count += 1
     return (
         transformed_images,
@@ -918,7 +974,9 @@ def transform_points_with_homography(points, H):
     return transformed_points
 
 
-def compute_homography_matrix_from_camera_matrix(K, world_points, original_points, wse):
+def compute_homography_matrix_from_camera_matrix(
+    K, world_points, original_points, wse
+):
     """
     Computes the homography matrix that represents a plane at a given elevation in the image.
 
@@ -1008,7 +1066,10 @@ def space_to_image(points, projection_mtx):
     # Highly optimized performance is faster than matmul, including with @jit
     new_points = np.einsum("ij,kj->ki", projection_mtx, points)
     new_points = np.vstack(
-        (new_points[:, 0] / new_points[:, -1], new_points[:, 1] / new_points[:, -1])
+        (
+            new_points[:, 0] / new_points[:, -1],
+            new_points[:, 1] / new_points[:, -1],
+        )
     ).T
     return new_points
 
@@ -1028,8 +1089,13 @@ def image_to_space(points, camera_matrix, X=None, Y=None, Z=0.0):
         tuple: tuple containing the transformed points and the new camera center location
     """
     # Check that camera_matrix is 3x4 array
-    if not isinstance(camera_matrix, np.ndarray) or camera_matrix.shape != (3, 4):
-        raise ValueError("Projection matrix array is not of the right shape (3x4)")
+    if not isinstance(camera_matrix, np.ndarray) or camera_matrix.shape != (
+        3,
+        4,
+    ):
+        raise ValueError(
+            "Projection matrix array is not of the right shape (3x4)"
+        )
 
     # ensure that the points are provided as an array
     points = np.array(points)
@@ -1084,7 +1150,10 @@ def projective_to_conventional(points_mx3: np.ndarray):
     assert points_mx3.shape[-1] == 3
 
     new_points = np.vstack(
-        (points_mx3[:, 0] / points_mx3[:, -1], points_mx3[:, 1] / points_mx3[:, -1])
+        (
+            points_mx3[:, 0] / points_mx3[:, -1],
+            points_mx3[:, 1] / points_mx3[:, -1],
+        )
     ).T
     return new_points
 
@@ -1121,7 +1190,9 @@ def normalize_points(points: np.ndarray) -> Union[np.ndarray, np.ndarray]:
     if dims == 2:
         T = np.array([[s, 0, m[0]], [0, s, m[1]], [0, 0, 1]])
     else:
-        T = np.array([[s, 0, 0, m[0]], [0, s, 0, m[1]], [0, 0, s, m[2]], [0, 0, 0, 1]])
+        T = np.array(
+            [[s, 0, 0, m[0]], [0, s, 0, m[1]], [0, 0, s, m[2]], [0, 0, 0, 1]]
+        )
     T = np.linalg.inv(T)
     points = T @ np.concatenate((points.T, np.ones((1, points.shape[0]))))
     points = points[0:dims, :].T
@@ -1143,8 +1214,13 @@ def compute_rays(
     points = np.array(points)
 
     # Check that camera_matrix is 3x4 array
-    if not isinstance(camera_matrix, np.ndarray) or camera_matrix.shape != (3, 4):
-        raise ValueError("Projection matrix array is not of the right shape (3x4)")
+    if not isinstance(camera_matrix, np.ndarray) or camera_matrix.shape != (
+        3,
+        4,
+    ):
+        raise ValueError(
+            "Projection matrix array is not of the right shape (3x4)"
+        )
 
     m_3x3 = camera_matrix[:, :3]
     p4_3x1 = camera_matrix[:, 3]
@@ -1340,7 +1416,9 @@ def estimate_view_angle(matrix):
         return view_angle_deg
 
     else:
-        raise ValueError("Input must be a 3x3 homography or 3x4 / 4x3 camera matrix.")
+        raise ValueError(
+            "Input must be a 3x3 homography or 3x4 / 4x3 camera matrix."
+        )
 
 
 def estimate_orthorectification_rmse(view_angle_deg, gsd_m):
@@ -1415,7 +1493,9 @@ def estimate_scale_based_rmse(gsd_m, baseline_m, pixel_error_per_point=2.0):
     import numpy as np
 
     # Total pixel error across both points
-    total_pixel_error = np.sqrt(2 * pixel_error_per_point**2)  # Pythagorean error
+    total_pixel_error = np.sqrt(
+        2 * pixel_error_per_point**2
+    )  # Pythagorean error
 
     # Estimated relative error in scale
     relative_scale_error = (total_pixel_error * gsd_m) / baseline_m
@@ -1425,6 +1505,7 @@ def estimate_scale_based_rmse(gsd_m, baseline_m, pixel_error_per_point=2.0):
     rmse_m = relative_scale_error * baseline_m
 
     return rmse_m
+
 
 def pixels_to_world(pixel_coords, H):
     """
@@ -1479,8 +1560,12 @@ def compute_translation_and_scale(world_coords, pixel_coords):
 
     # Calculate the scale factors by finding the ratios of the means of
     # world and pixel coordinates
-    mean_world_dist = np.mean(np.linalg.norm(world_coords - mean_world_coords, axis=1))
-    mean_pixel_dist = np.mean(np.linalg.norm(pixel_coords - mean_pixel_coords, axis=1))
+    mean_world_dist = np.mean(
+        np.linalg.norm(world_coords - mean_world_coords, axis=1)
+    )
+    mean_pixel_dist = np.mean(
+        np.linalg.norm(pixel_coords - mean_pixel_coords, axis=1)
+    )
     scale = mean_world_dist / mean_pixel_dist
 
     return translation, scale

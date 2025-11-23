@@ -33,7 +33,8 @@ if IVY_ENV == "development":
         ffmpeg_cmd = str(ffmpeg_fallback)[:-4]
         ffprobe_cmd = str(ffprobe_fallback)[:-4]
         logging.warning(
-            "[ffmpeg] Using local ./bin/ fallback; system binaries not found.")
+            "[ffmpeg] Using local ./bin/ fallback; system binaries not found."
+        )
 else:
     if not ffmpeg_cmd or not ffprobe_cmd:
         fallback_path = Path(resource_path("bin"))
@@ -43,9 +44,14 @@ else:
         if ffmpeg_fallback.exists() and ffprobe_fallback.exists():
             ffmpeg_cmd = str(ffmpeg_fallback)[:-4]
             ffprobe_cmd = str(ffprobe_fallback)[:-4]
-            logging.warning("[ffmpeg] Using local ./bin/ fallback; system binaries not found.")
+            logging.warning(
+                "[ffmpeg] Using local ./bin/ fallback; system binaries not found."
+            )
         else:
-            raise FileNotFoundError("FFmpeg and FFprobe not found in environment variables, system PATH, or local ./bin/")
+            raise FileNotFoundError(
+                "FFmpeg and FFprobe not found in environment variables, system PATH, or local ./bin/"
+            )
+
 
 def ffprobe_frame_count(file_path):
     """Count video frames using ffprobe.
@@ -57,26 +63,36 @@ def ffprobe_frame_count(file_path):
     """
 
     if not os.path.exists(file_path):
-        logging.warning(f"[ffprobe_frame_count] File does not exist: {file_path}")
+        logging.warning(
+            f"[ffprobe_frame_count] File does not exist: {file_path}"
+        )
         return None
 
     cmd = [
         ffprobe_cmd,
-        '-v', 'error',
-        '-select_streams', 'v:0',
-        '-count_frames',
-        '-show_entries', 'stream=nb_read_frames',
-        '-print_format', 'json',
-        file_path
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-count_frames",
+        "-show_entries",
+        "stream=nb_read_frames",
+        "-print_format",
+        "json",
+        file_path,
     ]
 
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        result = subprocess.run(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
         output = json.loads(result.stdout)
-        frame_count = int(output['streams'][0]['nb_read_frames'])
+        frame_count = int(output["streams"][0]["nb_read_frames"])
         return frame_count
     except Exception as e:
-        logging.warning(f"[ffprobe_frame_count] ffprobe failed for {file_path} with error: {e}")
+        logging.warning(
+            f"[ffprobe_frame_count] ffprobe failed for {file_path} with error: {e}"
+        )
         return None
 
 
@@ -99,10 +115,9 @@ def ffmpeg_compute_motion_trajectories_from_frames_command(
     escaped_result_path = result_path.replace(":", r"\\:")
 
     cmd = (
-            ffmpeg_cmd +
-            f' -i "{input_path}" -vf '
-            f'"vidstabdetect=stepsize={stepsize}:shakiness={shakiness}:accuracy={accuracy}:result={escaped_result_path}" '
-            f'-f null -'
+        ffmpeg_cmd + f' -i "{input_path}" -vf '
+        f'"vidstabdetect=stepsize={stepsize}:shakiness={shakiness}:accuracy={accuracy}:result={escaped_result_path}" '
+        f"-f null -"
     )
     logging.info(cmd)
     return cmd
@@ -132,9 +147,10 @@ def ffmpeg_remove_motion_from_frames_command(
         - Escape colon after drive letter (e.g., C\:/...)
         """
         path = Path(path).as_posix()  # Converts backslashes to forward slashes
-        if path[1:3] == ':/':
-            path = path[0] + r'\:' + path[
-                                     2:]  # Escape the colon after drive letter
+        if path[1:3] == ":/":
+            path = (
+                path[0] + r"\:" + path[2:]
+            )  # Escape the colon after drive letter
         return path
 
     transform_path = ffmpeg_escape_windows_path_for_filter(
@@ -142,10 +158,10 @@ def ffmpeg_remove_motion_from_frames_command(
     )
 
     cmd = (
-            ffmpeg_cmd + f' -i "{images_folder}{os.sep}{in_file_pattern}" '
-                         f'-vf "vidstabtransform=smoothing={smoothing}:crop={crop}:optzoom={optzoom}:'
-                         f"input='{transform_path}',"
-                         f'unsharp={unsharp_filter}\" -q:v {quality} \"{images_folder}{os.sep}{out_file_pattern}\"'
+        ffmpeg_cmd + f' -i "{images_folder}{os.sep}{in_file_pattern}" '
+        f'-vf "vidstabtransform=smoothing={smoothing}:crop={crop}:optzoom={optzoom}:'
+        f"input='{transform_path}',"
+        f'unsharp={unsharp_filter}" -q:v {quality} "{images_folder}{os.sep}{out_file_pattern}"'
     )
 
     logging.info(cmd)
@@ -177,7 +193,9 @@ def create_ffmpeg_command(params: dict) -> str:
     if "curve_preset" in params and params["curve_preset"] != "none":
         filtergraphs.append(f"curves=preset={params['curve_preset']}")
     if "extract_frames" in params and params["extract_frames"]:
-        filtergraphs.append(f"select=not(mod(n\\,{params['extract_frame_step']}))")
+        filtergraphs.append(
+            f"select=not(mod(n\\,{params['extract_frame_step']}))"
+        )
     if "calibrate_radial" in params:
         cx, cy, k1, k2 = params["cx"], params["cy"], params["k1"], params["k2"]
         filtergraphs.append(
@@ -191,7 +209,9 @@ def create_ffmpeg_command(params: dict) -> str:
         vfilter = ", ".join(filtergraphs)
         command_parts.extend(["-vf", f'"{vfilter}"'])
     else:
-        command_parts.extend(["-c:v", "copy"])  # Use stream copy b/c it's fastest
+        command_parts.extend(
+            ["-c:v", "copy"]
+        )  # Use stream copy b/c it's fastest
 
     # Audio and output parameters
     if "strip_audio" in params and "extract_frames" not in params:
@@ -218,7 +238,9 @@ def create_ffmpeg_command(params: dict) -> str:
             )
     if "output_video" in params:
         if params["output_video"][0] != "null -":
-            command_parts.extend(["-y", quotify_a_string(params["output_video"])])
+            command_parts.extend(
+                ["-y", quotify_a_string(params["output_video"])]
+            )
 
     # Construct and return final command string
     command_parts.insert(0, ffmpeg_cmd)
@@ -244,11 +266,11 @@ def parse_ffmpeg_stdout_progress(stdout_line_of_text, video_duration=1000):
     processing frame time given by ffmpeg.
     """
 
-    time_re_pattern = re.compile(r'time=(\d{2}:\d{2}:\d{2}(?:[.,]\d{1,3})?)')
+    time_re_pattern = re.compile(r"time=(\d{2}:\d{2}:\d{2}(?:[.,]\d{1,3})?)")
     matcher = time_re_pattern.search(stdout_line_of_text)
 
     if matcher:
-        time_string = matcher.group(1).replace(',', '.')
+        time_string = matcher.group(1).replace(",", ".")
         try:
             time_seconds = hhmmss_to_seconds(time_string)
             return int(time_seconds / video_duration * 100)
@@ -258,7 +280,7 @@ def parse_ffmpeg_stdout_progress(stdout_line_of_text, video_duration=1000):
         return None
 
 
-def ffprobe_add_exif_metadata(file_path, res_dict, ffprobe_cmd='ffprobe'):
+def ffprobe_add_exif_metadata(file_path, res_dict, ffprobe_cmd="ffprobe"):
     """Add available EXIF-like metadata from ffprobe to the result dictionary.
 
     Parameters
@@ -279,20 +301,30 @@ def ffprobe_add_exif_metadata(file_path, res_dict, ffprobe_cmd='ffprobe'):
     """
 
     if not os.path.exists(file_path):
-        logging.warning(f"[ffprobe_add_exif_metadata] File does not exist: {file_path}")
+        logging.warning(
+            f"[ffprobe_add_exif_metadata] File does not exist: {file_path}"
+        )
         return res_dict
 
     cmd = [
         ffprobe_cmd,
-        '-v', 'error',
-        '-print_format', 'json',
-        '-show_format',
-        '-show_streams',
-        file_path
+        "-v",
+        "error",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        file_path,
     ]
 
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            text=True,
+        )
         ffprobe_data = json.loads(result.stdout)
 
         if "format" in ffprobe_data:
@@ -313,6 +345,8 @@ def ffprobe_add_exif_metadata(file_path, res_dict, ffprobe_cmd='ffprobe'):
                 break
 
     except Exception as e:
-        logging.warning(f"[ffprobe_add_exif_metadata] ffprobe failed for {file_path} with error: {e}")
+        logging.warning(
+            f"[ffprobe_add_exif_metadata] ffprobe failed for {file_path} with error: {e}"
+        )
 
     return res_dict

@@ -19,54 +19,50 @@ class TestVideoService:
         """Test validation with valid clip times."""
         # Should not raise
         service.validate_clip_times(
-            start_time_ms=0,
-            end_time_ms=10000,
-            video_duration_ms=30000
+            start_time_ms=0, end_time_ms=10000, video_duration_ms=30000
         )
 
     def test_validate_clip_times_start_negative(self, service):
         """Test validation rejects negative start time."""
         with pytest.raises(ValueError, match="Start time cannot be negative"):
             service.validate_clip_times(
-                start_time_ms=-1000,
-                end_time_ms=10000,
-                video_duration_ms=30000
+                start_time_ms=-1000, end_time_ms=10000, video_duration_ms=30000
             )
 
     def test_validate_clip_times_end_before_start(self, service):
         """Test validation rejects end time before start time."""
-        with pytest.raises(ValueError, match="End time must be greater than start time"):
+        with pytest.raises(
+            ValueError, match="End time must be greater than start time"
+        ):
             service.validate_clip_times(
-                start_time_ms=10000,
-                end_time_ms=5000,
-                video_duration_ms=30000
+                start_time_ms=10000, end_time_ms=5000, video_duration_ms=30000
             )
 
     def test_validate_clip_times_end_exceeds_duration(self, service):
         """Test validation rejects end time exceeding video duration."""
-        with pytest.raises(ValueError, match="End time cannot exceed video duration"):
+        with pytest.raises(
+            ValueError, match="End time cannot exceed video duration"
+        ):
             service.validate_clip_times(
-                start_time_ms=5000,
-                end_time_ms=40000,
-                video_duration_ms=30000
+                start_time_ms=5000, end_time_ms=40000, video_duration_ms=30000
             )
 
     def test_validate_clip_times_start_equals_end(self, service):
         """Test validation rejects start time equal to end time."""
-        with pytest.raises(ValueError, match="End time must be greater than start time"):
+        with pytest.raises(
+            ValueError, match="End time must be greater than start time"
+        ):
             service.validate_clip_times(
-                start_time_ms=10000,
-                end_time_ms=10000,
-                video_duration_ms=30000
+                start_time_ms=10000, end_time_ms=10000, video_duration_ms=30000
             )
 
     def test_validate_clip_times_zero_duration(self, service):
         """Test validation with zero duration video."""
-        with pytest.raises(ValueError, match="Video duration must be positive"):
+        with pytest.raises(
+            ValueError, match="Video duration must be positive"
+        ):
             service.validate_clip_times(
-                start_time_ms=0,
-                end_time_ms=0,
-                video_duration_ms=0
+                start_time_ms=0, end_time_ms=0, video_duration_ms=0
             )
 
     # Output Filename Generation Tests
@@ -81,7 +77,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         assert filename.startswith("/output")
@@ -101,7 +97,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         assert "rot90" in filename
@@ -117,7 +113,7 @@ class TestVideoService:
             flip="vflip",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         assert "vflip" in filename
@@ -133,7 +129,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=True,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         assert "normluma" in filename
@@ -149,7 +145,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="lighter",
-            stabilize=False
+            stabilize=False,
         )
 
         assert "lighter" in filename
@@ -165,7 +161,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=True
+            stabilize=True,
         )
 
         assert "stab" in filename
@@ -181,7 +177,7 @@ class TestVideoService:
             flip="hflip",
             normalize_luma=True,
             curve_preset="darker",
-            stabilize=True
+            stabilize=True,
         )
 
         assert "rot180" in filename
@@ -201,7 +197,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         assert filename.endswith(".avi")
@@ -217,7 +213,7 @@ class TestVideoService:
             flip="none",
             normalize_luma=False,
             curve_preset="none",
-            stabilize=False
+            stabilize=False,
         )
 
         # Should default to .mp4
@@ -244,7 +240,7 @@ class TestVideoService:
             cx=960.0,
             cy=540.0,
             k1=0.0,
-            k2=0.0
+            k2=0.0,
         )
 
         assert params["input_video"] == "/path/to/input.mp4"
@@ -265,7 +261,7 @@ class TestVideoService:
             input_video="/path/to/input.mp4",
             output_video="/path/to/output.mp4",
             start_time_ms=5000,  # 5 seconds
-            end_time_ms=65000,   # 1 minute 5 seconds
+            end_time_ms=65000,  # 1 minute 5 seconds
             rotation=0,
             flip="none",
             strip_audio=False,
@@ -279,7 +275,7 @@ class TestVideoService:
             cx=960.0,
             cy=540.0,
             k1=0.0,
-            k2=0.0
+            k2=0.0,
         )
 
         # Times should be in HH:MM:SS.mmm format
@@ -306,7 +302,7 @@ class TestVideoService:
             cx=960.0,
             cy=540.0,
             k1=-0.1,
-            k2=0.05
+            k2=0.05,
         )
 
         assert params["video_rotation"] == 90
@@ -341,7 +337,7 @@ class TestVideoService:
             cx=1024.5,
             cy=768.3,
             k1=-0.15,
-            k2=0.08
+            k2=0.08,
         )
 
         assert params["calibrate_radial"] is True

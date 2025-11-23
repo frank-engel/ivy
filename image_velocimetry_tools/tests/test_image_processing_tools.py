@@ -112,7 +112,10 @@ class TestCreateBinaryMask(unittest.TestCase):
             for y in range(height):
                 # Note, convert polygons to int32
                 in_any_polygon = any(
-                    cv2.pointPolygonTest(polygon.astype(np.int32), (x, y), False) <= 1
+                    cv2.pointPolygonTest(
+                        polygon.astype(np.int32), (x, y), False
+                    )
+                    <= 1
                     for polygon in polygons
                 )
                 if not in_any_polygon:
@@ -138,7 +141,9 @@ class TestGenerateGrid(unittest.TestCase):
 
         # Load some images that should take up sufficient memory
         self.image_paths = glob.glob("./img_seq_welton_main_drain/*.jpg")
-        self.first_image = cv2.imread(self.image_paths[0], cv2.IMREAD_GRAYSCALE)
+        self.first_image = cv2.imread(
+            self.image_paths[0], cv2.IMREAD_GRAYSCALE
+        )
 
     def test_basic_grid(self):
         # Test with a basic case of a 5x5 image with 1 unmasked region
@@ -157,7 +162,11 @@ class TestGenerateGrid(unittest.TestCase):
         )
 
         grid = generate_grid(
-            image_width, image_height, vertical_spacing, horizontal_spacing, mask
+            image_width,
+            image_height,
+            vertical_spacing,
+            horizontal_spacing,
+            mask,
         )
 
         expected_grid = np.array(
@@ -175,7 +184,11 @@ class TestGenerateGrid(unittest.TestCase):
         mask = np.zeros((image_height, image_width))
 
         grid = generate_grid(
-            image_width, image_height, vertical_spacing, horizontal_spacing, mask
+            image_width,
+            image_height,
+            vertical_spacing,
+            horizontal_spacing,
+            mask,
         )
 
         expected_grid = np.array([]).reshape(0, 2)
@@ -199,10 +212,16 @@ class TestGenerateGrid(unittest.TestCase):
         )
 
         grid = generate_grid(
-            image_width, image_height, vertical_spacing, horizontal_spacing, mask
+            image_width,
+            image_height,
+            vertical_spacing,
+            horizontal_spacing,
+            mask,
         )
 
-        expected_grid = np.array([[0, 0], [2, 0], [4, 0], [0, 3], [2, 3], [4, 3]])
+        expected_grid = np.array(
+            [[0, 0], [2, 0], [4, 0], [0, 3], [2, 3], [4, 3]]
+        )
 
         np.testing.assert_array_equal(grid, expected_grid)
 
@@ -284,19 +303,25 @@ class TestGeneratePointsForMidSection(unittest.TestCase):
         """Set up test parameters and masks."""
         self.image_width = 100
         self.image_height = 100
-        self.binary_mask = np.ones((self.image_height, self.image_width), dtype=np.uint8)  # Fully unmasked
+        self.binary_mask = np.ones(
+            (self.image_height, self.image_width), dtype=np.uint8
+        )  # Fully unmasked
 
     def test_point_spacing(self):
         """Test points are evenly spaced."""
         line_start = np.array([0.0, 0.0])
         line_end = np.array([10, 10])
 
-
         number_points = 4
 
         # Call the function
         points = generate_points_along_line(
-            self.image_width, self.image_height, line_start, line_end, number_points, self.binary_mask
+            self.image_width,
+            self.image_height,
+            line_start,
+            line_end,
+            number_points,
+            self.binary_mask,
         )
 
         # Expected points for 4 evenly spaced points
@@ -307,11 +332,15 @@ class TestGeneratePointsForMidSection(unittest.TestCase):
 
     def test_points_with_masked_regions(self):
         """Test points are excluded if they fall in masked regions. **The points along the line (number_points) should be
-            recomputed based off the new edge of the masked regions,
-            this may cause an issue if masked regions are not on the edge? CJM"""
+        recomputed based off the new edge of the masked regions,
+        this may cause an issue if masked regions are not on the edge? CJM"""
         # Create a mask with only the middle region unmasked
-        self.binary_mask = np.zeros((self.image_height, self.image_width), dtype=np.uint8)
-        cv2.rectangle(self.binary_mask, (20, 20), (80, 80), 1, -1)  # Unmasked rectangle
+        self.binary_mask = np.zeros(
+            (self.image_height, self.image_width), dtype=np.uint8
+        )
+        cv2.rectangle(
+            self.binary_mask, (20, 20), (80, 80), 1, -1
+        )  # Unmasked rectangle
 
         line_start = np.array([10, 10])
         line_end = np.array([90, 90])
@@ -319,7 +348,12 @@ class TestGeneratePointsForMidSection(unittest.TestCase):
 
         # Call the function
         points = generate_points_along_line(
-            self.image_width, self.image_height, line_start, line_end, number_points, self.binary_mask
+            self.image_width,
+            self.image_height,
+            line_start,
+            line_end,
+            number_points,
+            self.binary_mask,
         )
 
         # Validate all points are within the unmasked region

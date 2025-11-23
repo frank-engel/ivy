@@ -6,7 +6,10 @@ Note: IVy is no longer using ImageMagick, but this module is retained for now.
 import logging
 import os
 
-from image_velocimetry_tools.common_functions import resource_path, quotify_a_string
+from image_velocimetry_tools.common_functions import (
+    resource_path,
+    quotify_a_string,
+)
 
 # Locate the ImageMagic exes and ensure they are reachable
 imagemagick_loc = "bin"
@@ -29,6 +32,9 @@ def create_median_image_command(images, out_folder):
     e = os.path.basename(images[-1])
     name = f"!median_{os.path.splitext(s)[0]}_{os.path.splitext(e)[0]}"
     output_location = quotify_a_string(f"{out_folder}{os.sep}{name}.jpg")
-    cmd = im_convert_cmd + f" {images_str} -evaluate-sequence median {output_location}"
+    cmd = (
+        im_convert_cmd
+        + f" {images_str} -evaluate-sequence median {output_location}"
+    )
     logging.info(cmd)
     return cmd

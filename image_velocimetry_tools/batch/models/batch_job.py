@@ -9,6 +9,7 @@ from pathlib import Path
 
 class JobStatus(Enum):
     """Enumeration of possible job statuses."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -147,8 +148,10 @@ class BatchJob:
             )
 
         # Validate end_time > start_time if both provided
-        if (self.start_time_seconds is not None and
-                self.end_time_seconds is not None):
+        if (
+            self.start_time_seconds is not None
+            and self.end_time_seconds is not None
+        ):
             if self.end_time_seconds <= self.start_time_seconds:
                 raise ValueError(
                     f"end_time ({self.end_time}) must be greater than "
@@ -177,7 +180,7 @@ class BatchJob:
             If time string format is invalid
         """
         try:
-            parts = time_str.split(':')
+            parts = time_str.split(":")
 
             if len(parts) == 1:
                 # Format: "ss" or "ss.s"
@@ -211,7 +214,7 @@ class BatchJob:
         discharge_value: float,
         processing_time: float,
         area_value: Optional[float] = None,
-        result_details: Optional[Dict[str, Any]] = None
+        result_details: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Mark job as successfully completed.
 
@@ -233,7 +236,9 @@ class BatchJob:
         self.processing_time = processing_time
         self.error_message = None
 
-    def mark_failed(self, error_message: str, processing_time: float = 0.0) -> None:
+    def mark_failed(
+        self, error_message: str, processing_time: float = 0.0
+    ) -> None:
         """Mark job as failed.
 
         Parameters
