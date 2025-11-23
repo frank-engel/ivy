@@ -173,8 +173,8 @@ This issue was discovered when integrating AreaComp3 into IVyTools for batch pro
 
 For questions about this issue:
 - **IVyTools Repository**: https://code.usgs.gov/hydrologic-remote-sensing-branch/ivy
-- **Issue discovered by**: Frank L. Engel (fengel@usgs.gov)
-- **Date**: November 2023
+- **Issue discovered by**: Frank L. Engel (sandcountyfrank@gmail.com)
+- **Date**: November 2025
 
 ---
 
