@@ -19,8 +19,9 @@ imutils
 qimage2ndarray>=1.9.0,<2.0
 
 # Machine learning (for STIV)
-# Note: numba is a dependency of areacomp3 and scikit-image
-# Let them pull in compatible versions automatically
+# Note: numba 0.56.x is the last version that works with areacomp3's JIT decorators
+# Newer versions (0.57+) are too strict and fail on areacomp3's method decorators
+numba>=0.56.0,<0.57.0
 scikit-image
 
 # GUI
