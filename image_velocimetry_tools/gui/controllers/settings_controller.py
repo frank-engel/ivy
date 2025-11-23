@@ -7,16 +7,25 @@ and application-wide preferences.
 
 import logging
 import os
-from image_velocimetry_tools.gui.controllers.base_controller import BaseController
+from image_velocimetry_tools.gui.controllers.base_controller import (
+    BaseController,
+)
 from image_velocimetry_tools.gui.models.settings_model import SettingsModel
-from image_velocimetry_tools.gui.dialogs.settings import Settings as Settings_Dialog
-from image_velocimetry_tools.common_functions import units_conversion, resource_path
+from image_velocimetry_tools.gui.dialogs.settings import (
+    Settings as Settings_Dialog,
+)
+from image_velocimetry_tools.common_functions import (
+    units_conversion,
+    resource_path,
+)
 
 
 class SettingsController(BaseController):
     """Controller for managing application settings and preferences."""
 
-    def __init__(self, main_window, settings_model: SettingsModel, sticky_settings):
+    def __init__(
+        self, main_window, settings_model: SettingsModel, sticky_settings
+    ):
         """
         Initialize the SettingsController.
 
@@ -46,7 +55,9 @@ class SettingsController(BaseController):
             ss = self.sticky_settings.get("last_display_units")
             self.settings_model.display_units = ss
         except KeyError:
-            self.sticky_settings.new("last_display_units", self.settings_model.display_units)
+            self.sticky_settings.new(
+                "last_display_units", self.settings_model.display_units
+            )
 
         # Open settings dialog
         dialog = Settings_Dialog(
@@ -65,10 +76,14 @@ class SettingsController(BaseController):
                 self.settings_model.display_units = dialog.units
 
                 # Update file menu
-                mw.actionUnits.setText(f"Units: {self.settings_model.units_label}")
+                mw.actionUnits.setText(
+                    f"Units: {self.settings_model.units_label}"
+                )
 
                 # Update the user's settings
-                self.sticky_settings.set("last_display_units", self.settings_model.display_units)
+                self.sticky_settings.set(
+                    "last_display_units", self.settings_model.display_units
+                )
 
                 # Apply units conversions
                 self.change_units(self.settings_model.display_units)
@@ -125,7 +140,7 @@ class SettingsController(BaseController):
         # Water Surface Elevation spinbox
         old = mw.doubleSpinBoxRectificationWaterSurfaceElevation.value()
         mw.doubleSpinBoxRectificationWaterSurfaceElevation.setValue(
-            old * units_conversion(units)['L']
+            old * units_conversion(units)["L"]
         )
 
         # Pixel GSD
@@ -164,7 +179,7 @@ class SettingsController(BaseController):
             mw.xs_survey.update_ui()
 
         # Discharge Tab - update table if it exists
-        if hasattr(mw, 'discharge_summary') and mw.discharge_summary:
+        if hasattr(mw, "discharge_summary") and mw.discharge_summary:
             # The discharge tab will update when it's accessed
             pass
 

@@ -16,9 +16,11 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1276, 1011)
         MainWindow.setMinimumSize(QtCore.QSize(600, 500))
-        MainWindow.setStyleSheet("QToolButton:checked {\n"
-"    background-color: rgb(0,101,219);\n"
-"}")
+        MainWindow.setStyleSheet(
+            "QToolButton:checked {\n"
+            "    background-color: rgb(0,101,219);\n"
+            "}"
+        )
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -37,63 +39,100 @@ class Ui_MainWindow(object):
         self.toolButtonSaveProject.setIconSize(QtCore.QSize(20, 20))
         self.toolButtonSaveProject.setObjectName("toolButtonSaveProject")
         self.horizontalLayoutToolbar.addWidget(self.toolButtonSaveProject)
-        spacerItem = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem)
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
         self.horizontalLayoutToolbar.addWidget(self.line_2)
-        spacerItem1 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem1)
         self.toolButtonImportVideo = QtWidgets.QToolButton(self.centralwidget)
         self.toolButtonImportVideo.setIconSize(QtCore.QSize(20, 20))
         self.toolButtonImportVideo.setObjectName("toolButtonImportVideo")
         self.horizontalLayoutToolbar.addWidget(self.toolButtonImportVideo)
-        self.toolButtonImportFramesDirectory = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButtonImportFramesDirectory = QtWidgets.QToolButton(
+            self.centralwidget
+        )
         self.toolButtonImportFramesDirectory.setIconSize(QtCore.QSize(20, 20))
-        self.toolButtonImportFramesDirectory.setObjectName("toolButtonImportFramesDirectory")
-        self.horizontalLayoutToolbar.addWidget(self.toolButtonImportFramesDirectory)
-        self.toolButtonImportGroundControlImage = QtWidgets.QToolButton(self.centralwidget)
-        self.toolButtonImportGroundControlImage.setIconSize(QtCore.QSize(20, 20))
-        self.toolButtonImportGroundControlImage.setObjectName("toolButtonImportGroundControlImage")
-        self.horizontalLayoutToolbar.addWidget(self.toolButtonImportGroundControlImage)
-        self.toolButtonImportBathymetry = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButtonImportFramesDirectory.setObjectName(
+            "toolButtonImportFramesDirectory"
+        )
+        self.horizontalLayoutToolbar.addWidget(
+            self.toolButtonImportFramesDirectory
+        )
+        self.toolButtonImportGroundControlImage = QtWidgets.QToolButton(
+            self.centralwidget
+        )
+        self.toolButtonImportGroundControlImage.setIconSize(
+            QtCore.QSize(20, 20)
+        )
+        self.toolButtonImportGroundControlImage.setObjectName(
+            "toolButtonImportGroundControlImage"
+        )
+        self.horizontalLayoutToolbar.addWidget(
+            self.toolButtonImportGroundControlImage
+        )
+        self.toolButtonImportBathymetry = QtWidgets.QToolButton(
+            self.centralwidget
+        )
         self.toolButtonImportBathymetry.setIconSize(QtCore.QSize(20, 20))
-        self.toolButtonImportBathymetry.setObjectName("toolButtonImportBathymetry")
+        self.toolButtonImportBathymetry.setObjectName(
+            "toolButtonImportBathymetry"
+        )
         self.horizontalLayoutToolbar.addWidget(self.toolButtonImportBathymetry)
-        self.toolButtonImportGCPTable = QtWidgets.QToolButton(self.centralwidget)
+        self.toolButtonImportGCPTable = QtWidgets.QToolButton(
+            self.centralwidget
+        )
         self.toolButtonImportGCPTable.setIconSize(QtCore.QSize(20, 20))
         self.toolButtonImportGCPTable.setObjectName("toolButtonImportGCPTable")
         self.horizontalLayoutToolbar.addWidget(self.toolButtonImportGCPTable)
-        spacerItem2 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem2)
         self.line_4 = QtWidgets.QFrame(self.centralwidget)
         self.line_4.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_4.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_4.setObjectName("line_4")
         self.horizontalLayoutToolbar.addWidget(self.line_4)
-        spacerItem3 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem3)
         self.toolButtonExportPDF = QtWidgets.QToolButton(self.centralwidget)
         self.toolButtonExportPDF.setIconSize(QtCore.QSize(20, 20))
         self.toolButtonExportPDF.setObjectName("toolButtonExportPDF")
         self.horizontalLayoutToolbar.addWidget(self.toolButtonExportPDF)
-        spacerItem4 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem4 = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem4)
         self.line_5 = QtWidgets.QFrame(self.centralwidget)
         self.line_5.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_5.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_5.setObjectName("line_5")
         self.horizontalLayoutToolbar.addWidget(self.line_5)
-        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem5 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum,
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem5)
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
         self.horizontalLayoutToolbar.addWidget(self.line_3)
-        spacerItem6 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem6 = QtWidgets.QSpacerItem(
+            5, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayoutToolbar.addItem(spacerItem6)
         self.toolButtonAddComment = QtWidgets.QToolButton(self.centralwidget)
         self.toolButtonAddComment.setIconSize(QtCore.QSize(20, 20))
@@ -124,10 +163,14 @@ class Ui_MainWindow(object):
         self.gridLayout_15 = QtWidgets.QGridLayout(self.widgetVideo)
         self.gridLayout_15.setObjectName("gridLayout_15")
         self.labelVideoPreload = QtWidgets.QLabel(self.widgetVideo)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(2)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.labelVideoPreload.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.labelVideoPreload.sizePolicy().hasHeightForWidth()
+        )
         self.labelVideoPreload.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -140,12 +183,16 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addLayout(self.layoutVideoTab, 0, 0, 1, 4)
         self.layoutVideoControls = QtWidgets.QVBoxLayout()
         self.layoutVideoControls.setObjectName("layoutVideoControls")
-        self.groupboxClipControl = QtWidgets.QGroupBox(self.tabVideoPreProcessing)
+        self.groupboxClipControl = QtWidgets.QGroupBox(
+            self.tabVideoPreProcessing
+        )
         self.groupboxClipControl.setObjectName("groupboxClipControl")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.groupboxClipControl)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.layoutClipControlGroupBox = QtWidgets.QHBoxLayout()
-        self.layoutClipControlGroupBox.setObjectName("layoutClipControlGroupBox")
+        self.layoutClipControlGroupBox.setObjectName(
+            "layoutClipControlGroupBox"
+        )
         self.buttonClipStart = QtWidgets.QPushButton(self.groupboxClipControl)
         self.buttonClipStart.setObjectName("buttonClipStart")
         self.layoutClipControlGroupBox.addWidget(self.buttonClipStart)
@@ -157,20 +204,34 @@ class Ui_MainWindow(object):
         self.layoutClipControlGroupBox.addWidget(self.buttonClearClip)
         self.gridLayout_3.addLayout(self.layoutClipControlGroupBox, 0, 0, 1, 1)
         self.layoutVideoControls.addWidget(self.groupboxClipControl)
-        self.groupboxClipCreationControls = QtWidgets.QGroupBox(self.tabVideoPreProcessing)
-        self.groupboxClipCreationControls.setObjectName("groupboxClipCreationControls")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.groupboxClipCreationControls)
+        self.groupboxClipCreationControls = QtWidgets.QGroupBox(
+            self.tabVideoPreProcessing
+        )
+        self.groupboxClipCreationControls.setObjectName(
+            "groupboxClipCreationControls"
+        )
+        self.verticalLayout = QtWidgets.QVBoxLayout(
+            self.groupboxClipCreationControls
+        )
         self.verticalLayout.setObjectName("verticalLayout")
         self.groupBox = QtWidgets.QGroupBox(self.groupboxClipCreationControls)
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.layoutFfmpegPreprocessing = QtWidgets.QGridLayout()
-        self.layoutFfmpegPreprocessing.setObjectName("layoutFfmpegPreprocessing")
+        self.layoutFfmpegPreprocessing.setObjectName(
+            "layoutFfmpegPreprocessing"
+        )
         self.labelVideoRotation = QtWidgets.QLabel(self.groupBox)
-        self.labelVideoRotation.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.labelVideoRotation.setAlignment(
+            QtCore.Qt.AlignRight
+            | QtCore.Qt.AlignTrailing
+            | QtCore.Qt.AlignVCenter
+        )
         self.labelVideoRotation.setObjectName("labelVideoRotation")
-        self.layoutFfmpegPreprocessing.addWidget(self.labelVideoRotation, 0, 0, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.labelVideoRotation, 0, 0, 1, 1
+        )
         self.comboboxFfmpegRotation = QtWidgets.QComboBox(self.groupBox)
         self.comboboxFfmpegRotation.setEditable(True)
         self.comboboxFfmpegRotation.setObjectName("comboboxFfmpegRotation")
@@ -178,13 +239,25 @@ class Ui_MainWindow(object):
         self.comboboxFfmpegRotation.addItem("")
         self.comboboxFfmpegRotation.addItem("")
         self.comboboxFfmpegRotation.addItem("")
-        self.layoutFfmpegPreprocessing.addWidget(self.comboboxFfmpegRotation, 0, 1, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.comboboxFfmpegRotation, 0, 1, 1, 1
+        )
         self.labelPresetCurveAdjustment = QtWidgets.QLabel(self.groupBox)
-        self.labelPresetCurveAdjustment.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.labelPresetCurveAdjustment.setObjectName("labelPresetCurveAdjustment")
-        self.layoutFfmpegPreprocessing.addWidget(self.labelPresetCurveAdjustment, 2, 0, 1, 1)
+        self.labelPresetCurveAdjustment.setAlignment(
+            QtCore.Qt.AlignRight
+            | QtCore.Qt.AlignTrailing
+            | QtCore.Qt.AlignVCenter
+        )
+        self.labelPresetCurveAdjustment.setObjectName(
+            "labelPresetCurveAdjustment"
+        )
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.labelPresetCurveAdjustment, 2, 0, 1, 1
+        )
         self.comboboxFfmpegCurvePresets = QtWidgets.QComboBox(self.groupBox)
-        self.comboboxFfmpegCurvePresets.setObjectName("comboboxFfmpegCurvePresets")
+        self.comboboxFfmpegCurvePresets.setObjectName(
+            "comboboxFfmpegCurvePresets"
+        )
         self.comboboxFfmpegCurvePresets.addItem("")
         self.comboboxFfmpegCurvePresets.addItem("")
         self.comboboxFfmpegCurvePresets.addItem("")
@@ -196,45 +269,71 @@ class Ui_MainWindow(object):
         self.comboboxFfmpegCurvePresets.addItem("")
         self.comboboxFfmpegCurvePresets.addItem("")
         self.comboboxFfmpegCurvePresets.addItem("")
-        self.layoutFfmpegPreprocessing.addWidget(self.comboboxFfmpegCurvePresets, 2, 1, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.comboboxFfmpegCurvePresets, 2, 1, 1, 1
+        )
         self.labelFlipVideo = QtWidgets.QLabel(self.groupBox)
-        self.labelFlipVideo.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.labelFlipVideo.setAlignment(
+            QtCore.Qt.AlignRight
+            | QtCore.Qt.AlignTrailing
+            | QtCore.Qt.AlignVCenter
+        )
         self.labelFlipVideo.setObjectName("labelFlipVideo")
-        self.layoutFfmpegPreprocessing.addWidget(self.labelFlipVideo, 1, 0, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.labelFlipVideo, 1, 0, 1, 1
+        )
         self.comboboxFfmpegFlipVideo = QtWidgets.QComboBox(self.groupBox)
         self.comboboxFfmpegFlipVideo.setObjectName("comboboxFfmpegFlipVideo")
         self.comboboxFfmpegFlipVideo.addItem("")
         self.comboboxFfmpegFlipVideo.addItem("")
         self.comboboxFfmpegFlipVideo.addItem("")
-        self.layoutFfmpegPreprocessing.addWidget(self.comboboxFfmpegFlipVideo, 1, 1, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.comboboxFfmpegFlipVideo, 1, 1, 1, 1
+        )
         self.checkboxStripAudio = QtWidgets.QCheckBox(self.groupBox)
         self.checkboxStripAudio.setChecked(True)
         self.checkboxStripAudio.setObjectName("checkboxStripAudio")
-        self.layoutFfmpegPreprocessing.addWidget(self.checkboxStripAudio, 0, 2, 1, 1)
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.checkboxStripAudio, 0, 2, 1, 1
+        )
         self.checkboxFfmpegNormalizeLuma = QtWidgets.QCheckBox(self.groupBox)
-        self.checkboxFfmpegNormalizeLuma.setObjectName("checkboxFfmpegNormalizeLuma")
-        self.layoutFfmpegPreprocessing.addWidget(self.checkboxFfmpegNormalizeLuma, 1, 2, 1, 1)
+        self.checkboxFfmpegNormalizeLuma.setObjectName(
+            "checkboxFfmpegNormalizeLuma"
+        )
+        self.layoutFfmpegPreprocessing.addWidget(
+            self.checkboxFfmpegNormalizeLuma, 1, 2, 1, 1
+        )
         self.gridLayout_6.addLayout(self.layoutFfmpegPreprocessing, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox)
         self.layoutClipCreationControls = QtWidgets.QHBoxLayout()
-        self.layoutClipCreationControls.setObjectName("layoutClipCreationControls")
-        self.buttonCreateVideoClip = QtWidgets.QPushButton(self.groupboxClipCreationControls)
+        self.layoutClipCreationControls.setObjectName(
+            "layoutClipCreationControls"
+        )
+        self.buttonCreateVideoClip = QtWidgets.QPushButton(
+            self.groupboxClipCreationControls
+        )
         self.buttonCreateVideoClip.setObjectName("buttonCreateVideoClip")
         self.layoutClipCreationControls.addWidget(self.buttonCreateVideoClip)
         self.verticalLayout.addLayout(self.layoutClipCreationControls)
         self.layoutVideoControls.addWidget(self.groupboxClipCreationControls)
         self.layoutVideoPlayerControls = QtWidgets.QHBoxLayout()
-        self.layoutVideoPlayerControls.setObjectName("layoutVideoPlayerControls")
+        self.layoutVideoPlayerControls.setObjectName(
+            "layoutVideoPlayerControls"
+        )
         self.buttonPlay = QtWidgets.QPushButton(self.tabVideoPreProcessing)
         self.buttonPlay.setText("")
         icon = QtGui.QIcon.fromTheme("play")
         self.buttonPlay.setIcon(icon)
         self.buttonPlay.setObjectName("buttonPlay")
         self.layoutVideoPlayerControls.addWidget(self.buttonPlay)
-        self.labelVideoPlayheadTime = QtWidgets.QLabel(self.tabVideoPreProcessing)
+        self.labelVideoPlayheadTime = QtWidgets.QLabel(
+            self.tabVideoPreProcessing
+        )
         self.labelVideoPlayheadTime.setObjectName("labelVideoPlayheadTime")
         self.layoutVideoPlayerControls.addWidget(self.labelVideoPlayheadTime)
-        self.sliderVideoPlayHead = QtWidgets.QSlider(self.tabVideoPreProcessing)
+        self.sliderVideoPlayHead = QtWidgets.QSlider(
+            self.tabVideoPreProcessing
+        )
         self.sliderVideoPlayHead.setMaximum(300)
         self.sliderVideoPlayHead.setOrientation(QtCore.Qt.Horizontal)
         self.sliderVideoPlayHead.setObjectName("sliderVideoPlayHead")
@@ -246,7 +345,9 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addLayout(self.layoutVideoControls, 1, 0, 1, 2)
         self.layoutFrameExtraction = QtWidgets.QVBoxLayout()
         self.layoutFrameExtraction.setObjectName("layoutFrameExtraction")
-        self.groupboxFrameExtraction = QtWidgets.QGroupBox(self.tabVideoPreProcessing)
+        self.groupboxFrameExtraction = QtWidgets.QGroupBox(
+            self.tabVideoPreProcessing
+        )
         self.groupboxFrameExtraction.setObjectName("groupboxFrameExtraction")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.groupboxFrameExtraction)
         self.gridLayout_5.setObjectName("gridLayout_5")
@@ -257,165 +358,292 @@ class Ui_MainWindow(object):
         self.gridLayout_5.addWidget(self.line, 1, 0, 1, 1)
         self.formLayout_2 = QtWidgets.QFormLayout()
         self.formLayout_2.setObjectName("formLayout_2")
-        self.labelVideoFramerateText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.labelVideoFramerateText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoFramerateText.setObjectName("labelVideoFramerateText")
-        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelVideoFramerateText)
-        self.labelVideoFramerateValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelVideoFramerateText
+        )
+        self.labelVideoFramerateValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoFramerateValue.setMinimumSize(QtCore.QSize(70, 0))
-        self.labelVideoFramerateValue.setMaximumSize(QtCore.QSize(115, 16777215))
+        self.labelVideoFramerateValue.setMaximumSize(
+            QtCore.QSize(115, 16777215)
+        )
         self.labelVideoFramerateValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelVideoFramerateValue.setObjectName("labelVideoFramerateValue")
-        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.labelVideoFramerateValue)
-        self.labelVideoTimestepText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.labelVideoFramerateValue
+        )
+        self.labelVideoTimestepText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoTimestepText.setObjectName("labelVideoTimestepText")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelVideoTimestepText)
-        self.labelVideoTimestepValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelVideoTimestepText
+        )
+        self.labelVideoTimestepValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoTimestepValue.setMinimumSize(QtCore.QSize(70, 0))
-        self.labelVideoTimestepValue.setMaximumSize(QtCore.QSize(115, 16777215))
+        self.labelVideoTimestepValue.setMaximumSize(
+            QtCore.QSize(115, 16777215)
+        )
         self.labelVideoTimestepValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelVideoTimestepValue.setObjectName("labelVideoTimestepValue")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.labelVideoTimestepValue)
-        self.labelNumOfFramesText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.labelVideoTimestepValue
+        )
+        self.labelNumOfFramesText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNumOfFramesText.setObjectName("labelNumOfFramesText")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelNumOfFramesText)
-        self.labelNumOfFramesValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelNumOfFramesText
+        )
+        self.labelNumOfFramesValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNumOfFramesValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelNumOfFramesValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelNumOfFramesValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelNumOfFramesValue.setObjectName("labelNumOfFramesValue")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.labelNumOfFramesValue)
-        self.labelVideoResolutionText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.labelNumOfFramesValue
+        )
+        self.labelVideoResolutionText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoResolutionText.setObjectName("labelVideoResolutionText")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelVideoResolutionText)
-        self.labelVideoResolutionValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_2.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelVideoResolutionText
+        )
+        self.labelVideoResolutionValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelVideoResolutionValue.setMinimumSize(QtCore.QSize(70, 0))
-        self.labelVideoResolutionValue.setMaximumSize(QtCore.QSize(115, 16777215))
+        self.labelVideoResolutionValue.setMaximumSize(
+            QtCore.QSize(115, 16777215)
+        )
         self.labelVideoResolutionValue.setAlignment(QtCore.Qt.AlignCenter)
-        self.labelVideoResolutionValue.setObjectName("labelVideoResolutionValue")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.labelVideoResolutionValue)
+        self.labelVideoResolutionValue.setObjectName(
+            "labelVideoResolutionValue"
+        )
+        self.formLayout_2.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.labelVideoResolutionValue
+        )
         self.gridLayout_5.addLayout(self.formLayout_2, 0, 0, 1, 1)
-        self.buttonExtractVideoFrames = QtWidgets.QPushButton(self.groupboxFrameExtraction)
+        self.buttonExtractVideoFrames = QtWidgets.QPushButton(
+            self.groupboxFrameExtraction
+        )
         self.buttonExtractVideoFrames.setObjectName("buttonExtractVideoFrames")
         self.gridLayout_5.addWidget(self.buttonExtractVideoFrames, 3, 0, 1, 1)
         self.formLayout_3 = QtWidgets.QFormLayout()
         self.formLayout_3.setObjectName("formLayout_3")
-        self.labelFrameStepText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.labelFrameStepText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelFrameStepText.setObjectName("labelFrameStepText")
-        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelFrameStepText)
-        self.lineeditFrameStepValue = QtWidgets.QLineEdit(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelFrameStepText
+        )
+        self.lineeditFrameStepValue = QtWidgets.QLineEdit(
+            self.groupboxFrameExtraction
+        )
         self.lineeditFrameStepValue.setMinimumSize(QtCore.QSize(70, 0))
         self.lineeditFrameStepValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.lineeditFrameStepValue.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditFrameStepValue.setObjectName("lineeditFrameStepValue")
-        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.lineeditFrameStepValue)
-        self.labelStartFrameText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.lineeditFrameStepValue
+        )
+        self.labelStartFrameText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelStartFrameText.setObjectName("labelStartFrameText")
-        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelStartFrameText)
-        self.labelStartFrameValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelStartFrameText
+        )
+        self.labelStartFrameValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelStartFrameValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelStartFrameValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelStartFrameValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelStartFrameValue.setObjectName("labelStartFrameValue")
-        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.labelStartFrameValue)
+        self.formLayout_3.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.labelStartFrameValue
+        )
         self.labelEndFrameText = QtWidgets.QLabel(self.groupboxFrameExtraction)
         self.labelEndFrameText.setObjectName("labelEndFrameText")
-        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelEndFrameText)
-        self.labelEndFrameValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelEndFrameText
+        )
+        self.labelEndFrameValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelEndFrameValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelEndFrameValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelEndFrameValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelEndFrameValue.setObjectName("labelEndFrameValue")
-        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.labelEndFrameValue)
-        self.labelNewFrameRateText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.labelEndFrameValue
+        )
+        self.labelNewFrameRateText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewFrameRateText.setObjectName("labelNewFrameRateText")
-        self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelNewFrameRateText)
-        self.labelNewFrameRateValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelNewFrameRateText
+        )
+        self.labelNewFrameRateValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewFrameRateValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelNewFrameRateValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelNewFrameRateValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelNewFrameRateValue.setObjectName("labelNewFrameRateValue")
-        self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.labelNewFrameRateValue)
-        self.labelNewTimestepText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.labelNewFrameRateValue
+        )
+        self.labelNewTimestepText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewTimestepText.setObjectName("labelNewTimestepText")
-        self.formLayout_3.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.labelNewTimestepText)
-        self.labelNewTimestepValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            4, QtWidgets.QFormLayout.LabelRole, self.labelNewTimestepText
+        )
+        self.labelNewTimestepValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewTimestepValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelNewTimestepValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelNewTimestepValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelNewTimestepValue.setObjectName("labelNewTimestepValue")
-        self.formLayout_3.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.labelNewTimestepValue)
-        self.labelNewNumFramesText = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            4, QtWidgets.QFormLayout.FieldRole, self.labelNewTimestepValue
+        )
+        self.labelNewNumFramesText = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewNumFramesText.setObjectName("labelNewNumFramesText")
-        self.formLayout_3.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.labelNewNumFramesText)
-        self.labelNewNumFramesValue = QtWidgets.QLabel(self.groupboxFrameExtraction)
+        self.formLayout_3.setWidget(
+            5, QtWidgets.QFormLayout.LabelRole, self.labelNewNumFramesText
+        )
+        self.labelNewNumFramesValue = QtWidgets.QLabel(
+            self.groupboxFrameExtraction
+        )
         self.labelNewNumFramesValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelNewNumFramesValue.setObjectName("labelNewNumFramesValue")
-        self.formLayout_3.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.labelNewNumFramesValue)
+        self.formLayout_3.setWidget(
+            5, QtWidgets.QFormLayout.FieldRole, self.labelNewNumFramesValue
+        )
         self.gridLayout_5.addLayout(self.formLayout_3, 2, 0, 1, 1)
         self.layoutFrameExtraction.addWidget(self.groupboxFrameExtraction)
         self.gridLayout_2.addLayout(self.layoutFrameExtraction, 1, 3, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.groupboxFramePreparation = QtWidgets.QGroupBox(self.tabVideoPreProcessing)
+        self.groupboxFramePreparation = QtWidgets.QGroupBox(
+            self.tabVideoPreProcessing
+        )
         self.groupboxFramePreparation.setObjectName("groupboxFramePreparation")
-        self.gridLayout_8 = QtWidgets.QGridLayout(self.groupboxFramePreparation)
+        self.gridLayout_8 = QtWidgets.QGridLayout(
+            self.groupboxFramePreparation
+        )
         self.gridLayout_8.setObjectName("gridLayout_8")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.checkboxFfmpeg2PassStabilization = QtWidgets.QCheckBox(self.groupboxFramePreparation)
-        self.checkboxFfmpeg2PassStabilization.setObjectName("checkboxFfmpeg2PassStabilization")
+        self.checkboxFfmpeg2PassStabilization = QtWidgets.QCheckBox(
+            self.groupboxFramePreparation
+        )
+        self.checkboxFfmpeg2PassStabilization.setObjectName(
+            "checkboxFfmpeg2PassStabilization"
+        )
         self.verticalLayout_2.addWidget(self.checkboxFfmpeg2PassStabilization)
-        self.checkboxCorrectRadialDistortion = QtWidgets.QCheckBox(self.groupboxFramePreparation)
-        self.checkboxCorrectRadialDistortion.setObjectName("checkboxCorrectRadialDistortion")
+        self.checkboxCorrectRadialDistortion = QtWidgets.QCheckBox(
+            self.groupboxFramePreparation
+        )
+        self.checkboxCorrectRadialDistortion.setObjectName(
+            "checkboxCorrectRadialDistortion"
+        )
         self.verticalLayout_2.addWidget(self.checkboxCorrectRadialDistortion)
         self.formLayout = QtWidgets.QFormLayout()
         self.formLayout.setObjectName("formLayout")
         self.labelLensCxText = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensCxText.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensCxText.setObjectName("labelLensCxText")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelLensCxText)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelLensCxText
+        )
         self.labelLensCxValue = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensCxValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelLensCxValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelLensCxValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelLensCxValue.setObjectName("labelLensCxValue")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.labelLensCxValue)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.labelLensCxValue
+        )
         self.labelLensCyText = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensCyText.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensCyText.setObjectName("labelLensCyText")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelLensCyText)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelLensCyText
+        )
         self.labelLensCyValue = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensCyValue.setMinimumSize(QtCore.QSize(70, 0))
         self.labelLensCyValue.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelLensCyValue.setAlignment(QtCore.Qt.AlignCenter)
         self.labelLensCyValue.setObjectName("labelLensCyValue")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.labelLensCyValue)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.labelLensCyValue
+        )
         self.labelLensK1Text = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensK1Text.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensK1Text.setObjectName("labelLensK1Text")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelLensK1Text)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelLensK1Text
+        )
         self.labelLensK1Value = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensK1Value.setMinimumSize(QtCore.QSize(70, 0))
         self.labelLensK1Value.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelLensK1Value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelLensK1Value.setObjectName("labelLensK1Value")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.labelLensK1Value)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.labelLensK1Value
+        )
         self.labelLensK2Value = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensK2Value.setMinimumSize(QtCore.QSize(70, 0))
         self.labelLensK2Value.setMaximumSize(QtCore.QSize(115, 16777215))
         self.labelLensK2Value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelLensK2Value.setObjectName("labelLensK2Value")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.labelLensK2Value)
+        self.formLayout.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.labelLensK2Value
+        )
         self.labelLensK2Text = QtWidgets.QLabel(self.groupboxFramePreparation)
         self.labelLensK2Text.setMinimumSize(QtCore.QSize(50, 0))
         self.labelLensK2Text.setObjectName("labelLensK2Text")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelLensK2Text)
+        self.formLayout.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelLensK2Text
+        )
         self.verticalLayout_2.addLayout(self.formLayout)
         self.gridLayout_8.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
-        self.buttonLoadLensCharacteristics = QtWidgets.QPushButton(self.groupboxFramePreparation)
-        self.buttonLoadLensCharacteristics.setObjectName("buttonLoadLensCharacteristics")
-        self.gridLayout_8.addWidget(self.buttonLoadLensCharacteristics, 1, 0, 1, 1)
-        spacerItem7 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.buttonLoadLensCharacteristics = QtWidgets.QPushButton(
+            self.groupboxFramePreparation
+        )
+        self.buttonLoadLensCharacteristics.setObjectName(
+            "buttonLoadLensCharacteristics"
+        )
+        self.gridLayout_8.addWidget(
+            self.buttonLoadLensCharacteristics, 1, 0, 1, 1
+        )
+        spacerItem7 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_8.addItem(spacerItem7, 2, 0, 1, 1)
         self.horizontalLayout.addWidget(self.groupboxFramePreparation)
         self.gridLayout_2.addLayout(self.horizontalLayout, 1, 2, 1, 1)
@@ -428,15 +656,31 @@ class Ui_MainWindow(object):
         self.gridLayout_4 = QtWidgets.QGridLayout(self.tabImageFrameProcessing)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.layoutImageFrameProcessingContainer = QtWidgets.QHBoxLayout()
-        self.layoutImageFrameProcessingContainer.setObjectName("layoutImageFrameProcessingContainer")
+        self.layoutImageFrameProcessingContainer.setObjectName(
+            "layoutImageFrameProcessingContainer"
+        )
         self.layoutImageToolsLeftPanel = QtWidgets.QVBoxLayout()
-        self.layoutImageToolsLeftPanel.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
-        self.layoutImageToolsLeftPanel.setObjectName("layoutImageToolsLeftPanel")
-        self.treeviewProjectStructureImageryProcessingTab = QtWidgets.QTreeView(self.tabImageFrameProcessing)
-        self.treeviewProjectStructureImageryProcessingTab.setMinimumSize(QtCore.QSize(199, 0))
-        self.treeviewProjectStructureImageryProcessingTab.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.treeviewProjectStructureImageryProcessingTab.setObjectName("treeviewProjectStructureImageryProcessingTab")
-        self.layoutImageToolsLeftPanel.addWidget(self.treeviewProjectStructureImageryProcessingTab)
+        self.layoutImageToolsLeftPanel.setSizeConstraint(
+            QtWidgets.QLayout.SetMaximumSize
+        )
+        self.layoutImageToolsLeftPanel.setObjectName(
+            "layoutImageToolsLeftPanel"
+        )
+        self.treeviewProjectStructureImageryProcessingTab = (
+            QtWidgets.QTreeView(self.tabImageFrameProcessing)
+        )
+        self.treeviewProjectStructureImageryProcessingTab.setMinimumSize(
+            QtCore.QSize(199, 0)
+        )
+        self.treeviewProjectStructureImageryProcessingTab.setMaximumSize(
+            QtCore.QSize(200, 16777215)
+        )
+        self.treeviewProjectStructureImageryProcessingTab.setObjectName(
+            "treeviewProjectStructureImageryProcessingTab"
+        )
+        self.layoutImageToolsLeftPanel.addWidget(
+            self.treeviewProjectStructureImageryProcessingTab
+        )
         self.groupboxTools = QtWidgets.QGroupBox(self.tabImageFrameProcessing)
         self.groupboxTools.setMinimumSize(QtCore.QSize(200, 0))
         self.groupboxTools.setMaximumSize(QtCore.QSize(200, 16777215))
@@ -447,25 +691,45 @@ class Ui_MainWindow(object):
         self.labelFrameFiltering.setObjectName("labelFrameFiltering")
         self.gridLayout_7.addWidget(self.labelFrameFiltering, 0, 0, 1, 1)
         self.layoutImagebrowserToolButtons = QtWidgets.QGridLayout()
-        self.layoutImagebrowserToolButtons.setObjectName("layoutImagebrowserToolButtons")
+        self.layoutImagebrowserToolButtons.setObjectName(
+            "layoutImagebrowserToolButtons"
+        )
         self.toolbuttonNextImage = QtWidgets.QToolButton(self.groupboxTools)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/play-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap("icons/play-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonNextImage.setIcon(icon)
         self.toolbuttonNextImage.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonNextImage.setObjectName("toolbuttonNextImage")
-        self.layoutImagebrowserToolButtons.addWidget(self.toolbuttonNextImage, 1, 3, 1, 1)
-        self.toolbuttonPreviousImage = QtWidgets.QToolButton(self.groupboxTools)
+        self.layoutImagebrowserToolButtons.addWidget(
+            self.toolbuttonNextImage, 1, 3, 1, 1
+        )
+        self.toolbuttonPreviousImage = QtWidgets.QToolButton(
+            self.groupboxTools
+        )
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/play-backwards-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap("icons/play-backwards-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonPreviousImage.setIcon(icon1)
         self.toolbuttonPreviousImage.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonPreviousImage.setObjectName("toolbuttonPreviousImage")
-        self.layoutImagebrowserToolButtons.addWidget(self.toolbuttonPreviousImage, 1, 1, 1, 1)
+        self.layoutImagebrowserToolButtons.addWidget(
+            self.toolbuttonPreviousImage, 1, 1, 1, 1
+        )
         self.labelFrameControl = QtWidgets.QLabel(self.groupboxTools)
         self.labelFrameControl.setObjectName("labelFrameControl")
-        self.layoutImagebrowserToolButtons.addWidget(self.labelFrameControl, 0, 1, 1, 3)
-        self.gridLayout_7.addLayout(self.layoutImagebrowserToolButtons, 4, 0, 1, 1)
+        self.layoutImagebrowserToolButtons.addWidget(
+            self.labelFrameControl, 0, 1, 1, 3
+        )
+        self.gridLayout_7.addLayout(
+            self.layoutImagebrowserToolButtons, 4, 0, 1, 1
+        )
         self.buttonApplyFileFilter = QtWidgets.QPushButton(self.groupboxTools)
         self.buttonApplyFileFilter.setObjectName("buttonApplyFileFilter")
         self.gridLayout_7.addWidget(self.buttonApplyFileFilter, 2, 0, 1, 1)
@@ -473,7 +737,9 @@ class Ui_MainWindow(object):
         self.lineeditFrameFiltering.setObjectName("lineeditFrameFiltering")
         self.gridLayout_7.addWidget(self.lineeditFrameFiltering, 1, 0, 1, 1)
         self.layoutImageToolsLeftPanel.addWidget(self.groupboxTools)
-        self.groupboxProcessing = QtWidgets.QGroupBox(self.tabImageFrameProcessing)
+        self.groupboxProcessing = QtWidgets.QGroupBox(
+            self.tabImageFrameProcessing
+        )
         self.groupboxProcessing.setMinimumSize(QtCore.QSize(200, 0))
         self.groupboxProcessing.setMaximumSize(QtCore.QSize(200, 16777215))
         self.groupboxProcessing.setObjectName("groupboxProcessing")
@@ -483,42 +749,80 @@ class Ui_MainWindow(object):
         self.groupboxContrast.setObjectName("groupboxContrast")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.groupboxContrast)
         self.gridLayout_9.setObjectName("gridLayout_9")
-        self.buttonApplyToThisFrame = QtWidgets.QPushButton(self.groupboxContrast)
+        self.buttonApplyToThisFrame = QtWidgets.QPushButton(
+            self.groupboxContrast
+        )
         self.buttonApplyToThisFrame.setObjectName("buttonApplyToThisFrame")
         self.gridLayout_9.addWidget(self.buttonApplyToThisFrame, 1, 0, 1, 1)
         self.layoutProcessingTools = QtWidgets.QGridLayout()
         self.layoutProcessingTools.setObjectName("layoutProcessingTools")
-        self.lineeditClaheHorzTileSize = QtWidgets.QLineEdit(self.groupboxContrast)
-        self.lineeditClaheHorzTileSize.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.lineeditClaheHorzTileSize = QtWidgets.QLineEdit(
+            self.groupboxContrast
+        )
+        self.lineeditClaheHorzTileSize.setMaximumSize(
+            QtCore.QSize(40, 16777215)
+        )
         self.lineeditClaheHorzTileSize.setAlignment(QtCore.Qt.AlignCenter)
-        self.lineeditClaheHorzTileSize.setObjectName("lineeditClaheHorzTileSize")
-        self.layoutProcessingTools.addWidget(self.lineeditClaheHorzTileSize, 1, 1, 1, 1)
-        self.lineeditAutoContrastPercentClip = QtWidgets.QLineEdit(self.groupboxContrast)
-        self.lineeditAutoContrastPercentClip.setMaximumSize(QtCore.QSize(40, 16777215))
-        self.lineeditAutoContrastPercentClip.setAlignment(QtCore.Qt.AlignCenter)
-        self.lineeditAutoContrastPercentClip.setObjectName("lineeditAutoContrastPercentClip")
-        self.layoutProcessingTools.addWidget(self.lineeditAutoContrastPercentClip, 4, 1, 1, 1)
+        self.lineeditClaheHorzTileSize.setObjectName(
+            "lineeditClaheHorzTileSize"
+        )
+        self.layoutProcessingTools.addWidget(
+            self.lineeditClaheHorzTileSize, 1, 1, 1, 1
+        )
+        self.lineeditAutoContrastPercentClip = QtWidgets.QLineEdit(
+            self.groupboxContrast
+        )
+        self.lineeditAutoContrastPercentClip.setMaximumSize(
+            QtCore.QSize(40, 16777215)
+        )
+        self.lineeditAutoContrastPercentClip.setAlignment(
+            QtCore.Qt.AlignCenter
+        )
+        self.lineeditAutoContrastPercentClip.setObjectName(
+            "lineeditAutoContrastPercentClip"
+        )
+        self.layoutProcessingTools.addWidget(
+            self.lineeditAutoContrastPercentClip, 4, 1, 1, 1
+        )
         self.labelPercent = QtWidgets.QLabel(self.groupboxContrast)
         self.labelPercent.setObjectName("labelPercent")
         self.layoutProcessingTools.addWidget(self.labelPercent, 4, 2, 1, 1)
         self.checkboxApplyClahe = QtWidgets.QCheckBox(self.groupboxContrast)
         self.checkboxApplyClahe.setObjectName("checkboxApplyClahe")
-        self.layoutProcessingTools.addWidget(self.checkboxApplyClahe, 0, 0, 1, 3)
-        self.lineeditClaheVertTileSize = QtWidgets.QLineEdit(self.groupboxContrast)
-        self.lineeditClaheVertTileSize.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.layoutProcessingTools.addWidget(
+            self.checkboxApplyClahe, 0, 0, 1, 3
+        )
+        self.lineeditClaheVertTileSize = QtWidgets.QLineEdit(
+            self.groupboxContrast
+        )
+        self.lineeditClaheVertTileSize.setMaximumSize(
+            QtCore.QSize(40, 16777215)
+        )
         self.lineeditClaheVertTileSize.setAlignment(QtCore.Qt.AlignCenter)
-        self.lineeditClaheVertTileSize.setObjectName("lineeditClaheVertTileSize")
-        self.layoutProcessingTools.addWidget(self.lineeditClaheVertTileSize, 1, 2, 1, 1)
+        self.lineeditClaheVertTileSize.setObjectName(
+            "lineeditClaheVertTileSize"
+        )
+        self.layoutProcessingTools.addWidget(
+            self.lineeditClaheVertTileSize, 1, 2, 1, 1
+        )
         self.checkboxAutoContrast = QtWidgets.QCheckBox(self.groupboxContrast)
         self.checkboxAutoContrast.setObjectName("checkboxAutoContrast")
-        self.layoutProcessingTools.addWidget(self.checkboxAutoContrast, 2, 0, 1, 3)
-        self.lineeditClaheClipLimit = QtWidgets.QLineEdit(self.groupboxContrast)
+        self.layoutProcessingTools.addWidget(
+            self.checkboxAutoContrast, 2, 0, 1, 3
+        )
+        self.lineeditClaheClipLimit = QtWidgets.QLineEdit(
+            self.groupboxContrast
+        )
         self.lineeditClaheClipLimit.setMaximumSize(QtCore.QSize(40, 16777215))
         self.lineeditClaheClipLimit.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditClaheClipLimit.setObjectName("lineeditClaheClipLimit")
-        self.layoutProcessingTools.addWidget(self.lineeditClaheClipLimit, 1, 0, 1, 1)
+        self.layoutProcessingTools.addWidget(
+            self.lineeditClaheClipLimit, 1, 0, 1, 1
+        )
         self.gridLayout_9.addLayout(self.layoutProcessingTools, 0, 0, 1, 1)
-        self.buttonApplyToAllFrames = QtWidgets.QPushButton(self.groupboxContrast)
+        self.buttonApplyToAllFrames = QtWidgets.QPushButton(
+            self.groupboxContrast
+        )
         self.buttonApplyToAllFrames.setObjectName("buttonApplyToAllFrames")
         self.gridLayout_9.addWidget(self.buttonApplyToAllFrames, 2, 0, 1, 1)
         self.gridLayout_10.addWidget(self.groupboxContrast, 0, 0, 1, 1)
@@ -526,13 +830,19 @@ class Ui_MainWindow(object):
         self.layoutImageToolsLeftPanel.setStretch(0, 4)
         self.layoutImageToolsLeftPanel.setStretch(1, 1)
         self.layoutImageToolsLeftPanel.setStretch(2, 1)
-        self.layoutImageFrameProcessingContainer.addLayout(self.layoutImageToolsLeftPanel)
+        self.layoutImageFrameProcessingContainer.addLayout(
+            self.layoutImageToolsLeftPanel
+        )
         self.layoutImageBrowser = QtWidgets.QGridLayout()
         self.layoutImageBrowser.setObjectName("layoutImageBrowser")
-        self.layoutImageFrameProcessingContainer.addLayout(self.layoutImageBrowser)
+        self.layoutImageFrameProcessingContainer.addLayout(
+            self.layoutImageBrowser
+        )
         self.layoutImageFrameProcessingContainer.setStretch(0, 1)
         self.layoutImageFrameProcessingContainer.setStretch(1, 5)
-        self.gridLayout_4.addLayout(self.layoutImageFrameProcessingContainer, 0, 0, 1, 1)
+        self.gridLayout_4.addLayout(
+            self.layoutImageFrameProcessingContainer, 0, 0, 1, 1
+        )
         self.tabWidget.addTab(self.tabImageFrameProcessing, "")
         self.tabOrthorectification = QtWidgets.QWidget()
         self.tabOrthorectification.setObjectName("tabOrthorectification")
@@ -542,16 +852,26 @@ class Ui_MainWindow(object):
         self.layoutOrthoImagePane.setObjectName("layoutOrthoImagePane")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.treeviewProjectStructureOrthorectificationTab = QtWidgets.QTreeView(self.tabOrthorectification)
-        self.treeviewProjectStructureOrthorectificationTab.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.treeviewProjectStructureOrthorectificationTab.setObjectName("treeviewProjectStructureOrthorectificationTab")
-        self.verticalLayout_3.addWidget(self.treeviewProjectStructureOrthorectificationTab)
+        self.treeviewProjectStructureOrthorectificationTab = (
+            QtWidgets.QTreeView(self.tabOrthorectification)
+        )
+        self.treeviewProjectStructureOrthorectificationTab.setMaximumSize(
+            QtCore.QSize(200, 16777215)
+        )
+        self.treeviewProjectStructureOrthorectificationTab.setObjectName(
+            "treeviewProjectStructureOrthorectificationTab"
+        )
+        self.verticalLayout_3.addWidget(
+            self.treeviewProjectStructureOrthorectificationTab
+        )
         self.layoutOrthoImagePane.addLayout(self.verticalLayout_3)
         self.layoutOrthoOriginalImage = QtWidgets.QGridLayout()
         self.layoutOrthoOriginalImage.setObjectName("layoutOrthoOriginalImage")
         self.layoutOrthoImagePane.addLayout(self.layoutOrthoOriginalImage)
         self.layoutOrthoRectifiedImage = QtWidgets.QGridLayout()
-        self.layoutOrthoRectifiedImage.setObjectName("layoutOrthoRectifiedImage")
+        self.layoutOrthoRectifiedImage.setObjectName(
+            "layoutOrthoRectifiedImage"
+        )
         self.layoutOrthoImagePane.addLayout(self.layoutOrthoRectifiedImage)
         self.layoutOrthoImagePane.setStretch(0, 2)
         self.layoutOrthoImagePane.setStretch(1, 5)
@@ -559,123 +879,266 @@ class Ui_MainWindow(object):
         self.gridLayout_13.addLayout(self.layoutOrthoImagePane, 0, 0, 1, 4)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.groupboxOrthoOrigImageTools = QtWidgets.QGroupBox(self.tabOrthorectification)
-        self.groupboxOrthoOrigImageTools.setObjectName("groupboxOrthoOrigImageTools")
-        self.gridLayout_14 = QtWidgets.QGridLayout(self.groupboxOrthoOrigImageTools)
+        self.groupboxOrthoOrigImageTools = QtWidgets.QGroupBox(
+            self.tabOrthorectification
+        )
+        self.groupboxOrthoOrigImageTools.setObjectName(
+            "groupboxOrthoOrigImageTools"
+        )
+        self.gridLayout_14 = QtWidgets.QGridLayout(
+            self.groupboxOrthoOrigImageTools
+        )
         self.gridLayout_14.setObjectName("gridLayout_14")
         self.layoutImagebrowserToolButtons_2 = QtWidgets.QGridLayout()
-        self.layoutImagebrowserToolButtons_2.setObjectName("layoutImagebrowserToolButtons_2")
-        self.toolbuttonOpenOrthoPointsTable = QtWidgets.QToolButton(self.groupboxOrthoOrigImageTools)
+        self.layoutImagebrowserToolButtons_2.setObjectName(
+            "layoutImagebrowserToolButtons_2"
+        )
+        self.toolbuttonOpenOrthoPointsTable = QtWidgets.QToolButton(
+            self.groupboxOrthoOrigImageTools
+        )
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("icons/table-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(
+            QtGui.QPixmap("icons/table-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonOpenOrthoPointsTable.setIcon(icon2)
         self.toolbuttonOpenOrthoPointsTable.setIconSize(QtCore.QSize(26, 26))
-        self.toolbuttonOpenOrthoPointsTable.setObjectName("toolbuttonOpenOrthoPointsTable")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.toolbuttonOpenOrthoPointsTable, 0, 1, 1, 1)
-        self.toolbuttonOrthoOrigImageDigitizePoint = QtWidgets.QToolButton(self.groupboxOrthoOrigImageTools)
+        self.toolbuttonOpenOrthoPointsTable.setObjectName(
+            "toolbuttonOpenOrthoPointsTable"
+        )
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.toolbuttonOpenOrthoPointsTable, 0, 1, 1, 1
+        )
+        self.toolbuttonOrthoOrigImageDigitizePoint = QtWidgets.QToolButton(
+            self.groupboxOrthoOrigImageTools
+        )
         self.toolbuttonOrthoOrigImageDigitizePoint.setStyleSheet("")
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("icons/crosshairs-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(
+            QtGui.QPixmap("icons/crosshairs-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonOrthoOrigImageDigitizePoint.setIcon(icon3)
-        self.toolbuttonOrthoOrigImageDigitizePoint.setIconSize(QtCore.QSize(26, 26))
-        self.toolbuttonOrthoOrigImageDigitizePoint.setObjectName("toolbuttonOrthoOrigImageDigitizePoint")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.toolbuttonOrthoOrigImageDigitizePoint, 1, 1, 1, 1)
-        self.toolbuttonAddOrthotableRow = QtWidgets.QToolButton(self.groupboxOrthoOrigImageTools)
+        self.toolbuttonOrthoOrigImageDigitizePoint.setIconSize(
+            QtCore.QSize(26, 26)
+        )
+        self.toolbuttonOrthoOrigImageDigitizePoint.setObjectName(
+            "toolbuttonOrthoOrigImageDigitizePoint"
+        )
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.toolbuttonOrthoOrigImageDigitizePoint, 1, 1, 1, 1
+        )
+        self.toolbuttonAddOrthotableRow = QtWidgets.QToolButton(
+            self.groupboxOrthoOrigImageTools
+        )
         self.toolbuttonAddOrthotableRow.setEnabled(False)
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("icons/square-plus-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(
+            QtGui.QPixmap("icons/square-plus-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonAddOrthotableRow.setIcon(icon4)
         self.toolbuttonAddOrthotableRow.setIconSize(QtCore.QSize(26, 26))
-        self.toolbuttonAddOrthotableRow.setObjectName("toolbuttonAddOrthotableRow")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.toolbuttonAddOrthotableRow, 2, 1, 1, 1)
-        self.toolbuttonSaveOrthoPointsTable = QtWidgets.QToolButton(self.groupboxOrthoOrigImageTools)
+        self.toolbuttonAddOrthotableRow.setObjectName(
+            "toolbuttonAddOrthotableRow"
+        )
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.toolbuttonAddOrthotableRow, 2, 1, 1, 1
+        )
+        self.toolbuttonSaveOrthoPointsTable = QtWidgets.QToolButton(
+            self.groupboxOrthoOrigImageTools
+        )
         self.toolbuttonSaveOrthoPointsTable.setText("")
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icons/floppy-disk-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(
+            QtGui.QPixmap("icons/floppy-disk-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonSaveOrthoPointsTable.setIcon(icon5)
         self.toolbuttonSaveOrthoPointsTable.setIconSize(QtCore.QSize(26, 26))
-        self.toolbuttonSaveOrthoPointsTable.setObjectName("toolbuttonSaveOrthoPointsTable")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.toolbuttonSaveOrthoPointsTable, 0, 3, 1, 1)
-        self.toolbuttonRemoveOrthotableRow = QtWidgets.QToolButton(self.groupboxOrthoOrigImageTools)
+        self.toolbuttonSaveOrthoPointsTable.setObjectName(
+            "toolbuttonSaveOrthoPointsTable"
+        )
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.toolbuttonSaveOrthoPointsTable, 0, 3, 1, 1
+        )
+        self.toolbuttonRemoveOrthotableRow = QtWidgets.QToolButton(
+            self.groupboxOrthoOrigImageTools
+        )
         self.toolbuttonRemoveOrthotableRow.setEnabled(False)
         icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icons/square-minus-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon6.addPixmap(
+            QtGui.QPixmap("icons/square-minus-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonRemoveOrthotableRow.setIcon(icon6)
         self.toolbuttonRemoveOrthotableRow.setIconSize(QtCore.QSize(26, 26))
-        self.toolbuttonRemoveOrthotableRow.setObjectName("toolbuttonRemoveOrthotableRow")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.toolbuttonRemoveOrthotableRow, 2, 3, 1, 1)
-        self.labelSelectRow = QtWidgets.QLabel(self.groupboxOrthoOrigImageTools)
+        self.toolbuttonRemoveOrthotableRow.setObjectName(
+            "toolbuttonRemoveOrthotableRow"
+        )
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.toolbuttonRemoveOrthotableRow, 2, 3, 1, 1
+        )
+        self.labelSelectRow = QtWidgets.QLabel(
+            self.groupboxOrthoOrigImageTools
+        )
         self.labelSelectRow.setObjectName("labelSelectRow")
-        self.layoutImagebrowserToolButtons_2.addWidget(self.labelSelectRow, 1, 3, 1, 1)
-        self.gridLayout_14.addLayout(self.layoutImagebrowserToolButtons_2, 0, 0, 1, 1)
-        spacerItem8 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.layoutImagebrowserToolButtons_2.addWidget(
+            self.labelSelectRow, 1, 3, 1, 1
+        )
+        self.gridLayout_14.addLayout(
+            self.layoutImagebrowserToolButtons_2, 0, 0, 1, 1
+        )
+        spacerItem8 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_14.addItem(spacerItem8, 1, 0, 1, 1)
         self.horizontalLayout_6.addWidget(self.groupboxOrthoOrigImageTools)
-        self.groupboxOrthoPointsTable = QtWidgets.QGroupBox(self.tabOrthorectification)
+        self.groupboxOrthoPointsTable = QtWidgets.QGroupBox(
+            self.tabOrthorectification
+        )
         self.groupboxOrthoPointsTable.setObjectName("groupboxOrthoPointsTable")
-        self.gridLayout_16 = QtWidgets.QGridLayout(self.groupboxOrthoPointsTable)
+        self.gridLayout_16 = QtWidgets.QGridLayout(
+            self.groupboxOrthoPointsTable
+        )
         self.gridLayout_16.setObjectName("gridLayout_16")
         self.layoutOrthoPointsTable = QtWidgets.QHBoxLayout()
         self.layoutOrthoPointsTable.setObjectName("layoutOrthoPointsTable")
         self.gridLayout_16.addLayout(self.layoutOrthoPointsTable, 0, 0, 1, 1)
         self.horizontalLayout_6.addWidget(self.groupboxOrthoPointsTable)
-        self.groupboxExportOrthoFrames = QtWidgets.QGroupBox(self.tabOrthorectification)
-        self.groupboxExportOrthoFrames.setObjectName("groupboxExportOrthoFrames")
-        self.gridLayout_17 = QtWidgets.QGridLayout(self.groupboxExportOrthoFrames)
+        self.groupboxExportOrthoFrames = QtWidgets.QGroupBox(
+            self.tabOrthorectification
+        )
+        self.groupboxExportOrthoFrames.setObjectName(
+            "groupboxExportOrthoFrames"
+        )
+        self.gridLayout_17 = QtWidgets.QGridLayout(
+            self.groupboxExportOrthoFrames
+        )
         self.gridLayout_17.setObjectName("gridLayout_17")
         self.layoutImagebrowserToolButtons_3 = QtWidgets.QGridLayout()
-        self.layoutImagebrowserToolButtons_3.setObjectName("layoutImagebrowserToolButtons_3")
-        self.doubleSpinBoxRectificationWaterSurfaceElevation = QtWidgets.QDoubleSpinBox(self.groupboxExportOrthoFrames)
-        self.doubleSpinBoxRectificationWaterSurfaceElevation.setAlignment(QtCore.Qt.AlignCenter)
+        self.layoutImagebrowserToolButtons_3.setObjectName(
+            "layoutImagebrowserToolButtons_3"
+        )
+        self.doubleSpinBoxRectificationWaterSurfaceElevation = (
+            QtWidgets.QDoubleSpinBox(self.groupboxExportOrthoFrames)
+        )
+        self.doubleSpinBoxRectificationWaterSurfaceElevation.setAlignment(
+            QtCore.Qt.AlignCenter
+        )
         self.doubleSpinBoxRectificationWaterSurfaceElevation.setDecimals(3)
-        self.doubleSpinBoxRectificationWaterSurfaceElevation.setMinimum(-99999.0)
-        self.doubleSpinBoxRectificationWaterSurfaceElevation.setMaximum(99999.99)
+        self.doubleSpinBoxRectificationWaterSurfaceElevation.setMinimum(
+            -99999.0
+        )
+        self.doubleSpinBoxRectificationWaterSurfaceElevation.setMaximum(
+            99999.99
+        )
         self.doubleSpinBoxRectificationWaterSurfaceElevation.setSingleStep(0.1)
-        self.doubleSpinBoxRectificationWaterSurfaceElevation.setObjectName("doubleSpinBoxRectificationWaterSurfaceElevation")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.doubleSpinBoxRectificationWaterSurfaceElevation, 0, 1, 1, 3)
+        self.doubleSpinBoxRectificationWaterSurfaceElevation.setObjectName(
+            "doubleSpinBoxRectificationWaterSurfaceElevation"
+        )
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.doubleSpinBoxRectificationWaterSurfaceElevation, 0, 1, 1, 3
+        )
         self.labelPixelGSD = QtWidgets.QLabel(self.groupboxExportOrthoFrames)
         self.labelPixelGSD.setObjectName("labelPixelGSD")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.labelPixelGSD, 1, 0, 1, 1)
-        self.buttonRectifyCurrentImage = QtWidgets.QPushButton(self.groupboxExportOrthoFrames)
-        self.buttonRectifyCurrentImage.setObjectName("buttonRectifyCurrentImage")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.buttonRectifyCurrentImage, 5, 0, 1, 4)
-        self.tablewidgetProjectiveMatrix = QtWidgets.QTableWidget(self.groupboxExportOrthoFrames)
-        self.tablewidgetProjectiveMatrix.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.tablewidgetProjectiveMatrix.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.tablewidgetProjectiveMatrix.setObjectName("tablewidgetProjectiveMatrix")
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.labelPixelGSD, 1, 0, 1, 1
+        )
+        self.buttonRectifyCurrentImage = QtWidgets.QPushButton(
+            self.groupboxExportOrthoFrames
+        )
+        self.buttonRectifyCurrentImage.setObjectName(
+            "buttonRectifyCurrentImage"
+        )
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.buttonRectifyCurrentImage, 5, 0, 1, 4
+        )
+        self.tablewidgetProjectiveMatrix = QtWidgets.QTableWidget(
+            self.groupboxExportOrthoFrames
+        )
+        self.tablewidgetProjectiveMatrix.setSizeAdjustPolicy(
+            QtWidgets.QAbstractScrollArea.AdjustToContents
+        )
+        self.tablewidgetProjectiveMatrix.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers
+        )
+        self.tablewidgetProjectiveMatrix.setObjectName(
+            "tablewidgetProjectiveMatrix"
+        )
         self.tablewidgetProjectiveMatrix.setColumnCount(0)
         self.tablewidgetProjectiveMatrix.setRowCount(0)
         self.tablewidgetProjectiveMatrix.horizontalHeader().setVisible(False)
         self.tablewidgetProjectiveMatrix.verticalHeader().setVisible(False)
-        self.layoutImagebrowserToolButtons_3.addWidget(self.tablewidgetProjectiveMatrix, 2, 0, 1, 4)
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.tablewidgetProjectiveMatrix, 2, 0, 1, 4
+        )
         self.labelPixelRMSE = QtWidgets.QLabel(self.groupboxExportOrthoFrames)
         self.labelPixelRMSE.setObjectName("labelPixelRMSE")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.labelPixelRMSE, 1, 2, 1, 1)
-        self.lineeditPixelRMSE = QtWidgets.QLineEdit(self.groupboxExportOrthoFrames)
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.labelPixelRMSE, 1, 2, 1, 1
+        )
+        self.lineeditPixelRMSE = QtWidgets.QLineEdit(
+            self.groupboxExportOrthoFrames
+        )
         self.lineeditPixelRMSE.setEnabled(False)
         self.lineeditPixelRMSE.setObjectName("lineeditPixelRMSE")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.lineeditPixelRMSE, 1, 3, 1, 1)
-        self.pushbuttonExportProjectedFrames = QtWidgets.QPushButton(self.groupboxExportOrthoFrames)
-        self.pushbuttonExportProjectedFrames.setObjectName("pushbuttonExportProjectedFrames")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.pushbuttonExportProjectedFrames, 6, 0, 1, 4)
-        self.lineeditPixelGSD = QtWidgets.QLineEdit(self.groupboxExportOrthoFrames)
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.lineeditPixelRMSE, 1, 3, 1, 1
+        )
+        self.pushbuttonExportProjectedFrames = QtWidgets.QPushButton(
+            self.groupboxExportOrthoFrames
+        )
+        self.pushbuttonExportProjectedFrames.setObjectName(
+            "pushbuttonExportProjectedFrames"
+        )
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.pushbuttonExportProjectedFrames, 6, 0, 1, 4
+        )
+        self.lineeditPixelGSD = QtWidgets.QLineEdit(
+            self.groupboxExportOrthoFrames
+        )
         self.lineeditPixelGSD.setEnabled(False)
         self.lineeditPixelGSD.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditPixelGSD.setObjectName("lineeditPixelGSD")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.lineeditPixelGSD, 1, 1, 1, 1)
-        self.labelWaterSurfaceElevation = QtWidgets.QLabel(self.groupboxExportOrthoFrames)
-        self.labelWaterSurfaceElevation.setObjectName("labelWaterSurfaceElevation")
-        self.layoutImagebrowserToolButtons_3.addWidget(self.labelWaterSurfaceElevation, 0, 0, 1, 1)
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.lineeditPixelGSD, 1, 1, 1, 1
+        )
+        self.labelWaterSurfaceElevation = QtWidgets.QLabel(
+            self.groupboxExportOrthoFrames
+        )
+        self.labelWaterSurfaceElevation.setObjectName(
+            "labelWaterSurfaceElevation"
+        )
+        self.layoutImagebrowserToolButtons_3.addWidget(
+            self.labelWaterSurfaceElevation, 0, 0, 1, 1
+        )
         self.horizontalLayout_14 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_14.setObjectName("horizontalLayout_14")
-        self.checkBoxOrthoFlipX = QtWidgets.QCheckBox(self.groupboxExportOrthoFrames)
+        self.checkBoxOrthoFlipX = QtWidgets.QCheckBox(
+            self.groupboxExportOrthoFrames
+        )
         self.checkBoxOrthoFlipX.setObjectName("checkBoxOrthoFlipX")
         self.horizontalLayout_14.addWidget(self.checkBoxOrthoFlipX)
-        self.checkBoxOrthoFlipY = QtWidgets.QCheckBox(self.groupboxExportOrthoFrames)
+        self.checkBoxOrthoFlipY = QtWidgets.QCheckBox(
+            self.groupboxExportOrthoFrames
+        )
         self.checkBoxOrthoFlipY.setObjectName("checkBoxOrthoFlipY")
         self.horizontalLayout_14.addWidget(self.checkBoxOrthoFlipY)
-        self.layoutImagebrowserToolButtons_3.addLayout(self.horizontalLayout_14, 4, 0, 1, 4)
-        self.gridLayout_17.addLayout(self.layoutImagebrowserToolButtons_3, 0, 0, 1, 1)
+        self.layoutImagebrowserToolButtons_3.addLayout(
+            self.horizontalLayout_14, 4, 0, 1, 4
+        )
+        self.gridLayout_17.addLayout(
+            self.layoutImagebrowserToolButtons_3, 0, 0, 1, 1
+        )
         self.horizontalLayout_6.addWidget(self.groupboxExportOrthoFrames)
         self.horizontalLayout_6.setStretch(0, 1)
         self.horizontalLayout_6.setStretch(1, 5)
@@ -686,7 +1149,9 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tabOrthorectification, "")
         self.tabCrossSectionGeometry = QtWidgets.QWidget()
         self.tabCrossSectionGeometry.setObjectName("tabCrossSectionGeometry")
-        self.gridLayout_30 = QtWidgets.QGridLayout(self.tabCrossSectionGeometry)
+        self.gridLayout_30 = QtWidgets.QGridLayout(
+            self.tabCrossSectionGeometry
+        )
         self.gridLayout_30.setObjectName("gridLayout_30")
         self.splitter_2 = QtWidgets.QSplitter(self.tabCrossSectionGeometry)
         self.splitter_2.setOrientation(QtCore.Qt.Horizontal)
@@ -721,11 +1186,15 @@ class Ui_MainWindow(object):
         self.gridLayout_24 = QtWidgets.QGridLayout()
         self.gridLayout_24.setObjectName("gridLayout_24")
         self.radioButtonRectifiedImage = QtWidgets.QRadioButton(self.page)
-        self.radioButtonRectifiedImage.setObjectName("radioButtonRectifiedImage")
+        self.radioButtonRectifiedImage.setObjectName(
+            "radioButtonRectifiedImage"
+        )
         self.buttongroupXsImageSource = QtWidgets.QButtonGroup(MainWindow)
         self.buttongroupXsImageSource.setObjectName("buttongroupXsImageSource")
         self.buttongroupXsImageSource.addButton(self.radioButtonRectifiedImage)
-        self.gridLayout_24.addWidget(self.radioButtonRectifiedImage, 6, 3, 1, 2)
+        self.gridLayout_24.addWidget(
+            self.radioButtonRectifiedImage, 6, 3, 1, 2
+        )
         self.radioButtonLeft = QtWidgets.QRadioButton(self.page)
         self.radioButtonLeft.setChecked(True)
         self.radioButtonLeft.setObjectName("radioButtonLeft")
@@ -734,7 +1203,11 @@ class Ui_MainWindow(object):
         self.buttongroupXsStartBank.addButton(self.radioButtonLeft)
         self.gridLayout_24.addWidget(self.radioButtonLeft, 4, 1, 1, 2)
         self.label_2 = QtWidgets.QLabel(self.page)
-        self.label_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_2.setAlignment(
+            QtCore.Qt.AlignLeading
+            | QtCore.Qt.AlignLeft
+            | QtCore.Qt.AlignVCenter
+        )
         self.label_2.setObjectName("label_2")
         self.gridLayout_24.addWidget(self.label_2, 5, 1, 1, 4)
         self.label_16 = QtWidgets.QLabel(self.page)
@@ -750,7 +1223,11 @@ class Ui_MainWindow(object):
         self.buttongroupXsImageSource.addButton(self.radioButtonOriginalImage)
         self.gridLayout_24.addWidget(self.radioButtonOriginalImage, 6, 1, 1, 2)
         self.label_3 = QtWidgets.QLabel(self.page)
-        self.label_3.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_3.setAlignment(
+            QtCore.Qt.AlignLeading
+            | QtCore.Qt.AlignLeft
+            | QtCore.Qt.AlignVCenter
+        )
         self.label_3.setObjectName("label_3")
         self.gridLayout_24.addWidget(self.label_3, 3, 1, 1, 4)
         self.toolbuttonDrawCrossSection = QtWidgets.QToolButton(self.page)
@@ -758,16 +1235,29 @@ class Ui_MainWindow(object):
         self.toolbuttonDrawCrossSection.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonDrawCrossSection.setCheckable(True)
         self.toolbuttonDrawCrossSection.setChecked(False)
-        self.toolbuttonDrawCrossSection.setObjectName("toolbuttonDrawCrossSection")
-        self.gridLayout_24.addWidget(self.toolbuttonDrawCrossSection, 0, 3, 1, 1)
+        self.toolbuttonDrawCrossSection.setObjectName(
+            "toolbuttonDrawCrossSection"
+        )
+        self.gridLayout_24.addWidget(
+            self.toolbuttonDrawCrossSection, 0, 3, 1, 1
+        )
         self.gridLayout_32.addLayout(self.gridLayout_24, 0, 0, 1, 1)
-        spacerItem9 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem9 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_32.addItem(spacerItem9, 8, 0, 1, 1)
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.labelCrossSectionMeasurementStage = QtWidgets.QLabel(self.page)
-        self.labelCrossSectionMeasurementStage.setObjectName("labelCrossSectionMeasurementStage")
-        self.horizontalLayout_11.addWidget(self.labelCrossSectionMeasurementStage)
+        self.labelCrossSectionMeasurementStage.setObjectName(
+            "labelCrossSectionMeasurementStage"
+        )
+        self.horizontalLayout_11.addWidget(
+            self.labelCrossSectionMeasurementStage
+        )
         self.char_stage_sb = QtWidgets.QDoubleSpinBox(self.page)
         self.char_stage_sb.setMinimum(-1000000000000.0)
         self.char_stage_sb.setMaximum(1000000000000.0)
@@ -784,37 +1274,61 @@ class Ui_MainWindow(object):
         self.label_22 = QtWidgets.QLabel(self.groupBox_3)
         self.label_22.setObjectName("label_22")
         self.gridLayout_41.addWidget(self.label_22, 1, 0, 1, 1)
-        self.sbRightBankRectifiedXCoordPixels = QtWidgets.QDoubleSpinBox(self.groupBox_3)
+        self.sbRightBankRectifiedXCoordPixels = QtWidgets.QDoubleSpinBox(
+            self.groupBox_3
+        )
         self.sbRightBankRectifiedXCoordPixels.setDecimals(3)
         self.sbRightBankRectifiedXCoordPixels.setMinimum(-99999.0)
         self.sbRightBankRectifiedXCoordPixels.setMaximum(99999.0)
         self.sbRightBankRectifiedXCoordPixels.setSingleStep(0.1)
-        self.sbRightBankRectifiedXCoordPixels.setObjectName("sbRightBankRectifiedXCoordPixels")
-        self.gridLayout_41.addWidget(self.sbRightBankRectifiedXCoordPixels, 3, 1, 1, 1)
+        self.sbRightBankRectifiedXCoordPixels.setObjectName(
+            "sbRightBankRectifiedXCoordPixels"
+        )
+        self.gridLayout_41.addWidget(
+            self.sbRightBankRectifiedXCoordPixels, 3, 1, 1, 1
+        )
         self.label_23 = QtWidgets.QLabel(self.groupBox_3)
         self.label_23.setObjectName("label_23")
         self.gridLayout_41.addWidget(self.label_23, 3, 0, 1, 1)
-        self.sbLeftBankYRectifiedCoordPixels = QtWidgets.QDoubleSpinBox(self.groupBox_3)
+        self.sbLeftBankYRectifiedCoordPixels = QtWidgets.QDoubleSpinBox(
+            self.groupBox_3
+        )
         self.sbLeftBankYRectifiedCoordPixels.setDecimals(3)
         self.sbLeftBankYRectifiedCoordPixels.setMinimum(-99999.0)
         self.sbLeftBankYRectifiedCoordPixels.setMaximum(99999.0)
         self.sbLeftBankYRectifiedCoordPixels.setSingleStep(0.1)
-        self.sbLeftBankYRectifiedCoordPixels.setObjectName("sbLeftBankYRectifiedCoordPixels")
-        self.gridLayout_41.addWidget(self.sbLeftBankYRectifiedCoordPixels, 1, 2, 1, 1)
-        self.sbLeftBankXRectifiedCoordPixels = QtWidgets.QDoubleSpinBox(self.groupBox_3)
+        self.sbLeftBankYRectifiedCoordPixels.setObjectName(
+            "sbLeftBankYRectifiedCoordPixels"
+        )
+        self.gridLayout_41.addWidget(
+            self.sbLeftBankYRectifiedCoordPixels, 1, 2, 1, 1
+        )
+        self.sbLeftBankXRectifiedCoordPixels = QtWidgets.QDoubleSpinBox(
+            self.groupBox_3
+        )
         self.sbLeftBankXRectifiedCoordPixels.setDecimals(3)
         self.sbLeftBankXRectifiedCoordPixels.setMinimum(-99999.0)
         self.sbLeftBankXRectifiedCoordPixels.setMaximum(99999.0)
         self.sbLeftBankXRectifiedCoordPixels.setSingleStep(0.1)
-        self.sbLeftBankXRectifiedCoordPixels.setObjectName("sbLeftBankXRectifiedCoordPixels")
-        self.gridLayout_41.addWidget(self.sbLeftBankXRectifiedCoordPixels, 1, 1, 1, 1)
-        self.sbRightBankRectifiedYCoordPixels = QtWidgets.QDoubleSpinBox(self.groupBox_3)
+        self.sbLeftBankXRectifiedCoordPixels.setObjectName(
+            "sbLeftBankXRectifiedCoordPixels"
+        )
+        self.gridLayout_41.addWidget(
+            self.sbLeftBankXRectifiedCoordPixels, 1, 1, 1, 1
+        )
+        self.sbRightBankRectifiedYCoordPixels = QtWidgets.QDoubleSpinBox(
+            self.groupBox_3
+        )
         self.sbRightBankRectifiedYCoordPixels.setDecimals(3)
         self.sbRightBankRectifiedYCoordPixels.setMinimum(-99999.0)
         self.sbRightBankRectifiedYCoordPixels.setMaximum(99999.0)
         self.sbRightBankRectifiedYCoordPixels.setSingleStep(0.1)
-        self.sbRightBankRectifiedYCoordPixels.setObjectName("sbRightBankRectifiedYCoordPixels")
-        self.gridLayout_41.addWidget(self.sbRightBankRectifiedYCoordPixels, 3, 2, 1, 1)
+        self.sbRightBankRectifiedYCoordPixels.setObjectName(
+            "sbRightBankRectifiedYCoordPixels"
+        )
+        self.gridLayout_41.addWidget(
+            self.sbRightBankRectifiedYCoordPixels, 3, 2, 1, 1
+        )
         self.label_24 = QtWidgets.QLabel(self.groupBox_3)
         self.label_24.setObjectName("label_24")
         self.gridLayout_41.addWidget(self.label_24, 0, 1, 1, 1)
@@ -863,7 +1377,12 @@ class Ui_MainWindow(object):
         self.pb_bathymetry_pan.setCheckable(True)
         self.pb_bathymetry_pan.setObjectName("pb_bathymetry_pan")
         self.gridLayout_33.addWidget(self.pb_bathymetry_pan, 2, 0, 1, 1)
-        spacerItem10 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem10 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_33.addItem(spacerItem10, 10, 0, 1, 1)
         self.toolBox_bathymetry.addItem(self.page_2, "")
         self.page_4 = QtWidgets.QWidget()
@@ -882,7 +1401,9 @@ class Ui_MainWindow(object):
         self.cb_file_name = QtWidgets.QComboBox(self.page_4)
         self.cb_file_name.setEnabled(True)
         self.cb_file_name.setMinimumSize(QtCore.QSize(0, 0))
-        self.cb_file_name.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        self.cb_file_name.setSizeAdjustPolicy(
+            QtWidgets.QComboBox.AdjustToContents
+        )
         self.cb_file_name.setObjectName("cb_file_name")
         self.horizontalLayout_7.addWidget(self.cb_file_name)
         self.verticalLayout_6.addLayout(self.horizontalLayout_7)
@@ -914,7 +1435,12 @@ class Ui_MainWindow(object):
         self.stage_lineEdit.setObjectName("stage_lineEdit")
         self.horizontalLayout_8.addWidget(self.stage_lineEdit)
         self.verticalLayout_6.addLayout(self.horizontalLayout_8)
-        spacerItem11 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem11 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.verticalLayout_6.addItem(spacerItem11)
         self.toolBox_bathymetry.addItem(self.page_4, "")
         self.gridLayout_18.addWidget(self.toolBox_bathymetry, 0, 1, 1, 1)
@@ -928,10 +1454,14 @@ class Ui_MainWindow(object):
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
         self.frame_2 = QtWidgets.QFrame(self.splitter)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.frame_2.sizePolicy().hasHeightForWidth()
+        )
         self.frame_2.setSizePolicy(sizePolicy)
         self.frame_2.setMinimumSize(QtCore.QSize(0, 400))
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -949,24 +1479,42 @@ class Ui_MainWindow(object):
         self.frame_3.setObjectName("frame_3")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.frame_3)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.groupboxCrossSectionCharacteristics = QtWidgets.QGroupBox(self.frame_3)
-        self.groupboxCrossSectionCharacteristics.setObjectName("groupboxCrossSectionCharacteristics")
-        self.gridLayout_22 = QtWidgets.QGridLayout(self.groupboxCrossSectionCharacteristics)
+        self.groupboxCrossSectionCharacteristics = QtWidgets.QGroupBox(
+            self.frame_3
+        )
+        self.groupboxCrossSectionCharacteristics.setObjectName(
+            "groupboxCrossSectionCharacteristics"
+        )
+        self.gridLayout_22 = QtWidgets.QGridLayout(
+            self.groupboxCrossSectionCharacteristics
+        )
         self.gridLayout_22.setObjectName("gridLayout_22")
-        self.tabWidget_2 = QtWidgets.QTabWidget(self.groupboxCrossSectionCharacteristics)
+        self.tabWidget_2 = QtWidgets.QTabWidget(
+            self.groupboxCrossSectionCharacteristics
+        )
         self.tabWidget_2.setTabShape(QtWidgets.QTabWidget.Triangular)
         self.tabWidget_2.setObjectName("tabWidget_2")
         self.bathymetry = QtWidgets.QWidget()
         self.bathymetry.setObjectName("bathymetry")
         self.gridLayout_31 = QtWidgets.QGridLayout(self.bathymetry)
         self.gridLayout_31.setObjectName("gridLayout_31")
-        self.tableCrossSectionBathymetry = QtWidgets.QTableWidget(self.bathymetry)
-        self.tableCrossSectionBathymetry.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.tableCrossSectionBathymetry.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.tableCrossSectionBathymetry.setObjectName("tableCrossSectionBathymetry")
+        self.tableCrossSectionBathymetry = QtWidgets.QTableWidget(
+            self.bathymetry
+        )
+        self.tableCrossSectionBathymetry.setVerticalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.tableCrossSectionBathymetry.setHorizontalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.tableCrossSectionBathymetry.setObjectName(
+            "tableCrossSectionBathymetry"
+        )
         self.tableCrossSectionBathymetry.setColumnCount(0)
         self.tableCrossSectionBathymetry.setRowCount(0)
-        self.gridLayout_31.addWidget(self.tableCrossSectionBathymetry, 3, 2, 7, 1)
+        self.gridLayout_31.addWidget(
+            self.tableCrossSectionBathymetry, 3, 2, 7, 1
+        )
         self.station_lineEdit = QtWidgets.QLineEdit(self.bathymetry)
         self.station_lineEdit.setEnabled(True)
         self.station_lineEdit.setMaximumSize(QtCore.QSize(200, 16777215))
@@ -999,7 +1547,12 @@ class Ui_MainWindow(object):
         self.delete_pushButton.setObjectName("delete_pushButton")
         self.horizontalLayout_5.addWidget(self.delete_pushButton)
         self.gridLayout_31.addLayout(self.horizontalLayout_5, 5, 0, 1, 2)
-        spacerItem12 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem12 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_31.addItem(spacerItem12, 6, 1, 1, 1)
         self.tabWidget_2.addTab(self.bathymetry, "")
         self.sub_surveys = QtWidgets.QWidget()
@@ -1007,9 +1560,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.sub_surveys)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.tbl_survey_info = QtWidgets.QTableWidget(self.sub_surveys)
-        self.tbl_survey_info.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.tbl_survey_info.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.tbl_survey_info.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.tbl_survey_info.setSizeAdjustPolicy(
+            QtWidgets.QAbstractScrollArea.AdjustToContents
+        )
+        self.tbl_survey_info.setVerticalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.tbl_survey_info.setHorizontalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
         self.tbl_survey_info.setObjectName("tbl_survey_info")
         self.tbl_survey_info.setColumnCount(0)
         self.tbl_survey_info.setRowCount(0)
@@ -1058,8 +1617,12 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.subsect_tbl.setFont(font)
-        self.subsect_tbl.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.subsect_tbl.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.subsect_tbl.setVerticalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.subsect_tbl.setHorizontalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
         self.subsect_tbl.setObjectName("subsect_tbl")
         self.subsect_tbl.setColumnCount(0)
         self.subsect_tbl.setRowCount(0)
@@ -1070,10 +1633,18 @@ class Ui_MainWindow(object):
         self.frame_6.setObjectName("frame_6")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.frame_6)
         self.verticalLayout_9.setObjectName("verticalLayout_9")
-        self.tableCrossSectionCharacteristics = QtWidgets.QTableWidget(self.frame_6)
-        self.tableCrossSectionCharacteristics.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.tableCrossSectionCharacteristics.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.tableCrossSectionCharacteristics.setObjectName("tableCrossSectionCharacteristics")
+        self.tableCrossSectionCharacteristics = QtWidgets.QTableWidget(
+            self.frame_6
+        )
+        self.tableCrossSectionCharacteristics.setVerticalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.tableCrossSectionCharacteristics.setHorizontalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self.tableCrossSectionCharacteristics.setObjectName(
+            "tableCrossSectionCharacteristics"
+        )
         self.tableCrossSectionCharacteristics.setColumnCount(0)
         self.tableCrossSectionCharacteristics.setRowCount(0)
         self.verticalLayout_9.addWidget(self.tableCrossSectionCharacteristics)
@@ -1081,7 +1652,9 @@ class Ui_MainWindow(object):
         self.tabWidget_2.addTab(self.characteristics, "")
         self.gridLayout_22.addWidget(self.tabWidget_2, 0, 0, 1, 3)
         self.gridLayout_22.setColumnStretch(0, 2)
-        self.verticalLayout_5.addWidget(self.groupboxCrossSectionCharacteristics)
+        self.verticalLayout_5.addWidget(
+            self.groupboxCrossSectionCharacteristics
+        )
         self.gridLayout_29.addWidget(self.splitter, 1, 1, 1, 1)
         self.gridLayout_30.addWidget(self.splitter_2, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabCrossSectionGeometry, "")
@@ -1093,10 +1666,18 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.layoutGridToolsLeftPanel = QtWidgets.QVBoxLayout()
         self.layoutGridToolsLeftPanel.setObjectName("layoutGridToolsLeftPanel")
-        self.treeviewProjectStructureGridPreparationTab = QtWidgets.QTreeView(self.tabGridPreparation)
-        self.treeviewProjectStructureGridPreparationTab.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.treeviewProjectStructureGridPreparationTab.setObjectName("treeviewProjectStructureGridPreparationTab")
-        self.layoutGridToolsLeftPanel.addWidget(self.treeviewProjectStructureGridPreparationTab)
+        self.treeviewProjectStructureGridPreparationTab = QtWidgets.QTreeView(
+            self.tabGridPreparation
+        )
+        self.treeviewProjectStructureGridPreparationTab.setMaximumSize(
+            QtCore.QSize(200, 16777215)
+        )
+        self.treeviewProjectStructureGridPreparationTab.setObjectName(
+            "treeviewProjectStructureGridPreparationTab"
+        )
+        self.layoutGridToolsLeftPanel.addWidget(
+            self.treeviewProjectStructureGridPreparationTab
+        )
         self.toolboxGridCreation = QtWidgets.QToolBox(self.tabGridPreparation)
         self.toolboxGridCreation.setEnabled(True)
         self.toolboxGridCreation.setMaximumSize(QtCore.QSize(200, 16777215))
@@ -1111,21 +1692,37 @@ class Ui_MainWindow(object):
         self.formLayout_9 = QtWidgets.QFormLayout()
         self.formLayout_9.setFormAlignment(QtCore.Qt.AlignCenter)
         self.formLayout_9.setObjectName("formLayout_9")
-        self.toolbuttonCreateXsLine = QtWidgets.QToolButton(self.CrossSectionPage)
+        self.toolbuttonCreateXsLine = QtWidgets.QToolButton(
+            self.CrossSectionPage
+        )
         icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("icons/draw-cross-section.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon7.addPixmap(
+            QtGui.QPixmap("icons/draw-cross-section.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonCreateXsLine.setIcon(icon7)
         self.toolbuttonCreateXsLine.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonCreateXsLine.setCheckable(True)
         self.toolbuttonCreateXsLine.setObjectName("toolbuttonCreateXsLine")
-        self.formLayout_9.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateXsLine)
-        self.toolbuttonClearXsLine = QtWidgets.QToolButton(self.CrossSectionPage)
+        self.formLayout_9.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateXsLine
+        )
+        self.toolbuttonClearXsLine = QtWidgets.QToolButton(
+            self.CrossSectionPage
+        )
         icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("icons/clear-draw-cross-section.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon8.addPixmap(
+            QtGui.QPixmap("icons/clear-draw-cross-section.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonClearXsLine.setIcon(icon8)
         self.toolbuttonClearXsLine.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonClearXsLine.setObjectName("toolbuttonClearXsLine")
-        self.formLayout_9.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearXsLine)
+        self.formLayout_9.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearXsLine
+        )
         self.verticalLayout_61.addLayout(self.formLayout_9)
         self.horizontalLayout_71 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_71.setObjectName("horizontalLayout_71")
@@ -1139,14 +1736,23 @@ class Ui_MainWindow(object):
         self.spinbocXsLineNumPoints.setObjectName("spinbocXsLineNumPoints")
         self.horizontalLayout_71.addWidget(self.spinbocXsLineNumPoints)
         self.verticalLayout_61.addLayout(self.horizontalLayout_71)
-        self.buttonCreatePointsOnCrossSection = QtWidgets.QPushButton(self.CrossSectionPage)
-        self.buttonCreatePointsOnCrossSection.setObjectName("buttonCreatePointsOnCrossSection")
+        self.buttonCreatePointsOnCrossSection = QtWidgets.QPushButton(
+            self.CrossSectionPage
+        )
+        self.buttonCreatePointsOnCrossSection.setObjectName(
+            "buttonCreatePointsOnCrossSection"
+        )
         self.verticalLayout_61.addWidget(self.buttonCreatePointsOnCrossSection)
         self.labelXsInstructions = QtWidgets.QLabel(self.CrossSectionPage)
         self.labelXsInstructions.setWordWrap(True)
         self.labelXsInstructions.setObjectName("labelXsInstructions")
         self.verticalLayout_61.addWidget(self.labelXsInstructions)
-        spacerItem13 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem13 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.verticalLayout_61.addItem(spacerItem13)
         self.toolboxGridCreation.addItem(self.CrossSectionPage, icon7, "")
         self.MaskingPage = QtWidgets.QWidget()
@@ -1160,26 +1766,43 @@ class Ui_MainWindow(object):
         self.formLayout_4.setObjectName("formLayout_4")
         self.toolbuttonCreateMask = QtWidgets.QToolButton(self.MaskingPage)
         icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("icons/draw-polygon-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon9.addPixmap(
+            QtGui.QPixmap("icons/draw-polygon-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonCreateMask.setIcon(icon9)
         self.toolbuttonCreateMask.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonCreateMask.setCheckable(True)
         self.toolbuttonCreateMask.setObjectName("toolbuttonCreateMask")
-        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateMask)
+        self.formLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateMask
+        )
         self.toolbuttonClearMask = QtWidgets.QToolButton(self.MaskingPage)
         icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap("icons/clear-draw-polygon-solid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon10.addPixmap(
+            QtGui.QPixmap("icons/clear-draw-polygon-solid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonClearMask.setIcon(icon10)
         self.toolbuttonClearMask.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonClearMask.setObjectName("toolbuttonClearMask")
-        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearMask)
+        self.formLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearMask
+        )
         self.gridLayout_11.addLayout(self.formLayout_4, 0, 0, 1, 1)
         self.labelMaskInstructions = QtWidgets.QLabel(self.MaskingPage)
         self.labelMaskInstructions.setTextFormat(QtCore.Qt.RichText)
         self.labelMaskInstructions.setWordWrap(True)
         self.labelMaskInstructions.setObjectName("labelMaskInstructions")
         self.gridLayout_11.addWidget(self.labelMaskInstructions, 1, 0, 1, 1)
-        spacerItem14 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem14 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_11.addItem(spacerItem14, 2, 0, 1, 1)
         self.toolboxGridCreation.addItem(self.MaskingPage, icon9, "")
         self.PointPage = QtWidgets.QWidget()
@@ -1192,25 +1815,42 @@ class Ui_MainWindow(object):
         self.formLayout_7.setObjectName("formLayout_7")
         self.toolbuttonCreatePoint = QtWidgets.QToolButton(self.PointPage)
         icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap("icons/draw-points.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon11.addPixmap(
+            QtGui.QPixmap("icons/draw-points.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonCreatePoint.setIcon(icon11)
         self.toolbuttonCreatePoint.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonCreatePoint.setCheckable(True)
         self.toolbuttonCreatePoint.setObjectName("toolbuttonCreatePoint")
-        self.formLayout_7.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreatePoint)
+        self.formLayout_7.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreatePoint
+        )
         self.toolbuttonClearPoints = QtWidgets.QToolButton(self.PointPage)
         icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("icons/clear-draw-points.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon12.addPixmap(
+            QtGui.QPixmap("icons/clear-draw-points.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonClearPoints.setIcon(icon12)
         self.toolbuttonClearPoints.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonClearPoints.setObjectName("toolbuttonClearPoints")
-        self.formLayout_7.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearPoints)
+        self.formLayout_7.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearPoints
+        )
         self.gridLayout_19.addLayout(self.formLayout_7, 0, 0, 1, 1)
         self.labelPointInstructions = QtWidgets.QLabel(self.PointPage)
         self.labelPointInstructions.setWordWrap(True)
         self.labelPointInstructions.setObjectName("labelPointInstructions")
         self.gridLayout_19.addWidget(self.labelPointInstructions, 1, 0, 1, 1)
-        spacerItem15 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem15 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.gridLayout_19.addItem(spacerItem15, 2, 0, 1, 1)
         self.toolboxGridCreation.addItem(self.PointPage, icon11, "")
         self.SimpleLinePage = QtWidgets.QWidget()
@@ -1223,20 +1863,32 @@ class Ui_MainWindow(object):
         self.formLayout_8.setObjectName("formLayout_8")
         self.toolbuttonCreateLine = QtWidgets.QToolButton(self.SimpleLinePage)
         icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("icons/draw-line-edit.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon13.addPixmap(
+            QtGui.QPixmap("icons/draw-line-edit.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonCreateLine.setIcon(icon13)
         self.toolbuttonCreateLine.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonCreateLine.setCheckable(True)
         self.toolbuttonCreateLine.setChecked(False)
         self.toolbuttonCreateLine.setObjectName("toolbuttonCreateLine")
-        self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateLine)
+        self.formLayout_8.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.toolbuttonCreateLine
+        )
         self.toolbuttonClearLine = QtWidgets.QToolButton(self.SimpleLinePage)
         icon14 = QtGui.QIcon()
-        icon14.addPixmap(QtGui.QPixmap("icons/clear-draw-line-edit1.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon14.addPixmap(
+            QtGui.QPixmap("icons/clear-draw-line-edit1.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolbuttonClearLine.setIcon(icon14)
         self.toolbuttonClearLine.setIconSize(QtCore.QSize(26, 26))
         self.toolbuttonClearLine.setObjectName("toolbuttonClearLine")
-        self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearLine)
+        self.formLayout_8.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.toolbuttonClearLine
+        )
         self.verticalLayout_51.addLayout(self.formLayout_8)
         self.horizontalLayout_51 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_51.setObjectName("horizontalLayout_51")
@@ -1250,14 +1902,21 @@ class Ui_MainWindow(object):
         self.spinboxLineNumPoints.setObjectName("spinboxLineNumPoints")
         self.horizontalLayout_51.addWidget(self.spinboxLineNumPoints)
         self.verticalLayout_51.addLayout(self.horizontalLayout_51)
-        self.buttonCreatePointsOnLine = QtWidgets.QPushButton(self.SimpleLinePage)
+        self.buttonCreatePointsOnLine = QtWidgets.QPushButton(
+            self.SimpleLinePage
+        )
         self.buttonCreatePointsOnLine.setObjectName("buttonCreatePointsOnLine")
         self.verticalLayout_51.addWidget(self.buttonCreatePointsOnLine)
         self.labelLineInstructions = QtWidgets.QLabel(self.SimpleLinePage)
         self.labelLineInstructions.setWordWrap(True)
         self.labelLineInstructions.setObjectName("labelLineInstructions")
         self.verticalLayout_51.addWidget(self.labelLineInstructions)
-        spacerItem16 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem16 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.verticalLayout_51.addItem(spacerItem16)
         self.toolboxGridCreation.addItem(self.SimpleLinePage, icon13, "")
         self.RegularGridPage = QtWidgets.QWidget()
@@ -1274,8 +1933,12 @@ class Ui_MainWindow(object):
         self.spinboxHorizGridSpacing.setMaximum(1000)
         self.spinboxHorizGridSpacing.setObjectName("spinboxHorizGridSpacing")
         self.horizontalLayout_81.addWidget(self.spinboxHorizGridSpacing)
-        self.labelHorzSpacingWorldUnits = QtWidgets.QLabel(self.RegularGridPage)
-        self.labelHorzSpacingWorldUnits.setObjectName("labelHorzSpacingWorldUnits")
+        self.labelHorzSpacingWorldUnits = QtWidgets.QLabel(
+            self.RegularGridPage
+        )
+        self.labelHorzSpacingWorldUnits.setObjectName(
+            "labelHorzSpacingWorldUnits"
+        )
         self.horizontalLayout_81.addWidget(self.labelHorzSpacingWorldUnits)
         self.verticalLayout_41.addLayout(self.horizontalLayout_81)
         self.horizontalLayout_91 = QtWidgets.QHBoxLayout()
@@ -1287,8 +1950,12 @@ class Ui_MainWindow(object):
         self.spinboxVertGridSpacing.setMaximum(1000)
         self.spinboxVertGridSpacing.setObjectName("spinboxVertGridSpacing")
         self.horizontalLayout_91.addWidget(self.spinboxVertGridSpacing)
-        self.labelVertSpacingWorldUnits = QtWidgets.QLabel(self.RegularGridPage)
-        self.labelVertSpacingWorldUnits.setObjectName("labelVertSpacingWorldUnits")
+        self.labelVertSpacingWorldUnits = QtWidgets.QLabel(
+            self.RegularGridPage
+        )
+        self.labelVertSpacingWorldUnits.setObjectName(
+            "labelVertSpacingWorldUnits"
+        )
         self.horizontalLayout_91.addWidget(self.labelVertSpacingWorldUnits)
         self.verticalLayout_41.addLayout(self.horizontalLayout_91)
         self.buttonCreateGrid = QtWidgets.QPushButton(self.RegularGridPage)
@@ -1298,10 +1965,19 @@ class Ui_MainWindow(object):
         self.label_GridInstructions.setWordWrap(True)
         self.label_GridInstructions.setObjectName("label_GridInstructions")
         self.verticalLayout_41.addWidget(self.label_GridInstructions)
-        spacerItem17 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem17 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.verticalLayout_41.addItem(spacerItem17)
         icon15 = QtGui.QIcon()
-        icon15.addPixmap(QtGui.QPixmap("icons/draw-grid.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon15.addPixmap(
+            QtGui.QPixmap("icons/draw-grid.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.toolboxGridCreation.addItem(self.RegularGridPage, icon15, "")
         self.layoutGridToolsLeftPanel.addWidget(self.toolboxGridCreation)
         self.horizontalLayout_2.addLayout(self.layoutGridToolsLeftPanel)
@@ -1316,9 +1992,15 @@ class Ui_MainWindow(object):
         self.tabImageVelocimetry.setObjectName("tabImageVelocimetry")
         self.gridLayout_12 = QtWidgets.QGridLayout(self.tabImageVelocimetry)
         self.gridLayout_12.setObjectName("gridLayout_12")
-        self.tabWidget_ImageVelocimetryMethods = QtWidgets.QTabWidget(self.tabImageVelocimetry)
-        self.tabWidget_ImageVelocimetryMethods.setTabShape(QtWidgets.QTabWidget.Triangular)
-        self.tabWidget_ImageVelocimetryMethods.setObjectName("tabWidget_ImageVelocimetryMethods")
+        self.tabWidget_ImageVelocimetryMethods = QtWidgets.QTabWidget(
+            self.tabImageVelocimetry
+        )
+        self.tabWidget_ImageVelocimetryMethods.setTabShape(
+            QtWidgets.QTabWidget.Triangular
+        )
+        self.tabWidget_ImageVelocimetryMethods.setObjectName(
+            "tabWidget_ImageVelocimetryMethods"
+        )
         self.tabSTIVExhaustive = QtWidgets.QWidget()
         self.tabSTIVExhaustive.setObjectName("tabSTIVExhaustive")
         self.gridLayout_20 = QtWidgets.QGridLayout(self.tabSTIVExhaustive)
@@ -1327,83 +2009,165 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.layoutSTIVLeftPanel = QtWidgets.QVBoxLayout()
         self.layoutSTIVLeftPanel.setObjectName("layoutSTIVLeftPanel")
-        self.treeviewProjectStructureSTIVTab = QtWidgets.QTreeView(self.tabSTIVExhaustive)
-        self.treeviewProjectStructureSTIVTab.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.treeviewProjectStructureSTIVTab.setObjectName("treeviewProjectStructureSTIVTab")
-        self.layoutSTIVLeftPanel.addWidget(self.treeviewProjectStructureSTIVTab)
-        self.groupboxSpaceTimeParameters = QtWidgets.QGroupBox(self.tabSTIVExhaustive)
-        self.groupboxSpaceTimeParameters.setObjectName("groupboxSpaceTimeParameters")
-        self.gridLayout_26 = QtWidgets.QGridLayout(self.groupboxSpaceTimeParameters)
+        self.treeviewProjectStructureSTIVTab = QtWidgets.QTreeView(
+            self.tabSTIVExhaustive
+        )
+        self.treeviewProjectStructureSTIVTab.setMaximumSize(
+            QtCore.QSize(200, 16777215)
+        )
+        self.treeviewProjectStructureSTIVTab.setObjectName(
+            "treeviewProjectStructureSTIVTab"
+        )
+        self.layoutSTIVLeftPanel.addWidget(
+            self.treeviewProjectStructureSTIVTab
+        )
+        self.groupboxSpaceTimeParameters = QtWidgets.QGroupBox(
+            self.tabSTIVExhaustive
+        )
+        self.groupboxSpaceTimeParameters.setObjectName(
+            "groupboxSpaceTimeParameters"
+        )
+        self.gridLayout_26 = QtWidgets.QGridLayout(
+            self.groupboxSpaceTimeParameters
+        )
         self.gridLayout_26.setObjectName("gridLayout_26")
         self.formLayout_5 = QtWidgets.QFormLayout()
         self.formLayout_5.setObjectName("formLayout_5")
         self.label_6 = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
         self.label_6.setTextFormat(QtCore.Qt.RichText)
         self.label_6.setObjectName("label_6")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_6)
+        self.formLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.label_6
+        )
         self.label_5 = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
         self.label_5.setTextFormat(QtCore.Qt.RichText)
         self.label_5.setObjectName("label_5")
-        self.formLayout_5.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_5)
+        self.formLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.label_5
+        )
         self.label_4 = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
         self.label_4.setTextFormat(QtCore.Qt.RichText)
         self.label_4.setObjectName("label_4")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_4)
-        self.spinboxSTIVPhiOrigin = QtWidgets.QSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.label_4
+        )
+        self.spinboxSTIVPhiOrigin = QtWidgets.QSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.spinboxSTIVPhiOrigin.setMaximum(360)
         self.spinboxSTIVPhiOrigin.setObjectName("spinboxSTIVPhiOrigin")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVPhiOrigin)
-        self.spinboxSTIVdPhi = QtWidgets.QDoubleSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVPhiOrigin
+        )
+        self.spinboxSTIVdPhi = QtWidgets.QDoubleSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.spinboxSTIVdPhi.setMinimum(0.5)
         self.spinboxSTIVdPhi.setMaximum(90.0)
         self.spinboxSTIVdPhi.setSingleStep(0.05)
         self.spinboxSTIVdPhi.setProperty("value", 1.0)
         self.spinboxSTIVdPhi.setObjectName("spinboxSTIVdPhi")
-        self.formLayout_5.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVdPhi)
-        self.buttonSTIVProcessVelocities = QtWidgets.QPushButton(self.groupboxSpaceTimeParameters)
-        self.buttonSTIVProcessVelocities.setObjectName("buttonSTIVProcessVelocities")
-        self.formLayout_5.setWidget(9, QtWidgets.QFormLayout.SpanningRole, self.buttonSTIVProcessVelocities)
-        self.pushbuttonCreateRefreshImageStackSTIV = QtWidgets.QPushButton(self.groupboxSpaceTimeParameters)
-        self.pushbuttonCreateRefreshImageStackSTIV.setObjectName("pushbuttonCreateRefreshImageStackSTIV")
-        self.formLayout_5.setWidget(8, QtWidgets.QFormLayout.SpanningRole, self.pushbuttonCreateRefreshImageStackSTIV)
-        self.checkboxSaveSTIs = QtWidgets.QCheckBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVdPhi
+        )
+        self.buttonSTIVProcessVelocities = QtWidgets.QPushButton(
+            self.groupboxSpaceTimeParameters
+        )
+        self.buttonSTIVProcessVelocities.setObjectName(
+            "buttonSTIVProcessVelocities"
+        )
+        self.formLayout_5.setWidget(
+            9,
+            QtWidgets.QFormLayout.SpanningRole,
+            self.buttonSTIVProcessVelocities,
+        )
+        self.pushbuttonCreateRefreshImageStackSTIV = QtWidgets.QPushButton(
+            self.groupboxSpaceTimeParameters
+        )
+        self.pushbuttonCreateRefreshImageStackSTIV.setObjectName(
+            "pushbuttonCreateRefreshImageStackSTIV"
+        )
+        self.formLayout_5.setWidget(
+            8,
+            QtWidgets.QFormLayout.SpanningRole,
+            self.pushbuttonCreateRefreshImageStackSTIV,
+        )
+        self.checkboxSaveSTIs = QtWidgets.QCheckBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.checkboxSaveSTIs.setEnabled(False)
         self.checkboxSaveSTIs.setCheckable(True)
         self.checkboxSaveSTIs.setChecked(True)
         self.checkboxSaveSTIs.setObjectName("checkboxSaveSTIs")
-        self.formLayout_5.setWidget(7, QtWidgets.QFormLayout.SpanningRole, self.checkboxSaveSTIs)
-        self.doublespinboxStivSearchLineDistance = QtWidgets.QDoubleSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            7, QtWidgets.QFormLayout.SpanningRole, self.checkboxSaveSTIs
+        )
+        self.doublespinboxStivSearchLineDistance = QtWidgets.QDoubleSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.doublespinboxStivSearchLineDistance.setMaximum(999.99)
         self.doublespinboxStivSearchLineDistance.setSingleStep(0.5)
         self.doublespinboxStivSearchLineDistance.setProperty("value", 5.0)
-        self.doublespinboxStivSearchLineDistance.setObjectName("doublespinboxStivSearchLineDistance")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.doublespinboxStivSearchLineDistance)
+        self.doublespinboxStivSearchLineDistance.setObjectName(
+            "doublespinboxStivSearchLineDistance"
+        )
+        self.formLayout_5.setWidget(
+            0,
+            QtWidgets.QFormLayout.FieldRole,
+            self.doublespinboxStivSearchLineDistance,
+        )
         self.label_7 = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
         self.label_7.setTextFormat(QtCore.Qt.RichText)
         self.label_7.setObjectName("label_7")
-        self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_7)
-        self.spinboxSTIVPhiRange = QtWidgets.QSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.label_7
+        )
+        self.spinboxSTIVPhiRange = QtWidgets.QSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.spinboxSTIVPhiRange.setMaximum(90)
         self.spinboxSTIVPhiRange.setProperty("value", 15)
         self.spinboxSTIVPhiRange.setObjectName("spinboxSTIVPhiRange")
-        self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVPhiRange)
-        self.labelStivMaxVelThreshold = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVPhiRange
+        )
+        self.labelStivMaxVelThreshold = QtWidgets.QLabel(
+            self.groupboxSpaceTimeParameters
+        )
         self.labelStivMaxVelThreshold.setObjectName("labelStivMaxVelThreshold")
-        self.formLayout_5.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.labelStivMaxVelThreshold)
-        self.spinboxSTIVMaxVelThreshold = QtWidgets.QDoubleSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            4, QtWidgets.QFormLayout.LabelRole, self.labelStivMaxVelThreshold
+        )
+        self.spinboxSTIVMaxVelThreshold = QtWidgets.QDoubleSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.spinboxSTIVMaxVelThreshold.setDecimals(1)
         self.spinboxSTIVMaxVelThreshold.setProperty("value", 20.0)
-        self.spinboxSTIVMaxVelThreshold.setObjectName("spinboxSTIVMaxVelThreshold")
-        self.formLayout_5.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVMaxVelThreshold)
+        self.spinboxSTIVMaxVelThreshold.setObjectName(
+            "spinboxSTIVMaxVelThreshold"
+        )
+        self.formLayout_5.setWidget(
+            4, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVMaxVelThreshold
+        )
         self.label_9 = QtWidgets.QLabel(self.groupboxSpaceTimeParameters)
         self.label_9.setObjectName("label_9")
-        self.formLayout_5.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_9)
-        self.doublespinboxStivGaussianBlurSigma = QtWidgets.QDoubleSpinBox(self.groupboxSpaceTimeParameters)
+        self.formLayout_5.setWidget(
+            5, QtWidgets.QFormLayout.LabelRole, self.label_9
+        )
+        self.doublespinboxStivGaussianBlurSigma = QtWidgets.QDoubleSpinBox(
+            self.groupboxSpaceTimeParameters
+        )
         self.doublespinboxStivGaussianBlurSigma.setDecimals(1)
         self.doublespinboxStivGaussianBlurSigma.setMaximum(5.0)
         self.doublespinboxStivGaussianBlurSigma.setProperty("value", 0.0)
-        self.doublespinboxStivGaussianBlurSigma.setObjectName("doublespinboxStivGaussianBlurSigma")
-        self.formLayout_5.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.doublespinboxStivGaussianBlurSigma)
+        self.doublespinboxStivGaussianBlurSigma.setObjectName(
+            "doublespinboxStivGaussianBlurSigma"
+        )
+        self.formLayout_5.setWidget(
+            5,
+            QtWidgets.QFormLayout.FieldRole,
+            self.doublespinboxStivGaussianBlurSigma,
+        )
         self.gridLayout_26.addLayout(self.formLayout_5, 5, 0, 1, 1)
         self.layoutSTIVLeftPanel.addWidget(self.groupboxSpaceTimeParameters)
         self.layoutSTIVLeftPanel.setStretch(0, 3)
@@ -1415,21 +2179,39 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setStretch(0, 1)
         self.horizontalLayout_3.setStretch(1, 5)
         self.gridLayout_20.addLayout(self.horizontalLayout_3, 0, 0, 1, 1)
-        self.tabWidget_ImageVelocimetryMethods.addTab(self.tabSTIVExhaustive, "")
+        self.tabWidget_ImageVelocimetryMethods.addTab(
+            self.tabSTIVExhaustive, ""
+        )
         self.tabSpaceTimeImageReview = QtWidgets.QWidget()
         self.tabSpaceTimeImageReview.setObjectName("tabSpaceTimeImageReview")
-        self.gridLayout_38 = QtWidgets.QGridLayout(self.tabSpaceTimeImageReview)
+        self.gridLayout_38 = QtWidgets.QGridLayout(
+            self.tabSpaceTimeImageReview
+        )
         self.gridLayout_38.setObjectName("gridLayout_38")
-        self.pushbuttonReloadProcessedSTIVResults = QtWidgets.QPushButton(self.tabSpaceTimeImageReview)
-        self.pushbuttonReloadProcessedSTIVResults.setObjectName("pushbuttonReloadProcessedSTIVResults")
-        self.gridLayout_38.addWidget(self.pushbuttonReloadProcessedSTIVResults, 1, 0, 1, 1)
-        self.pushbuttonApplyManualSTIVChanges = QtWidgets.QPushButton(self.tabSpaceTimeImageReview)
-        self.pushbuttonApplyManualSTIVChanges.setObjectName("pushbuttonApplyManualSTIVChanges")
-        self.gridLayout_38.addWidget(self.pushbuttonApplyManualSTIVChanges, 1, 1, 1, 1)
+        self.pushbuttonReloadProcessedSTIVResults = QtWidgets.QPushButton(
+            self.tabSpaceTimeImageReview
+        )
+        self.pushbuttonReloadProcessedSTIVResults.setObjectName(
+            "pushbuttonReloadProcessedSTIVResults"
+        )
+        self.gridLayout_38.addWidget(
+            self.pushbuttonReloadProcessedSTIVResults, 1, 0, 1, 1
+        )
+        self.pushbuttonApplyManualSTIVChanges = QtWidgets.QPushButton(
+            self.tabSpaceTimeImageReview
+        )
+        self.pushbuttonApplyManualSTIVChanges.setObjectName(
+            "pushbuttonApplyManualSTIVChanges"
+        )
+        self.gridLayout_38.addWidget(
+            self.pushbuttonApplyManualSTIVChanges, 1, 1, 1, 1
+        )
         self.layoutStiReviewTable = QtWidgets.QVBoxLayout()
         self.layoutStiReviewTable.setObjectName("layoutStiReviewTable")
         self.gridLayout_38.addLayout(self.layoutStiReviewTable, 0, 0, 1, 2)
-        self.tabWidget_ImageVelocimetryMethods.addTab(self.tabSpaceTimeImageReview, "")
+        self.tabWidget_ImageVelocimetryMethods.addTab(
+            self.tabSpaceTimeImageReview, ""
+        )
         self.tabSTIVOptimized = QtWidgets.QWidget()
         self.tabSTIVOptimized.setObjectName("tabSTIVOptimized")
         self.gridLayout_28 = QtWidgets.QGridLayout(self.tabSTIVOptimized)
@@ -1438,44 +2220,98 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.layoutSTIVOptLeftPanel = QtWidgets.QVBoxLayout()
         self.layoutSTIVOptLeftPanel.setObjectName("layoutSTIVOptLeftPanel")
-        self.treeviewProjectStructureSTIVTabOpt = QtWidgets.QTreeView(self.tabSTIVOptimized)
-        self.treeviewProjectStructureSTIVTabOpt.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.treeviewProjectStructureSTIVTabOpt.setObjectName("treeviewProjectStructureSTIVTabOpt")
-        self.layoutSTIVOptLeftPanel.addWidget(self.treeviewProjectStructureSTIVTabOpt)
-        self.groupboxSpaceTimeOptParameters = QtWidgets.QGroupBox(self.tabSTIVOptimized)
-        self.groupboxSpaceTimeOptParameters.setObjectName("groupboxSpaceTimeOptParameters")
-        self.gridLayout_27 = QtWidgets.QGridLayout(self.groupboxSpaceTimeOptParameters)
+        self.treeviewProjectStructureSTIVTabOpt = QtWidgets.QTreeView(
+            self.tabSTIVOptimized
+        )
+        self.treeviewProjectStructureSTIVTabOpt.setMaximumSize(
+            QtCore.QSize(200, 16777215)
+        )
+        self.treeviewProjectStructureSTIVTabOpt.setObjectName(
+            "treeviewProjectStructureSTIVTabOpt"
+        )
+        self.layoutSTIVOptLeftPanel.addWidget(
+            self.treeviewProjectStructureSTIVTabOpt
+        )
+        self.groupboxSpaceTimeOptParameters = QtWidgets.QGroupBox(
+            self.tabSTIVOptimized
+        )
+        self.groupboxSpaceTimeOptParameters.setObjectName(
+            "groupboxSpaceTimeOptParameters"
+        )
+        self.gridLayout_27 = QtWidgets.QGridLayout(
+            self.groupboxSpaceTimeOptParameters
+        )
         self.gridLayout_27.setObjectName("gridLayout_27")
         self.formLayout_6 = QtWidgets.QFormLayout()
         self.formLayout_6.setObjectName("formLayout_6")
         self.label_8 = QtWidgets.QLabel(self.groupboxSpaceTimeOptParameters)
         self.label_8.setTextFormat(QtCore.Qt.RichText)
         self.label_8.setObjectName("label_8")
-        self.formLayout_6.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_8)
-        self.spinboxSTIVOptNumPixels = QtWidgets.QSpinBox(self.groupboxSpaceTimeOptParameters)
+        self.formLayout_6.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.label_8
+        )
+        self.spinboxSTIVOptNumPixels = QtWidgets.QSpinBox(
+            self.groupboxSpaceTimeOptParameters
+        )
         self.spinboxSTIVOptNumPixels.setMinimum(5)
         self.spinboxSTIVOptNumPixels.setMaximum(2000)
         self.spinboxSTIVOptNumPixels.setProperty("value", 100)
         self.spinboxSTIVOptNumPixels.setObjectName("spinboxSTIVOptNumPixels")
-        self.formLayout_6.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVOptNumPixels)
-        self.labelStivOptMaxVelThreshold = QtWidgets.QLabel(self.groupboxSpaceTimeOptParameters)
+        self.formLayout_6.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVOptNumPixels
+        )
+        self.labelStivOptMaxVelThreshold = QtWidgets.QLabel(
+            self.groupboxSpaceTimeOptParameters
+        )
         self.labelStivOptMaxVelThreshold.setTextFormat(QtCore.Qt.RichText)
-        self.labelStivOptMaxVelThreshold.setObjectName("labelStivOptMaxVelThreshold")
-        self.formLayout_6.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelStivOptMaxVelThreshold)
-        self.buttonSTIVOptProcessVelocities = QtWidgets.QPushButton(self.groupboxSpaceTimeOptParameters)
-        self.buttonSTIVOptProcessVelocities.setObjectName("buttonSTIVOptProcessVelocities")
-        self.formLayout_6.setWidget(3, QtWidgets.QFormLayout.SpanningRole, self.buttonSTIVOptProcessVelocities)
-        self.spinboxSTIVOptMaxVelThreshold = QtWidgets.QDoubleSpinBox(self.groupboxSpaceTimeOptParameters)
+        self.labelStivOptMaxVelThreshold.setObjectName(
+            "labelStivOptMaxVelThreshold"
+        )
+        self.formLayout_6.setWidget(
+            1,
+            QtWidgets.QFormLayout.LabelRole,
+            self.labelStivOptMaxVelThreshold,
+        )
+        self.buttonSTIVOptProcessVelocities = QtWidgets.QPushButton(
+            self.groupboxSpaceTimeOptParameters
+        )
+        self.buttonSTIVOptProcessVelocities.setObjectName(
+            "buttonSTIVOptProcessVelocities"
+        )
+        self.formLayout_6.setWidget(
+            3,
+            QtWidgets.QFormLayout.SpanningRole,
+            self.buttonSTIVOptProcessVelocities,
+        )
+        self.spinboxSTIVOptMaxVelThreshold = QtWidgets.QDoubleSpinBox(
+            self.groupboxSpaceTimeOptParameters
+        )
         self.spinboxSTIVOptMaxVelThreshold.setDecimals(1)
         self.spinboxSTIVOptMaxVelThreshold.setMinimum(0.1)
         self.spinboxSTIVOptMaxVelThreshold.setProperty("value", 10.0)
-        self.spinboxSTIVOptMaxVelThreshold.setObjectName("spinboxSTIVOptMaxVelThreshold")
-        self.formLayout_6.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.spinboxSTIVOptMaxVelThreshold)
-        self.pushbuttonCreateRefreshImageStackSTIVOpt = QtWidgets.QPushButton(self.groupboxSpaceTimeOptParameters)
-        self.pushbuttonCreateRefreshImageStackSTIVOpt.setObjectName("pushbuttonCreateRefreshImageStackSTIVOpt")
-        self.formLayout_6.setWidget(2, QtWidgets.QFormLayout.SpanningRole, self.pushbuttonCreateRefreshImageStackSTIVOpt)
+        self.spinboxSTIVOptMaxVelThreshold.setObjectName(
+            "spinboxSTIVOptMaxVelThreshold"
+        )
+        self.formLayout_6.setWidget(
+            1,
+            QtWidgets.QFormLayout.FieldRole,
+            self.spinboxSTIVOptMaxVelThreshold,
+        )
+        self.pushbuttonCreateRefreshImageStackSTIVOpt = QtWidgets.QPushButton(
+            self.groupboxSpaceTimeOptParameters
+        )
+        self.pushbuttonCreateRefreshImageStackSTIVOpt.setObjectName(
+            "pushbuttonCreateRefreshImageStackSTIVOpt"
+        )
+        self.formLayout_6.setWidget(
+            2,
+            QtWidgets.QFormLayout.SpanningRole,
+            self.pushbuttonCreateRefreshImageStackSTIVOpt,
+        )
         self.gridLayout_27.addLayout(self.formLayout_6, 5, 0, 1, 1)
-        self.layoutSTIVOptLeftPanel.addWidget(self.groupboxSpaceTimeOptParameters)
+        self.layoutSTIVOptLeftPanel.addWidget(
+            self.groupboxSpaceTimeOptParameters
+        )
         self.layoutSTIVOptLeftPanel.setStretch(0, 3)
         self.layoutSTIVOptLeftPanel.setStretch(1, 1)
         self.horizontalLayout_4.addLayout(self.layoutSTIVOptLeftPanel)
@@ -1485,8 +2321,12 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setStretch(0, 1)
         self.horizontalLayout_4.setStretch(1, 5)
         self.gridLayout_28.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
-        self.tabWidget_ImageVelocimetryMethods.addTab(self.tabSTIVOptimized, "")
-        self.gridLayout_12.addWidget(self.tabWidget_ImageVelocimetryMethods, 0, 0, 1, 1)
+        self.tabWidget_ImageVelocimetryMethods.addTab(
+            self.tabSTIVOptimized, ""
+        )
+        self.gridLayout_12.addWidget(
+            self.tabWidget_ImageVelocimetryMethods, 0, 0, 1, 1
+        )
         self.tabWidget.addTab(self.tabImageVelocimetry, "")
         self.tabDischarge = QtWidgets.QWidget()
         self.tabDischarge.setObjectName("tabDischarge")
@@ -1495,33 +2335,59 @@ class Ui_MainWindow(object):
         self.verticalLayout_10 = QtWidgets.QVBoxLayout()
         self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.groupboxDischargeStations = QtWidgets.QGroupBox(self.tabDischarge)
-        self.groupboxDischargeStations.setObjectName("groupboxDischargeStations")
-        self.verticalLayout_11 = QtWidgets.QVBoxLayout(self.groupboxDischargeStations)
+        self.groupboxDischargeStations.setObjectName(
+            "groupboxDischargeStations"
+        )
+        self.verticalLayout_11 = QtWidgets.QVBoxLayout(
+            self.groupboxDischargeStations
+        )
         self.verticalLayout_11.setObjectName("verticalLayout_11")
         self.layoutDischargeStationsTable = QtWidgets.QHBoxLayout()
-        self.layoutDischargeStationsTable.setObjectName("layoutDischargeStationsTable")
+        self.layoutDischargeStationsTable.setObjectName(
+            "layoutDischargeStationsTable"
+        )
         self.verticalLayout_11.addLayout(self.layoutDischargeStationsTable)
         self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
-        self.pushbuttonUsedInMeasurement = QtWidgets.QPushButton(self.groupboxDischargeStations)
-        self.pushbuttonUsedInMeasurement.setObjectName("pushbuttonUsedInMeasurement")
+        self.pushbuttonUsedInMeasurement = QtWidgets.QPushButton(
+            self.groupboxDischargeStations
+        )
+        self.pushbuttonUsedInMeasurement.setObjectName(
+            "pushbuttonUsedInMeasurement"
+        )
         self.horizontalLayout_13.addWidget(self.pushbuttonUsedInMeasurement)
-        self.pushbuttonNotUsedInMeasurement = QtWidgets.QPushButton(self.groupboxDischargeStations)
-        self.pushbuttonNotUsedInMeasurement.setObjectName("pushbuttonNotUsedInMeasurement")
+        self.pushbuttonNotUsedInMeasurement = QtWidgets.QPushButton(
+            self.groupboxDischargeStations
+        )
+        self.pushbuttonNotUsedInMeasurement.setObjectName(
+            "pushbuttonNotUsedInMeasurement"
+        )
         self.horizontalLayout_13.addWidget(self.pushbuttonNotUsedInMeasurement)
-        self.pushbuttonResetDischargeStationsTable = QtWidgets.QPushButton(self.groupboxDischargeStations)
-        self.pushbuttonResetDischargeStationsTable.setObjectName("pushbuttonResetDischargeStationsTable")
-        self.horizontalLayout_13.addWidget(self.pushbuttonResetDischargeStationsTable)
+        self.pushbuttonResetDischargeStationsTable = QtWidgets.QPushButton(
+            self.groupboxDischargeStations
+        )
+        self.pushbuttonResetDischargeStationsTable.setObjectName(
+            "pushbuttonResetDischargeStationsTable"
+        )
+        self.horizontalLayout_13.addWidget(
+            self.pushbuttonResetDischargeStationsTable
+        )
         self.verticalLayout_11.addLayout(self.horizontalLayout_13)
-        self.groupboxDischargeResults = QtWidgets.QGroupBox(self.groupboxDischargeStations)
+        self.groupboxDischargeResults = QtWidgets.QGroupBox(
+            self.groupboxDischargeStations
+        )
         self.groupboxDischargeResults.setMinimumSize(QtCore.QSize(0, 200))
         self.groupboxDischargeResults.setObjectName("groupboxDischargeResults")
-        self.gridLayout_21 = QtWidgets.QGridLayout(self.groupboxDischargeResults)
+        self.gridLayout_21 = QtWidgets.QGridLayout(
+            self.groupboxDischargeResults
+        )
         self.gridLayout_21.setObjectName("gridLayout_21")
         self.label_14 = QtWidgets.QLabel(self.groupboxDischargeResults)
         self.label_14.setObjectName("label_14")
         self.gridLayout_21.addWidget(self.label_14, 1, 0, 1, 1)
-        self.comboboxUserRating = QtWidgets.QComboBox(self.groupboxDischargeResults)
+        self.comboboxUserRating = QtWidgets.QComboBox(
+            self.groupboxDischargeResults
+        )
         self.comboboxUserRating.setObjectName("comboboxUserRating")
         self.comboboxUserRating.addItem("")
         self.comboboxUserRating.addItem("")
@@ -1530,40 +2396,76 @@ class Ui_MainWindow(object):
         self.comboboxUserRating.addItem("")
         self.gridLayout_21.addWidget(self.comboboxUserRating, 1, 1, 1, 1)
         self.layoutDischargeResultsTable = QtWidgets.QHBoxLayout()
-        self.layoutDischargeResultsTable.setObjectName("layoutDischargeResultsTable")
-        self.measurementResultsTable = QtWidgets.QTableView(self.groupboxDischargeResults)
+        self.layoutDischargeResultsTable.setObjectName(
+            "layoutDischargeResultsTable"
+        )
+        self.measurementResultsTable = QtWidgets.QTableView(
+            self.groupboxDischargeResults
+        )
         self.measurementResultsTable.setMinimumSize(QtCore.QSize(0, 100))
         self.measurementResultsTable.setMaximumSize(QtCore.QSize(16777215, 75))
         self.measurementResultsTable.setObjectName("measurementResultsTable")
-        self.layoutDischargeResultsTable.addWidget(self.measurementResultsTable)
-        self.measurementUncertaintyTable = QtWidgets.QTableView(self.groupboxDischargeResults)
+        self.layoutDischargeResultsTable.addWidget(
+            self.measurementResultsTable
+        )
+        self.measurementUncertaintyTable = QtWidgets.QTableView(
+            self.groupboxDischargeResults
+        )
         self.measurementUncertaintyTable.setMinimumSize(QtCore.QSize(0, 100))
-        self.measurementUncertaintyTable.setMaximumSize(QtCore.QSize(16777215, 75))
-        self.measurementUncertaintyTable.setObjectName("measurementUncertaintyTable")
-        self.layoutDischargeResultsTable.addWidget(self.measurementUncertaintyTable)
-        self.gridLayout_21.addLayout(self.layoutDischargeResultsTable, 0, 0, 1, 2)
+        self.measurementUncertaintyTable.setMaximumSize(
+            QtCore.QSize(16777215, 75)
+        )
+        self.measurementUncertaintyTable.setObjectName(
+            "measurementUncertaintyTable"
+        )
+        self.layoutDischargeResultsTable.addWidget(
+            self.measurementUncertaintyTable
+        )
+        self.gridLayout_21.addLayout(
+            self.layoutDischargeResultsTable, 0, 0, 1, 2
+        )
         self.verticalLayout_11.addWidget(self.groupboxDischargeResults)
         self.gridLayout_35 = QtWidgets.QGridLayout()
         self.gridLayout_35.setObjectName("gridLayout_35")
-        self.doublespinboxGlobalAlhpa = QtWidgets.QDoubleSpinBox(self.groupboxDischargeStations)
-        self.doublespinboxGlobalAlhpa.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.doublespinboxGlobalAlhpa = QtWidgets.QDoubleSpinBox(
+            self.groupboxDischargeStations
+        )
+        self.doublespinboxGlobalAlhpa.setMaximumSize(
+            QtCore.QSize(100, 16777215)
+        )
         self.doublespinboxGlobalAlhpa.setSingleStep(0.01)
         self.doublespinboxGlobalAlhpa.setProperty("value", 0.85)
         self.doublespinboxGlobalAlhpa.setObjectName("doublespinboxGlobalAlhpa")
         self.gridLayout_35.addWidget(self.doublespinboxGlobalAlhpa, 0, 1, 1, 1)
-        self.labelGlobalAlpha = QtWidgets.QLabel(self.groupboxDischargeStations)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        self.labelGlobalAlpha = QtWidgets.QLabel(
+            self.groupboxDischargeStations
+        )
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.labelGlobalAlpha.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.labelGlobalAlpha.sizePolicy().hasHeightForWidth()
+        )
         self.labelGlobalAlpha.setSizePolicy(sizePolicy)
-        self.labelGlobalAlpha.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.labelGlobalAlpha.setAlignment(
+            QtCore.Qt.AlignRight
+            | QtCore.Qt.AlignTrailing
+            | QtCore.Qt.AlignVCenter
+        )
         self.labelGlobalAlpha.setObjectName("labelGlobalAlpha")
         self.gridLayout_35.addWidget(self.labelGlobalAlpha, 0, 0, 1, 1)
-        self.checkboxGlobalAlphaApplySelected = QtWidgets.QCheckBox(self.groupboxDischargeStations)
+        self.checkboxGlobalAlphaApplySelected = QtWidgets.QCheckBox(
+            self.groupboxDischargeStations
+        )
         self.checkboxGlobalAlphaApplySelected.setChecked(True)
-        self.checkboxGlobalAlphaApplySelected.setObjectName("checkboxGlobalAlphaApplySelected")
-        self.gridLayout_35.addWidget(self.checkboxGlobalAlphaApplySelected, 0, 2, 1, 1)
+        self.checkboxGlobalAlphaApplySelected.setObjectName(
+            "checkboxGlobalAlphaApplySelected"
+        )
+        self.gridLayout_35.addWidget(
+            self.checkboxGlobalAlphaApplySelected, 0, 2, 1, 1
+        )
         self.verticalLayout_11.addLayout(self.gridLayout_35)
         self.verticalLayout_11.setStretch(0, 10)
         self.verticalLayout_10.addWidget(self.groupboxDischargeStations)
@@ -1572,14 +2474,22 @@ class Ui_MainWindow(object):
         self.layoutDischargePlots.setObjectName("layoutDischargePlots")
         self.verticalLayout_12 = QtWidgets.QVBoxLayout()
         self.verticalLayout_12.setObjectName("verticalLayout_12")
-        self.labelDischargePlotsPlaceholder = QtWidgets.QLabel(self.tabDischarge)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.labelDischargePlotsPlaceholder = QtWidgets.QLabel(
+            self.tabDischarge
+        )
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.labelDischargePlotsPlaceholder.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.labelDischargePlotsPlaceholder.sizePolicy().hasHeightForWidth()
+        )
         self.labelDischargePlotsPlaceholder.setSizePolicy(sizePolicy)
         self.labelDischargePlotsPlaceholder.setAlignment(QtCore.Qt.AlignCenter)
-        self.labelDischargePlotsPlaceholder.setObjectName("labelDischargePlotsPlaceholder")
+        self.labelDischargePlotsPlaceholder.setObjectName(
+            "labelDischargePlotsPlaceholder"
+        )
         self.verticalLayout_12.addWidget(self.labelDischargePlotsPlaceholder)
         self.verticalLayout_12.setStretch(0, 2)
         self.layoutDischargePlots.addLayout(self.verticalLayout_12)
@@ -1598,16 +2508,24 @@ class Ui_MainWindow(object):
         self.label_21 = QtWidgets.QLabel(self.groupboxComments)
         self.label_21.setObjectName("label_21")
         self.gridLayout_37.addWidget(self.label_21, 1, 0, 1, 1)
-        self.projectDescriptionTextEdit = QtWidgets.QTextEdit(self.groupboxComments)
-        self.projectDescriptionTextEdit.setObjectName("projectDescriptionTextEdit")
-        self.gridLayout_37.addWidget(self.projectDescriptionTextEdit, 3, 0, 1, 1)
+        self.projectDescriptionTextEdit = QtWidgets.QTextEdit(
+            self.groupboxComments
+        )
+        self.projectDescriptionTextEdit.setObjectName(
+            "projectDescriptionTextEdit"
+        )
+        self.gridLayout_37.addWidget(
+            self.projectDescriptionTextEdit, 3, 0, 1, 1
+        )
         self.gridLayout_39 = QtWidgets.QGridLayout()
         self.gridLayout_39.setHorizontalSpacing(38)
         self.gridLayout_39.setObjectName("gridLayout_39")
         self.label_17 = QtWidgets.QLabel(self.groupboxComments)
         self.label_17.setObjectName("label_17")
         self.gridLayout_39.addWidget(self.label_17, 0, 5, 1, 1)
-        self.measurementNumberspinBox = QtWidgets.QSpinBox(self.groupboxComments)
+        self.measurementNumberspinBox = QtWidgets.QSpinBox(
+            self.groupboxComments
+        )
         self.measurementNumberspinBox.setMaximum(9999)
         self.measurementNumberspinBox.setObjectName("measurementNumberspinBox")
         self.gridLayout_39.addWidget(self.measurementNumberspinBox, 0, 6, 1, 1)
@@ -1624,7 +2542,9 @@ class Ui_MainWindow(object):
         self.userNameLabel.setObjectName("userNameLabel")
         self.gridLayout_39.addWidget(self.userNameLabel, 2, 0, 1, 1)
         self.stationNamelineEdit = QtWidgets.QLineEdit(self.groupboxComments)
-        self.stationNamelineEdit.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.stationNamelineEdit.setMaximumSize(
+            QtCore.QSize(16777215, 16777215)
+        )
         self.stationNamelineEdit.setObjectName("stationNamelineEdit")
         self.gridLayout_39.addWidget(self.stationNamelineEdit, 0, 2, 1, 1)
         self.partyLineEdit = QtWidgets.QLineEdit(self.groupboxComments)
@@ -1653,7 +2573,9 @@ class Ui_MainWindow(object):
         self.measDate.setDate(QtCore.QDate(2023, 10, 1))
         self.measDate.setObjectName("measDate")
         self.gridLayout_39.addWidget(self.measDate, 0, 4, 1, 1)
-        self.gageHeightdoubleSpinBox = QtWidgets.QDoubleSpinBox(self.groupboxComments)
+        self.gageHeightdoubleSpinBox = QtWidgets.QDoubleSpinBox(
+            self.groupboxComments
+        )
         self.gageHeightdoubleSpinBox.setObjectName("gageHeightdoubleSpinBox")
         self.gridLayout_39.addWidget(self.gageHeightdoubleSpinBox, 1, 4, 1, 1)
         self.measStartTime = QtWidgets.QTimeEdit(self.groupboxComments)
@@ -1704,30 +2626,50 @@ class Ui_MainWindow(object):
         self.actionOpen_Image_Folder.setObjectName("actionOpen_Image_Folder")
         self.actionAbout_IVy_Tools = QtWidgets.QAction(MainWindow)
         self.actionAbout_IVy_Tools.setObjectName("actionAbout_IVy_Tools")
-        self.actionCompute_coordinates_from_4_point_distances = QtWidgets.QAction(MainWindow)
-        self.actionCompute_coordinates_from_4_point_distances.setObjectName("actionCompute_coordinates_from_4_point_distances")
+        self.actionCompute_coordinates_from_4_point_distances = (
+            QtWidgets.QAction(MainWindow)
+        )
+        self.actionCompute_coordinates_from_4_point_distances.setObjectName(
+            "actionCompute_coordinates_from_4_point_distances"
+        )
         self.actionOpen_Ground_Control_Image = QtWidgets.QAction(MainWindow)
-        self.actionOpen_Ground_Control_Image.setObjectName("actionOpen_Ground_Control_Image")
+        self.actionOpen_Ground_Control_Image.setObjectName(
+            "actionOpen_Ground_Control_Image"
+        )
         self.actionNew_Project = QtWidgets.QAction(MainWindow)
         self.actionNew_Project.setObjectName("actionNew_Project")
         self.actionOpen_Project = QtWidgets.QAction(MainWindow)
         self.actionOpen_Project.setObjectName("actionOpen_Project")
         self.actionSave_Project = QtWidgets.QAction(MainWindow)
         self.actionSave_Project.setObjectName("actionSave_Project")
-        self.actionImport_Ground_Control_Points_Table = QtWidgets.QAction(MainWindow)
-        self.actionImport_Ground_Control_Points_Table.setObjectName("actionImport_Ground_Control_Points_Table")
+        self.actionImport_Ground_Control_Points_Table = QtWidgets.QAction(
+            MainWindow
+        )
+        self.actionImport_Ground_Control_Points_Table.setObjectName(
+            "actionImport_Ground_Control_Points_Table"
+        )
         self.actionImport_Bathymetry = QtWidgets.QAction(MainWindow)
         self.actionImport_Bathymetry.setObjectName("actionImport_Bathymetry")
         self.actionUnits = QtWidgets.QAction(MainWindow)
         self.actionUnits.setObjectName("actionUnits")
         self.actionSummary_Report_PDF = QtWidgets.QAction(MainWindow)
         self.actionSummary_Report_PDF.setObjectName("actionSummary_Report_PDF")
-        self.actionEstimate_STIV_Video_Sample_Rate = QtWidgets.QAction(MainWindow)
-        self.actionEstimate_STIV_Video_Sample_Rate.setObjectName("actionEstimate_STIV_Video_Sample_Rate")
-        self.actionSave_Template_Ground_Control_Points_File = QtWidgets.QAction(MainWindow)
-        self.actionSave_Template_Ground_Control_Points_File.setObjectName("actionSave_Template_Ground_Control_Points_File")
+        self.actionEstimate_STIV_Video_Sample_Rate = QtWidgets.QAction(
+            MainWindow
+        )
+        self.actionEstimate_STIV_Video_Sample_Rate.setObjectName(
+            "actionEstimate_STIV_Video_Sample_Rate"
+        )
+        self.actionSave_Template_Ground_Control_Points_File = (
+            QtWidgets.QAction(MainWindow)
+        )
+        self.actionSave_Template_Ground_Control_Points_File.setObjectName(
+            "actionSave_Template_Ground_Control_Points_File"
+        )
         self.actionOpen_Help_Documentation = QtWidgets.QAction(MainWindow)
-        self.actionOpen_Help_Documentation.setObjectName("actionOpen_Help_Documentation")
+        self.actionOpen_Help_Documentation.setObjectName(
+            "actionOpen_Help_Documentation"
+        )
         self.actionCheck_for_Updates = QtWidgets.QAction(MainWindow)
         self.actionCheck_for_Updates.setObjectName("actionCheck_for_Updates")
         self.menuAbout.addAction(self.actionOpen_Help_Documentation)
@@ -1741,14 +2683,20 @@ class Ui_MainWindow(object):
         self.menuMenu.addSeparator()
         self.menuMenu.addAction(self.actionExit)
         self.menuTools.addAction(self.actionEstimate_STIV_Video_Sample_Rate)
-        self.menuTools.addAction(self.actionCompute_coordinates_from_4_point_distances)
-        self.menuTools.addAction(self.actionSave_Template_Ground_Control_Points_File)
+        self.menuTools.addAction(
+            self.actionCompute_coordinates_from_4_point_distances
+        )
+        self.menuTools.addAction(
+            self.actionSave_Template_Ground_Control_Points_File
+        )
         self.menuImport.addAction(self.actionOpen_Video)
         self.menuImport.addAction(self.actionOpen_Image_Folder)
         self.menuImport.addAction(self.actionOpen_Ground_Control_Image)
         self.menuImport.addAction(self.actionImport_Bathymetry)
         self.menuImport.addSeparator()
-        self.menuImport.addAction(self.actionImport_Ground_Control_Points_Table)
+        self.menuImport.addAction(
+            self.actionImport_Ground_Control_Points_Table
+        )
         self.menuEdit.addAction(self.actionUnits)
         self.menuExport.addAction(self.actionSummary_Report_PDF)
         self.menuBar.addAction(self.menuMenu.menuAction())
@@ -1770,52 +2718,143 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.buttonClipStart, self.buttonClipEnd)
         MainWindow.setTabOrder(self.buttonClipEnd, self.buttonClearClip)
-        MainWindow.setTabOrder(self.buttonClearClip, self.comboboxFfmpegRotation)
-        MainWindow.setTabOrder(self.comboboxFfmpegRotation, self.comboboxFfmpegCurvePresets)
-        MainWindow.setTabOrder(self.comboboxFfmpegCurvePresets, self.comboboxFfmpegFlipVideo)
-        MainWindow.setTabOrder(self.comboboxFfmpegFlipVideo, self.checkboxStripAudio)
-        MainWindow.setTabOrder(self.checkboxStripAudio, self.checkboxFfmpegNormalizeLuma)
-        MainWindow.setTabOrder(self.checkboxFfmpegNormalizeLuma, self.buttonCreateVideoClip)
+        MainWindow.setTabOrder(
+            self.buttonClearClip, self.comboboxFfmpegRotation
+        )
+        MainWindow.setTabOrder(
+            self.comboboxFfmpegRotation, self.comboboxFfmpegCurvePresets
+        )
+        MainWindow.setTabOrder(
+            self.comboboxFfmpegCurvePresets, self.comboboxFfmpegFlipVideo
+        )
+        MainWindow.setTabOrder(
+            self.comboboxFfmpegFlipVideo, self.checkboxStripAudio
+        )
+        MainWindow.setTabOrder(
+            self.checkboxStripAudio, self.checkboxFfmpegNormalizeLuma
+        )
+        MainWindow.setTabOrder(
+            self.checkboxFfmpegNormalizeLuma, self.buttonCreateVideoClip
+        )
         MainWindow.setTabOrder(self.buttonCreateVideoClip, self.buttonPlay)
         MainWindow.setTabOrder(self.buttonPlay, self.sliderVideoPlayHead)
-        MainWindow.setTabOrder(self.sliderVideoPlayHead, self.buttonExtractVideoFrames)
-        MainWindow.setTabOrder(self.buttonExtractVideoFrames, self.lineeditFrameStepValue)
-        MainWindow.setTabOrder(self.lineeditFrameStepValue, self.checkboxFfmpeg2PassStabilization)
-        MainWindow.setTabOrder(self.checkboxFfmpeg2PassStabilization, self.checkboxCorrectRadialDistortion)
-        MainWindow.setTabOrder(self.checkboxCorrectRadialDistortion, self.buttonLoadLensCharacteristics)
-        MainWindow.setTabOrder(self.buttonLoadLensCharacteristics, self.treeviewProjectStructureImageryProcessingTab)
-        MainWindow.setTabOrder(self.treeviewProjectStructureImageryProcessingTab, self.toolbuttonNextImage)
-        MainWindow.setTabOrder(self.toolbuttonNextImage, self.toolbuttonPreviousImage)
-        MainWindow.setTabOrder(self.toolbuttonPreviousImage, self.buttonApplyFileFilter)
-        MainWindow.setTabOrder(self.buttonApplyFileFilter, self.lineeditFrameFiltering)
-        MainWindow.setTabOrder(self.lineeditFrameFiltering, self.buttonApplyToThisFrame)
-        MainWindow.setTabOrder(self.buttonApplyToThisFrame, self.lineeditClaheHorzTileSize)
-        MainWindow.setTabOrder(self.lineeditClaheHorzTileSize, self.lineeditAutoContrastPercentClip)
-        MainWindow.setTabOrder(self.lineeditAutoContrastPercentClip, self.checkboxApplyClahe)
-        MainWindow.setTabOrder(self.checkboxApplyClahe, self.lineeditClaheVertTileSize)
-        MainWindow.setTabOrder(self.lineeditClaheVertTileSize, self.checkboxAutoContrast)
-        MainWindow.setTabOrder(self.checkboxAutoContrast, self.lineeditClaheClipLimit)
-        MainWindow.setTabOrder(self.lineeditClaheClipLimit, self.buttonApplyToAllFrames)
-        MainWindow.setTabOrder(self.buttonApplyToAllFrames, self.toolbuttonOpenOrthoPointsTable)
-        MainWindow.setTabOrder(self.toolbuttonOpenOrthoPointsTable, self.toolbuttonSaveOrthoPointsTable)
-        MainWindow.setTabOrder(self.toolbuttonSaveOrthoPointsTable, self.toolbuttonOrthoOrigImageDigitizePoint)
-        MainWindow.setTabOrder(self.toolbuttonOrthoOrigImageDigitizePoint, self.toolbuttonAddOrthotableRow)
-        MainWindow.setTabOrder(self.toolbuttonAddOrthotableRow, self.toolbuttonRemoveOrthotableRow)
-        MainWindow.setTabOrder(self.toolbuttonRemoveOrthotableRow, self.lineeditPixelGSD)
+        MainWindow.setTabOrder(
+            self.sliderVideoPlayHead, self.buttonExtractVideoFrames
+        )
+        MainWindow.setTabOrder(
+            self.buttonExtractVideoFrames, self.lineeditFrameStepValue
+        )
+        MainWindow.setTabOrder(
+            self.lineeditFrameStepValue, self.checkboxFfmpeg2PassStabilization
+        )
+        MainWindow.setTabOrder(
+            self.checkboxFfmpeg2PassStabilization,
+            self.checkboxCorrectRadialDistortion,
+        )
+        MainWindow.setTabOrder(
+            self.checkboxCorrectRadialDistortion,
+            self.buttonLoadLensCharacteristics,
+        )
+        MainWindow.setTabOrder(
+            self.buttonLoadLensCharacteristics,
+            self.treeviewProjectStructureImageryProcessingTab,
+        )
+        MainWindow.setTabOrder(
+            self.treeviewProjectStructureImageryProcessingTab,
+            self.toolbuttonNextImage,
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonNextImage, self.toolbuttonPreviousImage
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonPreviousImage, self.buttonApplyFileFilter
+        )
+        MainWindow.setTabOrder(
+            self.buttonApplyFileFilter, self.lineeditFrameFiltering
+        )
+        MainWindow.setTabOrder(
+            self.lineeditFrameFiltering, self.buttonApplyToThisFrame
+        )
+        MainWindow.setTabOrder(
+            self.buttonApplyToThisFrame, self.lineeditClaheHorzTileSize
+        )
+        MainWindow.setTabOrder(
+            self.lineeditClaheHorzTileSize,
+            self.lineeditAutoContrastPercentClip,
+        )
+        MainWindow.setTabOrder(
+            self.lineeditAutoContrastPercentClip, self.checkboxApplyClahe
+        )
+        MainWindow.setTabOrder(
+            self.checkboxApplyClahe, self.lineeditClaheVertTileSize
+        )
+        MainWindow.setTabOrder(
+            self.lineeditClaheVertTileSize, self.checkboxAutoContrast
+        )
+        MainWindow.setTabOrder(
+            self.checkboxAutoContrast, self.lineeditClaheClipLimit
+        )
+        MainWindow.setTabOrder(
+            self.lineeditClaheClipLimit, self.buttonApplyToAllFrames
+        )
+        MainWindow.setTabOrder(
+            self.buttonApplyToAllFrames, self.toolbuttonOpenOrthoPointsTable
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonOpenOrthoPointsTable,
+            self.toolbuttonSaveOrthoPointsTable,
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonSaveOrthoPointsTable,
+            self.toolbuttonOrthoOrigImageDigitizePoint,
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonOrthoOrigImageDigitizePoint,
+            self.toolbuttonAddOrthotableRow,
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonAddOrthotableRow, self.toolbuttonRemoveOrthotableRow
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonRemoveOrthotableRow, self.lineeditPixelGSD
+        )
         MainWindow.setTabOrder(self.lineeditPixelGSD, self.lineeditPixelRMSE)
-        MainWindow.setTabOrder(self.lineeditPixelRMSE, self.tablewidgetProjectiveMatrix)
-        MainWindow.setTabOrder(self.tablewidgetProjectiveMatrix, self.pushbuttonExportProjectedFrames)
-        MainWindow.setTabOrder(self.pushbuttonExportProjectedFrames, self.treeviewProjectStructureGridPreparationTab)
-        MainWindow.setTabOrder(self.treeviewProjectStructureGridPreparationTab, self.treeviewProjectStructureOrthorectificationTab)
-        MainWindow.setTabOrder(self.treeviewProjectStructureOrthorectificationTab, self.tabWidget)
+        MainWindow.setTabOrder(
+            self.lineeditPixelRMSE, self.tablewidgetProjectiveMatrix
+        )
+        MainWindow.setTabOrder(
+            self.tablewidgetProjectiveMatrix,
+            self.pushbuttonExportProjectedFrames,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonExportProjectedFrames,
+            self.treeviewProjectStructureGridPreparationTab,
+        )
+        MainWindow.setTabOrder(
+            self.treeviewProjectStructureGridPreparationTab,
+            self.treeviewProjectStructureOrthorectificationTab,
+        )
+        MainWindow.setTabOrder(
+            self.treeviewProjectStructureOrthorectificationTab, self.tabWidget
+        )
         MainWindow.setTabOrder(self.tabWidget, self.radioButtonRectifiedImage)
-        MainWindow.setTabOrder(self.radioButtonRectifiedImage, self.radioButtonLeft)
+        MainWindow.setTabOrder(
+            self.radioButtonRectifiedImage, self.radioButtonLeft
+        )
         MainWindow.setTabOrder(self.radioButtonLeft, self.radioButtonRight)
-        MainWindow.setTabOrder(self.radioButtonRight, self.radioButtonOriginalImage)
-        MainWindow.setTabOrder(self.radioButtonOriginalImage, self.toolbuttonDrawCrossSection)
-        MainWindow.setTabOrder(self.toolbuttonDrawCrossSection, self.char_stage_sb)
+        MainWindow.setTabOrder(
+            self.radioButtonRight, self.radioButtonOriginalImage
+        )
+        MainWindow.setTabOrder(
+            self.radioButtonOriginalImage, self.toolbuttonDrawCrossSection
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonDrawCrossSection, self.char_stage_sb
+        )
         MainWindow.setTabOrder(self.char_stage_sb, self.pb_bathymetry_picker)
-        MainWindow.setTabOrder(self.pb_bathymetry_picker, self.pb_bathymetry_home)
+        MainWindow.setTabOrder(
+            self.pb_bathymetry_picker, self.pb_bathymetry_home
+        )
         MainWindow.setTabOrder(self.pb_bathymetry_home, self.radius_rb)
         MainWindow.setTabOrder(self.radius_rb, self.conveyance_rb)
         MainWindow.setTabOrder(self.conveyance_rb, self.area_rb)
@@ -1824,15 +2863,23 @@ class Ui_MainWindow(object):
         MainWindow.setTabOrder(self.perm_rb, self.pb_bathymetry_zoom)
         MainWindow.setTabOrder(self.pb_bathymetry_zoom, self.topwidtch_rb)
         MainWindow.setTabOrder(self.topwidtch_rb, self.pb_bathymetry_pan)
-        MainWindow.setTabOrder(self.pb_bathymetry_pan, self.pb_xs_subsurvey_import)
+        MainWindow.setTabOrder(
+            self.pb_bathymetry_pan, self.pb_xs_subsurvey_import
+        )
         MainWindow.setTabOrder(self.pb_xs_subsurvey_import, self.cb_file_name)
         MainWindow.setTabOrder(self.cb_file_name, self.pb_subsurvey_delete)
         MainWindow.setTabOrder(self.pb_subsurvey_delete, self.pb_flip)
         MainWindow.setTabOrder(self.pb_flip, self.start_station_lineEdit)
-        MainWindow.setTabOrder(self.start_station_lineEdit, self.stage_lineEdit)
+        MainWindow.setTabOrder(
+            self.start_station_lineEdit, self.stage_lineEdit
+        )
         MainWindow.setTabOrder(self.stage_lineEdit, self.tabWidget_2)
-        MainWindow.setTabOrder(self.tabWidget_2, self.tableCrossSectionBathymetry)
-        MainWindow.setTabOrder(self.tableCrossSectionBathymetry, self.station_lineEdit)
+        MainWindow.setTabOrder(
+            self.tabWidget_2, self.tableCrossSectionBathymetry
+        )
+        MainWindow.setTabOrder(
+            self.tableCrossSectionBathymetry, self.station_lineEdit
+        )
         MainWindow.setTabOrder(self.station_lineEdit, self.stage_lineEdit_2)
         MainWindow.setTabOrder(self.stage_lineEdit_2, self.add_pushButton)
         MainWindow.setTabOrder(self.add_pushButton, self.delete_pushButton)
@@ -1841,172 +2888,477 @@ class Ui_MainWindow(object):
         MainWindow.setTabOrder(self.subsection_sb, self.add_section_pb)
         MainWindow.setTabOrder(self.add_section_pb, self.rm_sect_pb)
         MainWindow.setTabOrder(self.rm_sect_pb, self.subsect_tbl)
-        MainWindow.setTabOrder(self.subsect_tbl, self.tableCrossSectionCharacteristics)
-        MainWindow.setTabOrder(self.tableCrossSectionCharacteristics, self.toolbuttonCreateXsLine)
-        MainWindow.setTabOrder(self.toolbuttonCreateXsLine, self.toolbuttonClearXsLine)
-        MainWindow.setTabOrder(self.toolbuttonClearXsLine, self.spinbocXsLineNumPoints)
-        MainWindow.setTabOrder(self.spinbocXsLineNumPoints, self.buttonCreatePointsOnCrossSection)
-        MainWindow.setTabOrder(self.buttonCreatePointsOnCrossSection, self.toolbuttonCreateMask)
-        MainWindow.setTabOrder(self.toolbuttonCreateMask, self.toolbuttonClearMask)
-        MainWindow.setTabOrder(self.toolbuttonClearMask, self.toolbuttonCreatePoint)
-        MainWindow.setTabOrder(self.toolbuttonCreatePoint, self.toolbuttonClearPoints)
-        MainWindow.setTabOrder(self.toolbuttonClearPoints, self.toolbuttonCreateLine)
-        MainWindow.setTabOrder(self.toolbuttonCreateLine, self.toolbuttonClearLine)
-        MainWindow.setTabOrder(self.toolbuttonClearLine, self.spinboxLineNumPoints)
-        MainWindow.setTabOrder(self.spinboxLineNumPoints, self.buttonCreatePointsOnLine)
-        MainWindow.setTabOrder(self.buttonCreatePointsOnLine, self.spinboxHorizGridSpacing)
-        MainWindow.setTabOrder(self.spinboxHorizGridSpacing, self.spinboxVertGridSpacing)
-        MainWindow.setTabOrder(self.spinboxVertGridSpacing, self.buttonCreateGrid)
-        MainWindow.setTabOrder(self.buttonCreateGrid, self.tabWidget_ImageVelocimetryMethods)
-        MainWindow.setTabOrder(self.tabWidget_ImageVelocimetryMethods, self.treeviewProjectStructureSTIVTab)
-        MainWindow.setTabOrder(self.treeviewProjectStructureSTIVTab, self.doublespinboxStivSearchLineDistance)
-        MainWindow.setTabOrder(self.doublespinboxStivSearchLineDistance, self.spinboxSTIVPhiOrigin)
-        MainWindow.setTabOrder(self.spinboxSTIVPhiOrigin, self.spinboxSTIVPhiRange)
+        MainWindow.setTabOrder(
+            self.subsect_tbl, self.tableCrossSectionCharacteristics
+        )
+        MainWindow.setTabOrder(
+            self.tableCrossSectionCharacteristics, self.toolbuttonCreateXsLine
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonCreateXsLine, self.toolbuttonClearXsLine
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonClearXsLine, self.spinbocXsLineNumPoints
+        )
+        MainWindow.setTabOrder(
+            self.spinbocXsLineNumPoints, self.buttonCreatePointsOnCrossSection
+        )
+        MainWindow.setTabOrder(
+            self.buttonCreatePointsOnCrossSection, self.toolbuttonCreateMask
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonCreateMask, self.toolbuttonClearMask
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonClearMask, self.toolbuttonCreatePoint
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonCreatePoint, self.toolbuttonClearPoints
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonClearPoints, self.toolbuttonCreateLine
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonCreateLine, self.toolbuttonClearLine
+        )
+        MainWindow.setTabOrder(
+            self.toolbuttonClearLine, self.spinboxLineNumPoints
+        )
+        MainWindow.setTabOrder(
+            self.spinboxLineNumPoints, self.buttonCreatePointsOnLine
+        )
+        MainWindow.setTabOrder(
+            self.buttonCreatePointsOnLine, self.spinboxHorizGridSpacing
+        )
+        MainWindow.setTabOrder(
+            self.spinboxHorizGridSpacing, self.spinboxVertGridSpacing
+        )
+        MainWindow.setTabOrder(
+            self.spinboxVertGridSpacing, self.buttonCreateGrid
+        )
+        MainWindow.setTabOrder(
+            self.buttonCreateGrid, self.tabWidget_ImageVelocimetryMethods
+        )
+        MainWindow.setTabOrder(
+            self.tabWidget_ImageVelocimetryMethods,
+            self.treeviewProjectStructureSTIVTab,
+        )
+        MainWindow.setTabOrder(
+            self.treeviewProjectStructureSTIVTab,
+            self.doublespinboxStivSearchLineDistance,
+        )
+        MainWindow.setTabOrder(
+            self.doublespinboxStivSearchLineDistance, self.spinboxSTIVPhiOrigin
+        )
+        MainWindow.setTabOrder(
+            self.spinboxSTIVPhiOrigin, self.spinboxSTIVPhiRange
+        )
         MainWindow.setTabOrder(self.spinboxSTIVPhiRange, self.spinboxSTIVdPhi)
-        MainWindow.setTabOrder(self.spinboxSTIVdPhi, self.spinboxSTIVMaxVelThreshold)
-        MainWindow.setTabOrder(self.spinboxSTIVMaxVelThreshold, self.doublespinboxStivGaussianBlurSigma)
-        MainWindow.setTabOrder(self.doublespinboxStivGaussianBlurSigma, self.checkboxSaveSTIs)
-        MainWindow.setTabOrder(self.checkboxSaveSTIs, self.pushbuttonCreateRefreshImageStackSTIV)
-        MainWindow.setTabOrder(self.pushbuttonCreateRefreshImageStackSTIV, self.buttonSTIVProcessVelocities)
-        MainWindow.setTabOrder(self.buttonSTIVProcessVelocities, self.pushbuttonReloadProcessedSTIVResults)
-        MainWindow.setTabOrder(self.pushbuttonReloadProcessedSTIVResults, self.pushbuttonApplyManualSTIVChanges)
-        MainWindow.setTabOrder(self.pushbuttonApplyManualSTIVChanges, self.treeviewProjectStructureSTIVTabOpt)
-        MainWindow.setTabOrder(self.treeviewProjectStructureSTIVTabOpt, self.spinboxSTIVOptNumPixels)
-        MainWindow.setTabOrder(self.spinboxSTIVOptNumPixels, self.buttonSTIVOptProcessVelocities)
-        MainWindow.setTabOrder(self.buttonSTIVOptProcessVelocities, self.spinboxSTIVOptMaxVelThreshold)
-        MainWindow.setTabOrder(self.spinboxSTIVOptMaxVelThreshold, self.pushbuttonCreateRefreshImageStackSTIVOpt)
-        MainWindow.setTabOrder(self.pushbuttonCreateRefreshImageStackSTIVOpt, self.pushbuttonUsedInMeasurement)
-        MainWindow.setTabOrder(self.pushbuttonUsedInMeasurement, self.pushbuttonNotUsedInMeasurement)
-        MainWindow.setTabOrder(self.pushbuttonNotUsedInMeasurement, self.pushbuttonResetDischargeStationsTable)
-        MainWindow.setTabOrder(self.pushbuttonResetDischargeStationsTable, self.comboboxUserRating)
-        MainWindow.setTabOrder(self.comboboxUserRating, self.measurementResultsTable)
-        MainWindow.setTabOrder(self.measurementResultsTable, self.measurementUncertaintyTable)
-        MainWindow.setTabOrder(self.measurementUncertaintyTable, self.doublespinboxGlobalAlhpa)
-        MainWindow.setTabOrder(self.doublespinboxGlobalAlhpa, self.checkboxGlobalAlphaApplySelected)
-        MainWindow.setTabOrder(self.checkboxGlobalAlphaApplySelected, self.stationNamelineEdit)
-        MainWindow.setTabOrder(self.stationNamelineEdit, self.stationNumberLineEdit)
+        MainWindow.setTabOrder(
+            self.spinboxSTIVdPhi, self.spinboxSTIVMaxVelThreshold
+        )
+        MainWindow.setTabOrder(
+            self.spinboxSTIVMaxVelThreshold,
+            self.doublespinboxStivGaussianBlurSigma,
+        )
+        MainWindow.setTabOrder(
+            self.doublespinboxStivGaussianBlurSigma, self.checkboxSaveSTIs
+        )
+        MainWindow.setTabOrder(
+            self.checkboxSaveSTIs, self.pushbuttonCreateRefreshImageStackSTIV
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonCreateRefreshImageStackSTIV,
+            self.buttonSTIVProcessVelocities,
+        )
+        MainWindow.setTabOrder(
+            self.buttonSTIVProcessVelocities,
+            self.pushbuttonReloadProcessedSTIVResults,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonReloadProcessedSTIVResults,
+            self.pushbuttonApplyManualSTIVChanges,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonApplyManualSTIVChanges,
+            self.treeviewProjectStructureSTIVTabOpt,
+        )
+        MainWindow.setTabOrder(
+            self.treeviewProjectStructureSTIVTabOpt,
+            self.spinboxSTIVOptNumPixels,
+        )
+        MainWindow.setTabOrder(
+            self.spinboxSTIVOptNumPixels, self.buttonSTIVOptProcessVelocities
+        )
+        MainWindow.setTabOrder(
+            self.buttonSTIVOptProcessVelocities,
+            self.spinboxSTIVOptMaxVelThreshold,
+        )
+        MainWindow.setTabOrder(
+            self.spinboxSTIVOptMaxVelThreshold,
+            self.pushbuttonCreateRefreshImageStackSTIVOpt,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonCreateRefreshImageStackSTIVOpt,
+            self.pushbuttonUsedInMeasurement,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonUsedInMeasurement,
+            self.pushbuttonNotUsedInMeasurement,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonNotUsedInMeasurement,
+            self.pushbuttonResetDischargeStationsTable,
+        )
+        MainWindow.setTabOrder(
+            self.pushbuttonResetDischargeStationsTable, self.comboboxUserRating
+        )
+        MainWindow.setTabOrder(
+            self.comboboxUserRating, self.measurementResultsTable
+        )
+        MainWindow.setTabOrder(
+            self.measurementResultsTable, self.measurementUncertaintyTable
+        )
+        MainWindow.setTabOrder(
+            self.measurementUncertaintyTable, self.doublespinboxGlobalAlhpa
+        )
+        MainWindow.setTabOrder(
+            self.doublespinboxGlobalAlhpa,
+            self.checkboxGlobalAlphaApplySelected,
+        )
+        MainWindow.setTabOrder(
+            self.checkboxGlobalAlphaApplySelected, self.stationNamelineEdit
+        )
+        MainWindow.setTabOrder(
+            self.stationNamelineEdit, self.stationNumberLineEdit
+        )
         MainWindow.setTabOrder(self.stationNumberLineEdit, self.partyLineEdit)
         MainWindow.setTabOrder(self.partyLineEdit, self.weatherLineEdit)
         MainWindow.setTabOrder(self.weatherLineEdit, self.measDate)
         MainWindow.setTabOrder(self.measDate, self.gageHeightdoubleSpinBox)
-        MainWindow.setTabOrder(self.gageHeightdoubleSpinBox, self.measStartTime)
+        MainWindow.setTabOrder(
+            self.gageHeightdoubleSpinBox, self.measStartTime
+        )
         MainWindow.setTabOrder(self.measStartTime, self.measEndTime)
         MainWindow.setTabOrder(self.measEndTime, self.measurementNumberspinBox)
-        MainWindow.setTabOrder(self.measurementNumberspinBox, self.projectDescriptionTextEdit)
-        MainWindow.setTabOrder(self.projectDescriptionTextEdit, self.comments_tbl)
+        MainWindow.setTabOrder(
+            self.measurementNumberspinBox, self.projectDescriptionTextEdit
+        )
+        MainWindow.setTabOrder(
+            self.projectDescriptionTextEdit, self.comments_tbl
+        )
         MainWindow.setTabOrder(self.comments_tbl, self.toolButtonNewProject)
-        MainWindow.setTabOrder(self.toolButtonNewProject, self.toolButtonOpenProject)
-        MainWindow.setTabOrder(self.toolButtonOpenProject, self.toolButtonSaveProject)
-        MainWindow.setTabOrder(self.toolButtonSaveProject, self.toolButtonImportVideo)
-        MainWindow.setTabOrder(self.toolButtonImportVideo, self.toolButtonImportFramesDirectory)
-        MainWindow.setTabOrder(self.toolButtonImportFramesDirectory, self.toolButtonImportGroundControlImage)
-        MainWindow.setTabOrder(self.toolButtonImportGroundControlImage, self.toolButtonImportBathymetry)
-        MainWindow.setTabOrder(self.toolButtonImportBathymetry, self.toolButtonImportGCPTable)
-        MainWindow.setTabOrder(self.toolButtonImportGCPTable, self.toolButtonExportPDF)
-        MainWindow.setTabOrder(self.toolButtonExportPDF, self.toolButtonAddComment)
-        MainWindow.setTabOrder(self.toolButtonAddComment, self.toolButtonOpenSettings)
-        MainWindow.setTabOrder(self.toolButtonOpenSettings, self.toolButtonOpenHelp)
+        MainWindow.setTabOrder(
+            self.toolButtonNewProject, self.toolButtonOpenProject
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonOpenProject, self.toolButtonSaveProject
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonSaveProject, self.toolButtonImportVideo
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonImportVideo, self.toolButtonImportFramesDirectory
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonImportFramesDirectory,
+            self.toolButtonImportGroundControlImage,
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonImportGroundControlImage,
+            self.toolButtonImportBathymetry,
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonImportBathymetry, self.toolButtonImportGCPTable
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonImportGCPTable, self.toolButtonExportPDF
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonExportPDF, self.toolButtonAddComment
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonAddComment, self.toolButtonOpenSettings
+        )
+        MainWindow.setTabOrder(
+            self.toolButtonOpenSettings, self.toolButtonOpenHelp
+        )
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.toolButtonNewProject.setToolTip(_translate("MainWindow", "Create a new project"))
+        self.toolButtonNewProject.setToolTip(
+            _translate("MainWindow", "Create a new project")
+        )
         self.toolButtonNewProject.setText(_translate("MainWindow", "..."))
-        self.toolButtonOpenProject.setToolTip(_translate("MainWindow", "Open an existing project"))
+        self.toolButtonOpenProject.setToolTip(
+            _translate("MainWindow", "Open an existing project")
+        )
         self.toolButtonOpenProject.setText(_translate("MainWindow", "..."))
-        self.toolButtonSaveProject.setToolTip(_translate("MainWindow", "Save the current project"))
+        self.toolButtonSaveProject.setToolTip(
+            _translate("MainWindow", "Save the current project")
+        )
         self.toolButtonSaveProject.setText(_translate("MainWindow", "..."))
-        self.toolButtonImportVideo.setToolTip(_translate("MainWindow", "Import video"))
+        self.toolButtonImportVideo.setToolTip(
+            _translate("MainWindow", "Import video")
+        )
         self.toolButtonImportVideo.setText(_translate("MainWindow", "..."))
-        self.toolButtonImportFramesDirectory.setToolTip(_translate("MainWindow", "Import a directory of images"))
-        self.toolButtonImportFramesDirectory.setText(_translate("MainWindow", "..."))
-        self.toolButtonImportGroundControlImage.setToolTip(_translate("MainWindow", "Import ground control image"))
-        self.toolButtonImportGroundControlImage.setText(_translate("MainWindow", "..."))
-        self.toolButtonImportBathymetry.setToolTip(_translate("MainWindow", "Import AreaComp bathymetry"))
-        self.toolButtonImportBathymetry.setText(_translate("MainWindow", "..."))
-        self.toolButtonImportGCPTable.setToolTip(_translate("MainWindow", "Import ground control points table"))
+        self.toolButtonImportFramesDirectory.setToolTip(
+            _translate("MainWindow", "Import a directory of images")
+        )
+        self.toolButtonImportFramesDirectory.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolButtonImportGroundControlImage.setToolTip(
+            _translate("MainWindow", "Import ground control image")
+        )
+        self.toolButtonImportGroundControlImage.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolButtonImportBathymetry.setToolTip(
+            _translate("MainWindow", "Import AreaComp bathymetry")
+        )
+        self.toolButtonImportBathymetry.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolButtonImportGCPTable.setToolTip(
+            _translate("MainWindow", "Import ground control points table")
+        )
         self.toolButtonImportGCPTable.setText(_translate("MainWindow", "..."))
-        self.toolButtonExportPDF.setToolTip(_translate("MainWindow", "Export measurement summary PDF"))
+        self.toolButtonExportPDF.setToolTip(
+            _translate("MainWindow", "Export measurement summary PDF")
+        )
         self.toolButtonExportPDF.setText(_translate("MainWindow", "..."))
-        self.toolButtonAddComment.setToolTip(_translate("MainWindow", "Add a comment"))
+        self.toolButtonAddComment.setToolTip(
+            _translate("MainWindow", "Add a comment")
+        )
         self.toolButtonAddComment.setText(_translate("MainWindow", "..."))
-        self.toolButtonOpenSettings.setToolTip(_translate("MainWindow", "Open settings"))
+        self.toolButtonOpenSettings.setToolTip(
+            _translate("MainWindow", "Open settings")
+        )
         self.toolButtonOpenSettings.setText(_translate("MainWindow", "..."))
-        self.toolButtonOpenHelp.setToolTip(_translate("MainWindow", "Open help documentation"))
+        self.toolButtonOpenHelp.setToolTip(
+            _translate("MainWindow", "Open help documentation")
+        )
         self.toolButtonOpenHelp.setText(_translate("MainWindow", "..."))
-        self.labelVideoPreload.setText(_translate("MainWindow", "Drag a video here or load a video from the Import menu"))
-        self.groupboxClipControl.setTitle(_translate("MainWindow", "Video Clip Controls"))
-        self.buttonClipStart.setToolTip(_translate("MainWindow", "Set the desired start point of a video clip"))
+        self.labelVideoPreload.setText(
+            _translate(
+                "MainWindow",
+                "Drag a video here or load a video from the Import menu",
+            )
+        )
+        self.groupboxClipControl.setTitle(
+            _translate("MainWindow", "Video Clip Controls")
+        )
+        self.buttonClipStart.setToolTip(
+            _translate(
+                "MainWindow", "Set the desired start point of a video clip"
+            )
+        )
         self.buttonClipStart.setText(_translate("MainWindow", "Clip Start"))
-        self.buttonClipEnd.setToolTip(_translate("MainWindow", "Set the desired end point of a video clip"))
+        self.buttonClipEnd.setToolTip(
+            _translate(
+                "MainWindow", "Set the desired end point of a video clip"
+            )
+        )
         self.buttonClipEnd.setText(_translate("MainWindow", "Clip End"))
-        self.buttonClearClip.setToolTip(_translate("MainWindow", "Clear currentl clip start and end information"))
+        self.buttonClearClip.setToolTip(
+            _translate(
+                "MainWindow", "Clear currentl clip start and end information"
+            )
+        )
         self.buttonClearClip.setText(_translate("MainWindow", "Clear"))
-        self.groupboxClipCreationControls.setTitle(_translate("MainWindow", "Clip Creation Controls"))
-        self.groupBox.setTitle(_translate("MainWindow", "FFMPEG Video Pre-processing"))
-        self.labelVideoRotation.setText(_translate("MainWindow", "Video rotaton (clockwise):"))
-        self.comboboxFfmpegRotation.setToolTip(_translate("MainWindow", "Degrees clockwiss to rotate the output video"))
-        self.comboboxFfmpegRotation.setCurrentText(_translate("MainWindow", "0"))
-        self.comboboxFfmpegRotation.setPlaceholderText(_translate("MainWindow", "0"))
-        self.comboboxFfmpegRotation.setItemText(0, _translate("MainWindow", "0"))
-        self.comboboxFfmpegRotation.setItemText(1, _translate("MainWindow", "90"))
-        self.comboboxFfmpegRotation.setItemText(2, _translate("MainWindow", "180"))
-        self.comboboxFfmpegRotation.setItemText(3, _translate("MainWindow", "270"))
-        self.labelPresetCurveAdjustment.setText(_translate("MainWindow", "Preset Curve Adjustments:"))
-        self.comboboxFfmpegCurvePresets.setToolTip(_translate("MainWindow", "Apply one of the present curve adjustment profiles"))
-        self.comboboxFfmpegCurvePresets.setItemText(0, _translate("MainWindow", "none"))
-        self.comboboxFfmpegCurvePresets.setItemText(1, _translate("MainWindow", "color_negative"))
-        self.comboboxFfmpegCurvePresets.setItemText(2, _translate("MainWindow", "cross_process"))
-        self.comboboxFfmpegCurvePresets.setItemText(3, _translate("MainWindow", "darker"))
-        self.comboboxFfmpegCurvePresets.setItemText(4, _translate("MainWindow", "increase_contrast"))
-        self.comboboxFfmpegCurvePresets.setItemText(5, _translate("MainWindow", "lighter"))
-        self.comboboxFfmpegCurvePresets.setItemText(6, _translate("MainWindow", "linear_contrast"))
-        self.comboboxFfmpegCurvePresets.setItemText(7, _translate("MainWindow", "medium_contrast"))
-        self.comboboxFfmpegCurvePresets.setItemText(8, _translate("MainWindow", "negative"))
-        self.comboboxFfmpegCurvePresets.setItemText(9, _translate("MainWindow", "strong_contrast"))
-        self.comboboxFfmpegCurvePresets.setItemText(10, _translate("MainWindow", "vintage"))
+        self.groupboxClipCreationControls.setTitle(
+            _translate("MainWindow", "Clip Creation Controls")
+        )
+        self.groupBox.setTitle(
+            _translate("MainWindow", "FFMPEG Video Pre-processing")
+        )
+        self.labelVideoRotation.setText(
+            _translate("MainWindow", "Video rotaton (clockwise):")
+        )
+        self.comboboxFfmpegRotation.setToolTip(
+            _translate(
+                "MainWindow", "Degrees clockwiss to rotate the output video"
+            )
+        )
+        self.comboboxFfmpegRotation.setCurrentText(
+            _translate("MainWindow", "0")
+        )
+        self.comboboxFfmpegRotation.setPlaceholderText(
+            _translate("MainWindow", "0")
+        )
+        self.comboboxFfmpegRotation.setItemText(
+            0, _translate("MainWindow", "0")
+        )
+        self.comboboxFfmpegRotation.setItemText(
+            1, _translate("MainWindow", "90")
+        )
+        self.comboboxFfmpegRotation.setItemText(
+            2, _translate("MainWindow", "180")
+        )
+        self.comboboxFfmpegRotation.setItemText(
+            3, _translate("MainWindow", "270")
+        )
+        self.labelPresetCurveAdjustment.setText(
+            _translate("MainWindow", "Preset Curve Adjustments:")
+        )
+        self.comboboxFfmpegCurvePresets.setToolTip(
+            _translate(
+                "MainWindow",
+                "Apply one of the present curve adjustment profiles",
+            )
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            0, _translate("MainWindow", "none")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            1, _translate("MainWindow", "color_negative")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            2, _translate("MainWindow", "cross_process")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            3, _translate("MainWindow", "darker")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            4, _translate("MainWindow", "increase_contrast")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            5, _translate("MainWindow", "lighter")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            6, _translate("MainWindow", "linear_contrast")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            7, _translate("MainWindow", "medium_contrast")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            8, _translate("MainWindow", "negative")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            9, _translate("MainWindow", "strong_contrast")
+        )
+        self.comboboxFfmpegCurvePresets.setItemText(
+            10, _translate("MainWindow", "vintage")
+        )
         self.labelFlipVideo.setText(_translate("MainWindow", "Flip video:"))
-        self.comboboxFfmpegFlipVideo.setToolTip(_translate("MainWindow", "Apply vertical or horizontal flip to video"))
-        self.comboboxFfmpegFlipVideo.setItemText(0, _translate("MainWindow", "none"))
-        self.comboboxFfmpegFlipVideo.setItemText(1, _translate("MainWindow", "hflip"))
-        self.comboboxFfmpegFlipVideo.setItemText(2, _translate("MainWindow", "vflip"))
-        self.checkboxStripAudio.setText(_translate("MainWindow", "Strip audio from input video?"))
-        self.checkboxFfmpegNormalizeLuma.setToolTip(_translate("MainWindow", "Normalize video lighting for all frames using luma correction. Attempts to correct for changing lighting in scene."))
-        self.checkboxFfmpegNormalizeLuma.setText(_translate("MainWindow", "Normalize video luma to full dynamic range?"))
-        self.buttonCreateVideoClip.setToolTip(_translate("MainWindow", "Create a video (mp4) clip of the loaded video with current settings"))
-        self.buttonCreateVideoClip.setText(_translate("MainWindow", "Create Video Clip"))
-        self.buttonPlay.setToolTip(_translate("MainWindow", "Play or pause video"))
+        self.comboboxFfmpegFlipVideo.setToolTip(
+            _translate(
+                "MainWindow", "Apply vertical or horizontal flip to video"
+            )
+        )
+        self.comboboxFfmpegFlipVideo.setItemText(
+            0, _translate("MainWindow", "none")
+        )
+        self.comboboxFfmpegFlipVideo.setItemText(
+            1, _translate("MainWindow", "hflip")
+        )
+        self.comboboxFfmpegFlipVideo.setItemText(
+            2, _translate("MainWindow", "vflip")
+        )
+        self.checkboxStripAudio.setText(
+            _translate("MainWindow", "Strip audio from input video?")
+        )
+        self.checkboxFfmpegNormalizeLuma.setToolTip(
+            _translate(
+                "MainWindow",
+                "Normalize video lighting for all frames using luma correction. Attempts to correct for changing lighting in scene.",
+            )
+        )
+        self.checkboxFfmpegNormalizeLuma.setText(
+            _translate(
+                "MainWindow", "Normalize video luma to full dynamic range?"
+            )
+        )
+        self.buttonCreateVideoClip.setToolTip(
+            _translate(
+                "MainWindow",
+                "Create a video (mp4) clip of the loaded video with current settings",
+            )
+        )
+        self.buttonCreateVideoClip.setText(
+            _translate("MainWindow", "Create Video Clip")
+        )
+        self.buttonPlay.setToolTip(
+            _translate("MainWindow", "Play or pause video")
+        )
         self.labelVideoPlayheadTime.setText(_translate("MainWindow", "00:00"))
         self.labelVideoDuration.setText(_translate("MainWindow", "00:00"))
-        self.groupboxFrameExtraction.setTitle(_translate("MainWindow", "Frame Extraction"))
-        self.labelVideoFramerateText.setText(_translate("MainWindow", "Video framerate:"))
+        self.groupboxFrameExtraction.setTitle(
+            _translate("MainWindow", "Frame Extraction")
+        )
+        self.labelVideoFramerateText.setText(
+            _translate("MainWindow", "Video framerate:")
+        )
         self.labelVideoFramerateValue.setText(_translate("MainWindow", "N/A"))
-        self.labelVideoTimestepText.setText(_translate("MainWindow", "Video timestep:"))
+        self.labelVideoTimestepText.setText(
+            _translate("MainWindow", "Video timestep:")
+        )
         self.labelVideoTimestepValue.setText(_translate("MainWindow", "N/A"))
-        self.labelNumOfFramesText.setText(_translate("MainWindow", "Video number of frames:"))
+        self.labelNumOfFramesText.setText(
+            _translate("MainWindow", "Video number of frames:")
+        )
         self.labelNumOfFramesValue.setText(_translate("MainWindow", "N/A"))
-        self.labelVideoResolutionText.setText(_translate("MainWindow", "Video resolution"))
+        self.labelVideoResolutionText.setText(
+            _translate("MainWindow", "Video resolution")
+        )
         self.labelVideoResolutionValue.setText(_translate("MainWindow", "N/A"))
-        self.buttonExtractVideoFrames.setToolTip(_translate("MainWindow", "Extract requested frames from video with current settings"))
-        self.buttonExtractVideoFrames.setText(_translate("MainWindow", "Extract Video Frames"))
-        self.labelFrameStepText.setText(_translate("MainWindow", "Frame step:"))
-        self.lineeditFrameStepValue.setToolTip(_translate("MainWindow", "Skip n-frames when exporting (1: all frames, 2: every other frame, etc.)"))
+        self.buttonExtractVideoFrames.setToolTip(
+            _translate(
+                "MainWindow",
+                "Extract requested frames from video with current settings",
+            )
+        )
+        self.buttonExtractVideoFrames.setText(
+            _translate("MainWindow", "Extract Video Frames")
+        )
+        self.labelFrameStepText.setText(
+            _translate("MainWindow", "Frame step:")
+        )
+        self.lineeditFrameStepValue.setToolTip(
+            _translate(
+                "MainWindow",
+                "Skip n-frames when exporting (1: all frames, 2: every other frame, etc.)",
+            )
+        )
         self.lineeditFrameStepValue.setText(_translate("MainWindow", "1"))
-        self.labelStartFrameText.setText(_translate("MainWindow", "Start frame:"))
+        self.labelStartFrameText.setText(
+            _translate("MainWindow", "Start frame:")
+        )
         self.labelStartFrameValue.setText(_translate("MainWindow", "N/A"))
         self.labelEndFrameText.setText(_translate("MainWindow", "End frame:"))
         self.labelEndFrameValue.setText(_translate("MainWindow", "N/A"))
-        self.labelNewFrameRateText.setText(_translate("MainWindow", "New frame rate:"))
+        self.labelNewFrameRateText.setText(
+            _translate("MainWindow", "New frame rate:")
+        )
         self.labelNewFrameRateValue.setText(_translate("MainWindow", "N/A"))
-        self.labelNewTimestepText.setText(_translate("MainWindow", "New timestep"))
+        self.labelNewTimestepText.setText(
+            _translate("MainWindow", "New timestep")
+        )
         self.labelNewTimestepValue.setText(_translate("MainWindow", "N/A"))
-        self.labelNewNumFramesText.setText(_translate("MainWindow", "New number of frames:"))
+        self.labelNewNumFramesText.setText(
+            _translate("MainWindow", "New number of frames:")
+        )
         self.labelNewNumFramesValue.setText(_translate("MainWindow", "N/A"))
-        self.groupboxFramePreparation.setTitle(_translate("MainWindow", "Frame Preparation"))
-        self.checkboxFfmpeg2PassStabilization.setToolTip(_translate("MainWindow", "Stabilize motion using 2-pass method"))
-        self.checkboxFfmpeg2PassStabilization.setText(_translate("MainWindow", "Perform image stabilization?"))
-        self.checkboxCorrectRadialDistortion.setToolTip(_translate("MainWindow", "Apply lens corrections (must load lens characteristics)"))
-        self.checkboxCorrectRadialDistortion.setText(_translate("MainWindow", "Correct radial lens distortion?"))
+        self.groupboxFramePreparation.setTitle(
+            _translate("MainWindow", "Frame Preparation")
+        )
+        self.checkboxFfmpeg2PassStabilization.setToolTip(
+            _translate("MainWindow", "Stabilize motion using 2-pass method")
+        )
+        self.checkboxFfmpeg2PassStabilization.setText(
+            _translate("MainWindow", "Perform image stabilization?")
+        )
+        self.checkboxCorrectRadialDistortion.setToolTip(
+            _translate(
+                "MainWindow",
+                "Apply lens corrections (must load lens characteristics)",
+            )
+        )
+        self.checkboxCorrectRadialDistortion.setText(
+            _translate("MainWindow", "Correct radial lens distortion?")
+        )
         self.labelLensCxText.setText(_translate("MainWindow", "cx:"))
         self.labelLensCxValue.setText(_translate("MainWindow", "N/A"))
         self.labelLensCyText.setText(_translate("MainWindow", "cy:"))
@@ -2015,87 +3367,267 @@ class Ui_MainWindow(object):
         self.labelLensK1Value.setText(_translate("MainWindow", "N/A"))
         self.labelLensK2Value.setText(_translate("MainWindow", "N/A"))
         self.labelLensK2Text.setText(_translate("MainWindow", "k2:"))
-        self.buttonLoadLensCharacteristics.setToolTip(_translate("MainWindow", "Supply lens characteristics from calibration process"))
-        self.buttonLoadLensCharacteristics.setText(_translate("MainWindow", "Load Lens Characteristics"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabVideoPreProcessing), _translate("MainWindow", "Video Pre-Processing"))
+        self.buttonLoadLensCharacteristics.setToolTip(
+            _translate(
+                "MainWindow",
+                "Supply lens characteristics from calibration process",
+            )
+        )
+        self.buttonLoadLensCharacteristics.setText(
+            _translate("MainWindow", "Load Lens Characteristics")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabVideoPreProcessing),
+            _translate("MainWindow", "Video Pre-Processing"),
+        )
         self.groupboxTools.setTitle(_translate("MainWindow", "Tools"))
-        self.labelFrameFiltering.setText(_translate("MainWindow", "Frame filtering:"))
-        self.toolbuttonNextImage.setToolTip(_translate("MainWindow", "Next image in folder (Ctrl+Right Arrow)"))
+        self.labelFrameFiltering.setText(
+            _translate("MainWindow", "Frame filtering:")
+        )
+        self.toolbuttonNextImage.setToolTip(
+            _translate("MainWindow", "Next image in folder (Ctrl+Right Arrow)")
+        )
         self.toolbuttonNextImage.setText(_translate("MainWindow", "..."))
-        self.toolbuttonNextImage.setShortcut(_translate("MainWindow", "Ctrl+Right"))
-        self.toolbuttonPreviousImage.setToolTip(_translate("MainWindow", "Previous image in folder (Ctrl+Left Arrow)"))
+        self.toolbuttonNextImage.setShortcut(
+            _translate("MainWindow", "Ctrl+Right")
+        )
+        self.toolbuttonPreviousImage.setToolTip(
+            _translate(
+                "MainWindow", "Previous image in folder (Ctrl+Left Arrow)"
+            )
+        )
         self.toolbuttonPreviousImage.setText(_translate("MainWindow", "..."))
-        self.toolbuttonPreviousImage.setShortcut(_translate("MainWindow", "Ctrl+Left"))
-        self.labelFrameControl.setText(_translate("MainWindow", "Frame control"))
-        self.buttonApplyFileFilter.setToolTip(_translate("MainWindow", "Apply current frame filtering"))
-        self.buttonApplyFileFilter.setText(_translate("MainWindow", "Apply File Filter"))
-        self.lineeditFrameFiltering.setToolTip(_translate("MainWindow", "String pattern to filter images using unix-style glob (e.g. \"f*.jpg\")"))
+        self.toolbuttonPreviousImage.setShortcut(
+            _translate("MainWindow", "Ctrl+Left")
+        )
+        self.labelFrameControl.setText(
+            _translate("MainWindow", "Frame control")
+        )
+        self.buttonApplyFileFilter.setToolTip(
+            _translate("MainWindow", "Apply current frame filtering")
+        )
+        self.buttonApplyFileFilter.setText(
+            _translate("MainWindow", "Apply File Filter")
+        )
+        self.lineeditFrameFiltering.setToolTip(
+            _translate(
+                "MainWindow",
+                'String pattern to filter images using unix-style glob (e.g. "f*.jpg")',
+            )
+        )
         self.lineeditFrameFiltering.setText(_translate("MainWindow", "f*.jpg"))
-        self.groupboxProcessing.setTitle(_translate("MainWindow", "Processing"))
+        self.groupboxProcessing.setTitle(
+            _translate("MainWindow", "Processing")
+        )
         self.groupboxContrast.setTitle(_translate("MainWindow", "Contrast"))
-        self.buttonApplyToThisFrame.setToolTip(_translate("MainWindow", "Apply current image preprocessing settings to the currently loaded frame"))
-        self.buttonApplyToThisFrame.setText(_translate("MainWindow", "Apply to This Frame"))
-        self.lineeditClaheHorzTileSize.setToolTip(_translate("MainWindow", "CLAHE horizontal tile size (default=8)"))
+        self.buttonApplyToThisFrame.setToolTip(
+            _translate(
+                "MainWindow",
+                "Apply current image preprocessing settings to the currently loaded frame",
+            )
+        )
+        self.buttonApplyToThisFrame.setText(
+            _translate("MainWindow", "Apply to This Frame")
+        )
+        self.lineeditClaheHorzTileSize.setToolTip(
+            _translate("MainWindow", "CLAHE horizontal tile size (default=8)")
+        )
         self.lineeditClaheHorzTileSize.setText(_translate("MainWindow", "8"))
-        self.lineeditAutoContrastPercentClip.setToolTip(_translate("MainWindow", "Histogram clipping percent (default=1%)"))
-        self.lineeditAutoContrastPercentClip.setText(_translate("MainWindow", "1"))
+        self.lineeditAutoContrastPercentClip.setToolTip(
+            _translate("MainWindow", "Histogram clipping percent (default=1%)")
+        )
+        self.lineeditAutoContrastPercentClip.setText(
+            _translate("MainWindow", "1")
+        )
         self.labelPercent.setText(_translate("MainWindow", "%"))
-        self.checkboxApplyClahe.setToolTip(_translate("MainWindow", "Enable Contrast Limited Adaptive Histogram correction"))
-        self.checkboxApplyClahe.setText(_translate("MainWindow", "CLAHE (grayscale)"))
-        self.lineeditClaheVertTileSize.setToolTip(_translate("MainWindow", "CLAHE vertical tile size (default=8)"))
+        self.checkboxApplyClahe.setToolTip(
+            _translate(
+                "MainWindow",
+                "Enable Contrast Limited Adaptive Histogram correction",
+            )
+        )
+        self.checkboxApplyClahe.setText(
+            _translate("MainWindow", "CLAHE (grayscale)")
+        )
+        self.lineeditClaheVertTileSize.setToolTip(
+            _translate("MainWindow", "CLAHE vertical tile size (default=8)")
+        )
         self.lineeditClaheVertTileSize.setText(_translate("MainWindow", "8"))
-        self.checkboxAutoContrast.setToolTip(_translate("MainWindow", "Enable auto contrast stretching"))
-        self.checkboxAutoContrast.setText(_translate("MainWindow", "Auto contrast (color)"))
-        self.lineeditClaheClipLimit.setToolTip(_translate("MainWindow", "CLAHE Clip Limit (default=2.0)"))
+        self.checkboxAutoContrast.setToolTip(
+            _translate("MainWindow", "Enable auto contrast stretching")
+        )
+        self.checkboxAutoContrast.setText(
+            _translate("MainWindow", "Auto contrast (color)")
+        )
+        self.lineeditClaheClipLimit.setToolTip(
+            _translate("MainWindow", "CLAHE Clip Limit (default=2.0)")
+        )
         self.lineeditClaheClipLimit.setText(_translate("MainWindow", "2.0"))
-        self.buttonApplyToAllFrames.setToolTip(_translate("MainWindow", "Apply current image preprocessing settings to all frames in the sequence"))
-        self.buttonApplyToAllFrames.setText(_translate("MainWindow", "Apply to All Frames"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabImageFrameProcessing), _translate("MainWindow", "Image Frame Processing"))
-        self.groupboxOrthoOrigImageTools.setTitle(_translate("MainWindow", "Original Photo"))
-        self.toolbuttonOpenOrthoPointsTable.setToolTip(_translate("MainWindow", "Load table with ground control points"))
-        self.toolbuttonOpenOrthoPointsTable.setText(_translate("MainWindow", "..."))
-        self.toolbuttonOrthoOrigImageDigitizePoint.setToolTip(_translate("MainWindow", "Select row in the points table first, then click to digitize pixel location of selected point."))
-        self.toolbuttonOrthoOrigImageDigitizePoint.setText(_translate("MainWindow", "..."))
-        self.toolbuttonAddOrthotableRow.setToolTip(_translate("MainWindow", "Add new row above selected row to the points table"))
-        self.toolbuttonAddOrthotableRow.setText(_translate("MainWindow", "..."))
-        self.toolbuttonSaveOrthoPointsTable.setToolTip(_translate("MainWindow", "Save ground control points table"))
-        self.toolbuttonRemoveOrthotableRow.setToolTip(_translate("MainWindow", "Remove selected row from the points table"))
-        self.toolbuttonRemoveOrthotableRow.setText(_translate("MainWindow", "..."))
-        self.labelSelectRow.setText(_translate("MainWindow", "Select row to digitize"))
-        self.groupboxOrthoPointsTable.setTitle(_translate("MainWindow", "Points Table"))
-        self.groupboxExportOrthoFrames.setTitle(_translate("MainWindow", "Export Transformed Frames"))
+        self.buttonApplyToAllFrames.setToolTip(
+            _translate(
+                "MainWindow",
+                "Apply current image preprocessing settings to all frames in the sequence",
+            )
+        )
+        self.buttonApplyToAllFrames.setText(
+            _translate("MainWindow", "Apply to All Frames")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabImageFrameProcessing),
+            _translate("MainWindow", "Image Frame Processing"),
+        )
+        self.groupboxOrthoOrigImageTools.setTitle(
+            _translate("MainWindow", "Original Photo")
+        )
+        self.toolbuttonOpenOrthoPointsTable.setToolTip(
+            _translate("MainWindow", "Load table with ground control points")
+        )
+        self.toolbuttonOpenOrthoPointsTable.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolbuttonOrthoOrigImageDigitizePoint.setToolTip(
+            _translate(
+                "MainWindow",
+                "Select row in the points table first, then click to digitize pixel location of selected point.",
+            )
+        )
+        self.toolbuttonOrthoOrigImageDigitizePoint.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolbuttonAddOrthotableRow.setToolTip(
+            _translate(
+                "MainWindow",
+                "Add new row above selected row to the points table",
+            )
+        )
+        self.toolbuttonAddOrthotableRow.setText(
+            _translate("MainWindow", "...")
+        )
+        self.toolbuttonSaveOrthoPointsTable.setToolTip(
+            _translate("MainWindow", "Save ground control points table")
+        )
+        self.toolbuttonRemoveOrthotableRow.setToolTip(
+            _translate(
+                "MainWindow", "Remove selected row from the points table"
+            )
+        )
+        self.toolbuttonRemoveOrthotableRow.setText(
+            _translate("MainWindow", "...")
+        )
+        self.labelSelectRow.setText(
+            _translate("MainWindow", "Select row to digitize")
+        )
+        self.groupboxOrthoPointsTable.setTitle(
+            _translate("MainWindow", "Points Table")
+        )
+        self.groupboxExportOrthoFrames.setTitle(
+            _translate("MainWindow", "Export Transformed Frames")
+        )
         self.labelPixelGSD.setText(_translate("MainWindow", "Pixel GSD (m):"))
-        self.buttonRectifyCurrentImage.setToolTip(_translate("MainWindow", "Apply recification to the currently loaded GCP image"))
-        self.buttonRectifyCurrentImage.setText(_translate("MainWindow", "Rectify Current Image"))
-        self.tablewidgetProjectiveMatrix.setToolTip(_translate("MainWindow", "The transformation matrix calculated from rectification. The shape and form will vary depending on method."))
-        self.labelPixelRMSE.setText(_translate("MainWindow", "Pixel RMSE (px):"))
-        self.lineeditPixelRMSE.setToolTip(_translate("MainWindow", "Pixel root mean square error computed from rectification (in pixels)"))
-        self.pushbuttonExportProjectedFrames.setToolTip(_translate("MainWindow", "Export projected frames using current settings"))
-        self.pushbuttonExportProjectedFrames.setText(_translate("MainWindow", "Export Projected Frames"))
-        self.lineeditPixelGSD.setToolTip(_translate("MainWindow", "Pixel ground scale distance computed from rectification (units same as GCPs)"))
-        self.labelWaterSurfaceElevation.setText(_translate("MainWindow", "Water Surface Elevation (m):"))
-        self.checkBoxOrthoFlipX.setToolTip(_translate("MainWindow", "If selected, flip the Rectified Image about the Y axis. This can be used to fix \"mirrored\" rectifications."))
-        self.checkBoxOrthoFlipX.setText(_translate("MainWindow", "Flip Rectified Image X?"))
-        self.checkBoxOrthoFlipY.setToolTip(_translate("MainWindow", "<html><head/><body><p>If selected, flip the Rectified Image about the Y axis. This can be used to fix &quot;mirrored&quot; rectifications.</p></body></html>"))
-        self.checkBoxOrthoFlipY.setText(_translate("MainWindow", "Flip Rectified Image Y?"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabOrthorectification), _translate("MainWindow", "Orthorectification"))
-        self.radioButtonRectifiedImage.setText(_translate("MainWindow", "Rectified Image"))
+        self.buttonRectifyCurrentImage.setToolTip(
+            _translate(
+                "MainWindow",
+                "Apply recification to the currently loaded GCP image",
+            )
+        )
+        self.buttonRectifyCurrentImage.setText(
+            _translate("MainWindow", "Rectify Current Image")
+        )
+        self.tablewidgetProjectiveMatrix.setToolTip(
+            _translate(
+                "MainWindow",
+                "The transformation matrix calculated from rectification. The shape and form will vary depending on method.",
+            )
+        )
+        self.labelPixelRMSE.setText(
+            _translate("MainWindow", "Pixel RMSE (px):")
+        )
+        self.lineeditPixelRMSE.setToolTip(
+            _translate(
+                "MainWindow",
+                "Pixel root mean square error computed from rectification (in pixels)",
+            )
+        )
+        self.pushbuttonExportProjectedFrames.setToolTip(
+            _translate(
+                "MainWindow", "Export projected frames using current settings"
+            )
+        )
+        self.pushbuttonExportProjectedFrames.setText(
+            _translate("MainWindow", "Export Projected Frames")
+        )
+        self.lineeditPixelGSD.setToolTip(
+            _translate(
+                "MainWindow",
+                "Pixel ground scale distance computed from rectification (units same as GCPs)",
+            )
+        )
+        self.labelWaterSurfaceElevation.setText(
+            _translate("MainWindow", "Water Surface Elevation (m):")
+        )
+        self.checkBoxOrthoFlipX.setToolTip(
+            _translate(
+                "MainWindow",
+                'If selected, flip the Rectified Image about the Y axis. This can be used to fix "mirrored" rectifications.',
+            )
+        )
+        self.checkBoxOrthoFlipX.setText(
+            _translate("MainWindow", "Flip Rectified Image X?")
+        )
+        self.checkBoxOrthoFlipY.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>If selected, flip the Rectified Image about the Y axis. This can be used to fix &quot;mirrored&quot; rectifications.</p></body></html>",
+            )
+        )
+        self.checkBoxOrthoFlipY.setText(
+            _translate("MainWindow", "Flip Rectified Image Y?")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabOrthorectification),
+            _translate("MainWindow", "Orthorectification"),
+        )
+        self.radioButtonRectifiedImage.setText(
+            _translate("MainWindow", "Rectified Image")
+        )
         self.radioButtonLeft.setText(_translate("MainWindow", "Left"))
-        self.label_2.setText(_translate("MainWindow", "Cross-section Image Source:"))
+        self.label_2.setText(
+            _translate("MainWindow", "Cross-section Image Source:")
+        )
         self.label_16.setText(_translate("MainWindow", "Add cross-section:"))
         self.radioButtonRight.setText(_translate("MainWindow", "Right"))
-        self.radioButtonOriginalImage.setText(_translate("MainWindow", "Original Image"))
+        self.radioButtonOriginalImage.setText(
+            _translate("MainWindow", "Original Image")
+        )
         self.label_3.setText(_translate("MainWindow", "Start bank:"))
-        self.toolbuttonDrawCrossSection.setToolTip(_translate("MainWindow", "Digitize a line on either the original or rectified image inidcating the location of the cross section. The first point corresponds to the selected start bank."))
-        self.toolbuttonDrawCrossSection.setText(_translate("MainWindow", "..."))
-        self.labelCrossSectionMeasurementStage.setText(_translate("MainWindow", "Measurement Stage (m):"))
-        self.groupBox_3.setTitle(_translate("MainWindow", "Cross-section Pixel Location (rectified)"))
+        self.toolbuttonDrawCrossSection.setToolTip(
+            _translate(
+                "MainWindow",
+                "Digitize a line on either the original or rectified image inidcating the location of the cross section. The first point corresponds to the selected start bank.",
+            )
+        )
+        self.toolbuttonDrawCrossSection.setText(
+            _translate("MainWindow", "...")
+        )
+        self.labelCrossSectionMeasurementStage.setText(
+            _translate("MainWindow", "Measurement Stage (m):")
+        )
+        self.groupBox_3.setTitle(
+            _translate(
+                "MainWindow", "Cross-section Pixel Location (rectified)"
+            )
+        )
         self.label_22.setText(_translate("MainWindow", "Left bank (px):"))
         self.label_23.setText(_translate("MainWindow", "Right bank (px)"))
         self.label_24.setText(_translate("MainWindow", "X Coord."))
         self.label_25.setText(_translate("MainWindow", "Y Coord."))
-        self.toolBox_bathymetry.setItemText(self.toolBox_bathymetry.indexOf(self.page), _translate("MainWindow", "Tools"))
-        self.pb_bathymetry_picker.setText(_translate("MainWindow", "Data Picker"))
+        self.toolBox_bathymetry.setItemText(
+            self.toolBox_bathymetry.indexOf(self.page),
+            _translate("MainWindow", "Tools"),
+        )
+        self.pb_bathymetry_picker.setText(
+            _translate("MainWindow", "Data Picker")
+        )
         self.pb_bathymetry_home.setText(_translate("MainWindow", "Home"))
         self.radius_rb.setText(_translate("MainWindow", "Hydraulic Radius"))
         self.conveyance_rb.setText(_translate("MainWindow", "Conveyance"))
@@ -2105,144 +3637,505 @@ class Ui_MainWindow(object):
         self.pb_bathymetry_zoom.setText(_translate("MainWindow", "Zoom"))
         self.topwidtch_rb.setText(_translate("MainWindow", "Top Width"))
         self.pb_bathymetry_pan.setText(_translate("MainWindow", "Pan"))
-        self.toolBox_bathymetry.setItemText(self.toolBox_bathymetry.indexOf(self.page_2), _translate("MainWindow", "Plot Controls"))
+        self.toolBox_bathymetry.setItemText(
+            self.toolBox_bathymetry.indexOf(self.page_2),
+            _translate("MainWindow", "Plot Controls"),
+        )
         self.pb_xs_subsurvey_import.setText(_translate("MainWindow", "Import"))
         self.fileLabel.setText(_translate("MainWindow", "File:"))
         self.pb_subsurvey_delete.setText(_translate("MainWindow", "Delete"))
         self.pb_flip.setText(_translate("MainWindow", "Flip"))
-        self.stationStationLabel.setText(_translate("MainWindow", "Starting Station (m):"))
+        self.stationStationLabel.setText(
+            _translate("MainWindow", "Starting Station (m):")
+        )
         self.gageHeightLabel.setText(_translate("MainWindow", "Stage (m):"))
-        self.toolBox_bathymetry.setItemText(self.toolBox_bathymetry.indexOf(self.page_4), _translate("MainWindow", "Sub-Survey Settings"))
-        self.label.setText(_translate("MainWindow", "Import bathymetry file to continue."))
-        self.groupboxCrossSectionCharacteristics.setTitle(_translate("MainWindow", "Cross-Section Characteristics"))
+        self.toolBox_bathymetry.setItemText(
+            self.toolBox_bathymetry.indexOf(self.page_4),
+            _translate("MainWindow", "Sub-Survey Settings"),
+        )
+        self.label.setText(
+            _translate("MainWindow", "Import bathymetry file to continue.")
+        )
+        self.groupboxCrossSectionCharacteristics.setTitle(
+            _translate("MainWindow", "Cross-Section Characteristics")
+        )
         self.label_10.setText(_translate("MainWindow", "Station:"))
         self.label_12.setText(_translate("MainWindow", "Stage:"))
         self.add_pushButton.setText(_translate("MainWindow", "Add"))
         self.delete_pushButton.setText(_translate("MainWindow", "Delete"))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.bathymetry), _translate("MainWindow", "Bathymetry"))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.sub_surveys), _translate("MainWindow", "Sub-Surveys"))
+        self.tabWidget_2.setTabText(
+            self.tabWidget_2.indexOf(self.bathymetry),
+            _translate("MainWindow", "Bathymetry"),
+        )
+        self.tabWidget_2.setTabText(
+            self.tabWidget_2.indexOf(self.sub_surveys),
+            _translate("MainWindow", "Sub-Surveys"),
+        )
         self.label_13.setText(_translate("MainWindow", "Station:"))
         self.add_section_pb.setText(_translate("MainWindow", "Add Subsection"))
         self.rm_sect_pb.setText(_translate("MainWindow", "Remove Subsection"))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.characteristics), _translate("MainWindow", "Characteristics"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCrossSectionGeometry), _translate("MainWindow", "Cross-Section Geometry"))
-        self.toolbuttonCreateXsLine.setToolTip(_translate("MainWindow", "Create a line given known cross-section geometry"))
+        self.tabWidget_2.setTabText(
+            self.tabWidget_2.indexOf(self.characteristics),
+            _translate("MainWindow", "Characteristics"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabCrossSectionGeometry),
+            _translate("MainWindow", "Cross-Section Geometry"),
+        )
+        self.toolbuttonCreateXsLine.setToolTip(
+            _translate(
+                "MainWindow",
+                "Create a line given known cross-section geometry",
+            )
+        )
         self.toolbuttonCreateXsLine.setText(_translate("MainWindow", "..."))
-        self.toolbuttonClearXsLine.setToolTip(_translate("MainWindow", "Clear the line and any points"))
+        self.toolbuttonClearXsLine.setToolTip(
+            _translate("MainWindow", "Clear the line and any points")
+        )
         self.toolbuttonClearXsLine.setText(_translate("MainWindow", "..."))
         self.labelXsNumPoints.setText(_translate("MainWindow", "Num. points:"))
-        self.spinbocXsLineNumPoints.setToolTip(_translate("MainWindow", "Number of equally-spaced points along the line"))
-        self.buttonCreatePointsOnCrossSection.setToolTip(_translate("MainWindow", "Create equally-spaced points along the line"))
-        self.buttonCreatePointsOnCrossSection.setText(_translate("MainWindow", "Create Points on Line"))
-        self.labelXsInstructions.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">Instructions:</span> Create regularly spaced points along an existing cross-section geometry. Click the Create XS Line button to activate. Click the starting point for a line. Move the mouse to set the line orientation. Length is determined from the Cross-section Geometry tab. Set the number of points along the line in the spin box, then press the Create Points on Line button. The Clear XS Line button will delete the line and any created points from the image. </p></body></html>"))
-        self.toolboxGridCreation.setItemText(self.toolboxGridCreation.indexOf(self.CrossSectionPage), _translate("MainWindow", "Cross-Section"))
-        self.toolbuttonCreateMask.setToolTip(_translate("MainWindow", "Create a mask polygon"))
+        self.spinbocXsLineNumPoints.setToolTip(
+            _translate(
+                "MainWindow", "Number of equally-spaced points along the line"
+            )
+        )
+        self.buttonCreatePointsOnCrossSection.setToolTip(
+            _translate(
+                "MainWindow", "Create equally-spaced points along the line"
+            )
+        )
+        self.buttonCreatePointsOnCrossSection.setText(
+            _translate("MainWindow", "Create Points on Line")
+        )
+        self.labelXsInstructions.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Instructions:</span> Create regularly spaced points along an existing cross-section geometry. Click the Create XS Line button to activate. Click the starting point for a line. Move the mouse to set the line orientation. Length is determined from the Cross-section Geometry tab. Set the number of points along the line in the spin box, then press the Create Points on Line button. The Clear XS Line button will delete the line and any created points from the image. </p></body></html>',
+            )
+        )
+        self.toolboxGridCreation.setItemText(
+            self.toolboxGridCreation.indexOf(self.CrossSectionPage),
+            _translate("MainWindow", "Cross-Section"),
+        )
+        self.toolbuttonCreateMask.setToolTip(
+            _translate("MainWindow", "Create a mask polygon")
+        )
         self.toolbuttonCreateMask.setText(_translate("MainWindow", "..."))
-        self.toolbuttonClearMask.setToolTip(_translate("MainWindow", "Clear all masks and points"))
+        self.toolbuttonClearMask.setToolTip(
+            _translate("MainWindow", "Clear all masks and points")
+        )
         self.toolbuttonClearMask.setText(_translate("MainWindow", "..."))
-        self.labelMaskInstructions.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">Instructions:</span> Click the Create Mask button to activate. Digitize masks, leaving the region where points are desired unmasked. Masks are respected by all of the grid creation methods. The Clear Masks button will delete any masks from the image. </p></body></html>"))
-        self.toolboxGridCreation.setItemText(self.toolboxGridCreation.indexOf(self.MaskingPage), _translate("MainWindow", "Masking"))
-        self.toolbuttonCreatePoint.setToolTip(_translate("MainWindow", "Create points"))
+        self.labelMaskInstructions.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Instructions:</span> Click the Create Mask button to activate. Digitize masks, leaving the region where points are desired unmasked. Masks are respected by all of the grid creation methods. The Clear Masks button will delete any masks from the image. </p></body></html>',
+            )
+        )
+        self.toolboxGridCreation.setItemText(
+            self.toolboxGridCreation.indexOf(self.MaskingPage),
+            _translate("MainWindow", "Masking"),
+        )
+        self.toolbuttonCreatePoint.setToolTip(
+            _translate("MainWindow", "Create points")
+        )
         self.toolbuttonCreatePoint.setText(_translate("MainWindow", "..."))
-        self.toolbuttonClearPoints.setToolTip(_translate("MainWindow", "Clear any points"))
+        self.toolbuttonClearPoints.setToolTip(
+            _translate("MainWindow", "Clear any points")
+        )
         self.toolbuttonClearPoints.setText(_translate("MainWindow", "..."))
-        self.labelPointInstructions.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">Instructions:</span> Create points where needed. Check the Create Points button to start digitizing image velocimetry points. Click on the desired location in the image to create a new point. When finished, click the Create Points button to complete digitization. Press the Clear Points button to clear all existing points.</p></body></html>"))
-        self.toolboxGridCreation.setItemText(self.toolboxGridCreation.indexOf(self.PointPage), _translate("MainWindow", "Point"))
-        self.toolbuttonCreateLine.setToolTip(_translate("MainWindow", "Create a line"))
+        self.labelPointInstructions.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Instructions:</span> Create points where needed. Check the Create Points button to start digitizing image velocimetry points. Click on the desired location in the image to create a new point. When finished, click the Create Points button to complete digitization. Press the Clear Points button to clear all existing points.</p></body></html>',
+            )
+        )
+        self.toolboxGridCreation.setItemText(
+            self.toolboxGridCreation.indexOf(self.PointPage),
+            _translate("MainWindow", "Point"),
+        )
+        self.toolbuttonCreateLine.setToolTip(
+            _translate("MainWindow", "Create a line")
+        )
         self.toolbuttonCreateLine.setText(_translate("MainWindow", "..."))
-        self.toolbuttonClearLine.setToolTip(_translate("MainWindow", "Clear the line and any points"))
+        self.toolbuttonClearLine.setToolTip(
+            _translate("MainWindow", "Clear the line and any points")
+        )
         self.toolbuttonClearLine.setText(_translate("MainWindow", "..."))
-        self.labelLineNumPoints.setText(_translate("MainWindow", "Num. points:"))
-        self.spinboxLineNumPoints.setToolTip(_translate("MainWindow", "Number of equally-spaced points along the line"))
-        self.buttonCreatePointsOnLine.setToolTip(_translate("MainWindow", "Create equally-spaced points along the line"))
-        self.buttonCreatePointsOnLine.setText(_translate("MainWindow", "Create Points on Line"))
-        self.labelLineInstructions.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">Instructions:</span> Create a line of regularly spaced points. Click the Create Line button to activate. In the image, click the starting point for a line. Move the mouse to the desired end point and click again to set the line. Set the desired number of points along the line in the spin box, and then press the Create Points on Line button. Pressing the Clear Line button will delete the line and any created points from the image. </p></body></html>"))
-        self.toolboxGridCreation.setItemText(self.toolboxGridCreation.indexOf(self.SimpleLinePage), _translate("MainWindow", "Simple Line"))
+        self.labelLineNumPoints.setText(
+            _translate("MainWindow", "Num. points:")
+        )
+        self.spinboxLineNumPoints.setToolTip(
+            _translate(
+                "MainWindow", "Number of equally-spaced points along the line"
+            )
+        )
+        self.buttonCreatePointsOnLine.setToolTip(
+            _translate(
+                "MainWindow", "Create equally-spaced points along the line"
+            )
+        )
+        self.buttonCreatePointsOnLine.setText(
+            _translate("MainWindow", "Create Points on Line")
+        )
+        self.labelLineInstructions.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Instructions:</span> Create a line of regularly spaced points. Click the Create Line button to activate. In the image, click the starting point for a line. Move the mouse to the desired end point and click again to set the line. Set the desired number of points along the line in the spin box, and then press the Create Points on Line button. Pressing the Clear Line button will delete the line and any created points from the image. </p></body></html>',
+            )
+        )
+        self.toolboxGridCreation.setItemText(
+            self.toolboxGridCreation.indexOf(self.SimpleLinePage),
+            _translate("MainWindow", "Simple Line"),
+        )
         self.labelHorzSpacing.setText(_translate("MainWindow", "H. Spacing"))
         self.labelHorzSpacingWorldUnits.setText(_translate("MainWindow", "px"))
         self.labelVertSpacing.setText(_translate("MainWindow", "V. Spacing"))
         self.labelVertSpacingWorldUnits.setText(_translate("MainWindow", "px"))
-        self.buttonCreateGrid.setToolTip(_translate("MainWindow", "Create grid using specified mask and spacing"))
+        self.buttonCreateGrid.setToolTip(
+            _translate(
+                "MainWindow", "Create grid using specified mask and spacing"
+            )
+        )
         self.buttonCreateGrid.setText(_translate("MainWindow", "Create Grid"))
-        self.label_GridInstructions.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">Instructions:</span> Create regularly spaced points in unmasked regions of the image. Set the points spacing using the spin boxes, then press the Create Grid.</p></body></html>"))
-        self.toolboxGridCreation.setItemText(self.toolboxGridCreation.indexOf(self.RegularGridPage), _translate("MainWindow", "Regular Grid"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabGridPreparation), _translate("MainWindow", "Grid Preparation"))
-        self.groupboxSpaceTimeParameters.setTitle(_translate("MainWindow", "Parameters"))
-        self.label_6.setToolTip(_translate("MainWindow", "<html><head/><body><p>The total length of a search line in feet.</p></body></html>"))
-        self.label_6.setText(_translate("MainWindow", "<html><head/><body><p>Search Line distance (ft):</p></body></html>"))
-        self.label_5.setToolTip(_translate("MainWindow", "<html><head/><body><p>Angular resolution of the search lines to the consider in degrees.</p></body></html>"))
-        self.label_5.setText(_translate("MainWindow", "<html><head/><body><p>Search Angle Increment (deg):</p></body></html>"))
-        self.label_4.setToolTip(_translate("MainWindow", "<html><head/><body><p>An initial guess of the flow direction in geographic degrees (i.e., the top of the image is 0°/North, the right is 90°/East, the bottom is 180°/South, and the left is 270°/West). </p><p>Choose an approximate angle representing the direction fo the majority of the flow.</p></body></html>"))
-        self.label_4.setText(_translate("MainWindow", "<html><head/><body><p>Estimated Flow Angle (deg):</p></body></html>"))
-        self.spinboxSTIVPhiOrigin.setToolTip(_translate("MainWindow", "<html><head/><body><p>An initial guess of the flow direction in geographic degrees (i.e., the top of the image is 0°/North, the right is 90°/East, the bottom is 180°/South, and the left is 270°/West). </p><p>Choose an approximate angle representing the direction fo the majority of the flow.</p></body></html>"))
-        self.spinboxSTIVdPhi.setToolTip(_translate("MainWindow", "<html><head/><body><p>Angular resolution of the search lines to the consider in degrees.</p></body></html>"))
-        self.buttonSTIVProcessVelocities.setText(_translate("MainWindow", "Process Velocities"))
-        self.pushbuttonCreateRefreshImageStackSTIV.setText(_translate("MainWindow", "Create or Refresh Image Stack"))
+        self.label_GridInstructions.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Instructions:</span> Create regularly spaced points in unmasked regions of the image. Set the points spacing using the spin boxes, then press the Create Grid.</p></body></html>',
+            )
+        )
+        self.toolboxGridCreation.setItemText(
+            self.toolboxGridCreation.indexOf(self.RegularGridPage),
+            _translate("MainWindow", "Regular Grid"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabGridPreparation),
+            _translate("MainWindow", "Grid Preparation"),
+        )
+        self.groupboxSpaceTimeParameters.setTitle(
+            _translate("MainWindow", "Parameters")
+        )
+        self.label_6.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>The total length of a search line in feet.</p></body></html>",
+            )
+        )
+        self.label_6.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Search Line distance (ft):</p></body></html>",
+            )
+        )
+        self.label_5.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Angular resolution of the search lines to the consider in degrees.</p></body></html>",
+            )
+        )
+        self.label_5.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Search Angle Increment (deg):</p></body></html>",
+            )
+        )
+        self.label_4.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>An initial guess of the flow direction in geographic degrees (i.e., the top of the image is 0°/North, the right is 90°/East, the bottom is 180°/South, and the left is 270°/West). </p><p>Choose an approximate angle representing the direction fo the majority of the flow.</p></body></html>",
+            )
+        )
+        self.label_4.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Estimated Flow Angle (deg):</p></body></html>",
+            )
+        )
+        self.spinboxSTIVPhiOrigin.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>An initial guess of the flow direction in geographic degrees (i.e., the top of the image is 0°/North, the right is 90°/East, the bottom is 180°/South, and the left is 270°/West). </p><p>Choose an approximate angle representing the direction fo the majority of the flow.</p></body></html>",
+            )
+        )
+        self.spinboxSTIVdPhi.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Angular resolution of the search lines to the consider in degrees.</p></body></html>",
+            )
+        )
+        self.buttonSTIVProcessVelocities.setText(
+            _translate("MainWindow", "Process Velocities")
+        )
+        self.pushbuttonCreateRefreshImageStackSTIV.setText(
+            _translate("MainWindow", "Create or Refresh Image Stack")
+        )
         self.checkboxSaveSTIs.setText(_translate("MainWindow", "Save STIs?"))
-        self.doublespinboxStivSearchLineDistance.setToolTip(_translate("MainWindow", "The total length of a search line in feet."))
-        self.label_7.setToolTip(_translate("MainWindow", "<html><head/><body><p>The envelope of angles used to search for the primary flow direction, in degrees. For example, 15° will search for primary flow directions within +/- 7.5° of the Estimated Flow Angle. </p></body></html>"))
-        self.label_7.setText(_translate("MainWindow", "<html><head/><body><p>Search Angle Range (deg):</p></body></html>"))
-        self.spinboxSTIVPhiRange.setToolTip(_translate("MainWindow", "<html><head/><body><p>The envelope of angles used to search for the primary flow direction, in degrees. For example, 15° will search for primary flow directions within +/- 7.5° of the Estimated Flow Angle. </p></body></html>"))
-        self.labelStivMaxVelThreshold.setToolTip(_translate("MainWindow", "<html><head/><body><p>Maximum allowed STIV velocity threshold in feet per second. </p></body></html>"))
-        self.labelStivMaxVelThreshold.setText(_translate("MainWindow", "Max Vel. Threshold (ft/s):"))
-        self.spinboxSTIVMaxVelThreshold.setToolTip(_translate("MainWindow", "Maximum allowed STIV velocity threshold in feet per second. "))
-        self.label_9.setToolTip(_translate("MainWindow", "<html><head/><body><p>Strength of the Gaussian blur applied to Space-Time Images before attempting to find primary flow angles. A value of 0.0 represents no blur applied. A value of 5.0 is the maximum blur level.</p></body></html>"))
-        self.label_9.setText(_translate("MainWindow", "<html><head/><body><p>Gaussian Blur Strength:</p></body></html>"))
-        self.doublespinboxStivGaussianBlurSigma.setToolTip(_translate("MainWindow", "Strength of the Gaussian blur applied to Space-Time Images before attempting to find primary flow angles. A value of 0.0 represents no blur applied. A value of 5.0 is the maximum blur level."))
-        self.tabWidget_ImageVelocimetryMethods.setTabText(self.tabWidget_ImageVelocimetryMethods.indexOf(self.tabSTIVExhaustive), _translate("MainWindow", "Space-Time Image Velocimetry (Exhaustive)"))
-        self.pushbuttonReloadProcessedSTIVResults.setText(_translate("MainWindow", "Reload Processed STIV Results"))
-        self.pushbuttonApplyManualSTIVChanges.setText(_translate("MainWindow", "Apply Manual STIV Changes"))
-        self.tabWidget_ImageVelocimetryMethods.setTabText(self.tabWidget_ImageVelocimetryMethods.indexOf(self.tabSpaceTimeImageReview), _translate("MainWindow", "Space-Time Image Results"))
-        self.groupboxSpaceTimeOptParameters.setTitle(_translate("MainWindow", "Parameters"))
-        self.label_8.setToolTip(_translate("MainWindow", "<html><head/><body><p>The total length of a search line in pixels.</p></body></html>"))
-        self.label_8.setText(_translate("MainWindow", "<html><head/><body><p>Num. pixels:</p></body></html>"))
-        self.spinboxSTIVOptNumPixels.setToolTip(_translate("MainWindow", "<html><head/><body><p>The total length of a search line in pixels.</p></body></html>"))
-        self.labelStivOptMaxVelThreshold.setToolTip(_translate("MainWindow", "<html><head/><body><p>A threshold to be applied to the absolute value of all STIV Optimized velocities. Any velocities above this threshold are screened out.  </p></body></html>"))
-        self.labelStivOptMaxVelThreshold.setText(_translate("MainWindow", "<html><head/><body><p>Max Vel. Threshold (m/s):</p></body></html>"))
-        self.buttonSTIVOptProcessVelocities.setText(_translate("MainWindow", "Process Velocities"))
-        self.pushbuttonCreateRefreshImageStackSTIVOpt.setText(_translate("MainWindow", "Create or Refresh Image Stack"))
-        self.tabWidget_ImageVelocimetryMethods.setTabText(self.tabWidget_ImageVelocimetryMethods.indexOf(self.tabSTIVOptimized), _translate("MainWindow", "Space-Time Image Velocimetry (Optimized)"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabImageVelocimetry), _translate("MainWindow", "Image Velocimetry"))
-        self.groupboxDischargeStations.setTitle(_translate("MainWindow", "Discharge Stations"))
-        self.pushbuttonUsedInMeasurement.setToolTip(_translate("MainWindow", "Mark selected rows in the Discharge Stations Table as \"Used.\" These rows will be used in computation of discharge."))
-        self.pushbuttonUsedInMeasurement.setText(_translate("MainWindow", "Used in Measurement"))
-        self.pushbuttonNotUsedInMeasurement.setToolTip(_translate("MainWindow", "Mark selected rows in the Discharge Stations Table as \"Not Used.\" These rows will not be used in computations of dishcarge."))
-        self.pushbuttonNotUsedInMeasurement.setText(_translate("MainWindow", "Not Used in Measurement"))
-        self.pushbuttonResetDischargeStationsTable.setToolTip(_translate("MainWindow", "Reset the Discharge Table values. This will apply the default alpha to all stations. Stations with NaN velocities are marked \"Not Used\""))
-        self.pushbuttonResetDischargeStationsTable.setText(_translate("MainWindow", "Reset Discharge Stations Table"))
-        self.groupboxDischargeResults.setTitle(_translate("MainWindow", "Measurement Results"))
-        self.label_14.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:700;\">User Rating:</span></p></body></html>"))
-        self.comboboxUserRating.setToolTip(_translate("MainWindow", "Select the Quality Rating for this measurement. The default selection is based on the IVE uncertainty."))
-        self.comboboxUserRating.setItemText(0, _translate("MainWindow", "Not Rated"))
-        self.comboboxUserRating.setItemText(1, _translate("MainWindow", "Excellent (<3%)"))
-        self.comboboxUserRating.setItemText(2, _translate("MainWindow", "Good (3-5%)"))
-        self.comboboxUserRating.setItemText(3, _translate("MainWindow", "Fair (5-8%)"))
-        self.comboboxUserRating.setItemText(4, _translate("MainWindow", "Poor (>8%)"))
-        self.doublespinboxGlobalAlhpa.setToolTip(_translate("MainWindow", "Alpha value to be applied. Changing the value in this spinbox will cause the Discharge Stations Table to update."))
-        self.labelGlobalAlpha.setText(_translate("MainWindow", "<html><head/><body><p>Global <span style=\" font-size:12pt; font-style:italic;\">α</span> (alpha) setting:</p></body></html>"))
-        self.checkboxGlobalAlphaApplySelected.setToolTip(_translate("MainWindow", "When checked, alpha value changes will only apply to selected rows in the Discharge Stations Table."))
-        self.checkboxGlobalAlphaApplySelected.setText(_translate("MainWindow", "Apply only to selected?"))
-        self.labelDischargePlotsPlaceholder.setText(_translate("MainWindow", "Place holder for Discharge Plots"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabDischarge), _translate("MainWindow", "Discharge"))
-        self.groupboxComments.setTitle(_translate("MainWindow", "Measurement Summary"))
+        self.doublespinboxStivSearchLineDistance.setToolTip(
+            _translate(
+                "MainWindow", "The total length of a search line in feet."
+            )
+        )
+        self.label_7.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>The envelope of angles used to search for the primary flow direction, in degrees. For example, 15° will search for primary flow directions within +/- 7.5° of the Estimated Flow Angle. </p></body></html>",
+            )
+        )
+        self.label_7.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Search Angle Range (deg):</p></body></html>",
+            )
+        )
+        self.spinboxSTIVPhiRange.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>The envelope of angles used to search for the primary flow direction, in degrees. For example, 15° will search for primary flow directions within +/- 7.5° of the Estimated Flow Angle. </p></body></html>",
+            )
+        )
+        self.labelStivMaxVelThreshold.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Maximum allowed STIV velocity threshold in feet per second. </p></body></html>",
+            )
+        )
+        self.labelStivMaxVelThreshold.setText(
+            _translate("MainWindow", "Max Vel. Threshold (ft/s):")
+        )
+        self.spinboxSTIVMaxVelThreshold.setToolTip(
+            _translate(
+                "MainWindow",
+                "Maximum allowed STIV velocity threshold in feet per second. ",
+            )
+        )
+        self.label_9.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Strength of the Gaussian blur applied to Space-Time Images before attempting to find primary flow angles. A value of 0.0 represents no blur applied. A value of 5.0 is the maximum blur level.</p></body></html>",
+            )
+        )
+        self.label_9.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Gaussian Blur Strength:</p></body></html>",
+            )
+        )
+        self.doublespinboxStivGaussianBlurSigma.setToolTip(
+            _translate(
+                "MainWindow",
+                "Strength of the Gaussian blur applied to Space-Time Images before attempting to find primary flow angles. A value of 0.0 represents no blur applied. A value of 5.0 is the maximum blur level.",
+            )
+        )
+        self.tabWidget_ImageVelocimetryMethods.setTabText(
+            self.tabWidget_ImageVelocimetryMethods.indexOf(
+                self.tabSTIVExhaustive
+            ),
+            _translate(
+                "MainWindow", "Space-Time Image Velocimetry (Exhaustive)"
+            ),
+        )
+        self.pushbuttonReloadProcessedSTIVResults.setText(
+            _translate("MainWindow", "Reload Processed STIV Results")
+        )
+        self.pushbuttonApplyManualSTIVChanges.setText(
+            _translate("MainWindow", "Apply Manual STIV Changes")
+        )
+        self.tabWidget_ImageVelocimetryMethods.setTabText(
+            self.tabWidget_ImageVelocimetryMethods.indexOf(
+                self.tabSpaceTimeImageReview
+            ),
+            _translate("MainWindow", "Space-Time Image Results"),
+        )
+        self.groupboxSpaceTimeOptParameters.setTitle(
+            _translate("MainWindow", "Parameters")
+        )
+        self.label_8.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>The total length of a search line in pixels.</p></body></html>",
+            )
+        )
+        self.label_8.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Num. pixels:</p></body></html>",
+            )
+        )
+        self.spinboxSTIVOptNumPixels.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>The total length of a search line in pixels.</p></body></html>",
+            )
+        )
+        self.labelStivOptMaxVelThreshold.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>A threshold to be applied to the absolute value of all STIV Optimized velocities. Any velocities above this threshold are screened out.  </p></body></html>",
+            )
+        )
+        self.labelStivOptMaxVelThreshold.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Max Vel. Threshold (m/s):</p></body></html>",
+            )
+        )
+        self.buttonSTIVOptProcessVelocities.setText(
+            _translate("MainWindow", "Process Velocities")
+        )
+        self.pushbuttonCreateRefreshImageStackSTIVOpt.setText(
+            _translate("MainWindow", "Create or Refresh Image Stack")
+        )
+        self.tabWidget_ImageVelocimetryMethods.setTabText(
+            self.tabWidget_ImageVelocimetryMethods.indexOf(
+                self.tabSTIVOptimized
+            ),
+            _translate(
+                "MainWindow", "Space-Time Image Velocimetry (Optimized)"
+            ),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabImageVelocimetry),
+            _translate("MainWindow", "Image Velocimetry"),
+        )
+        self.groupboxDischargeStations.setTitle(
+            _translate("MainWindow", "Discharge Stations")
+        )
+        self.pushbuttonUsedInMeasurement.setToolTip(
+            _translate(
+                "MainWindow",
+                'Mark selected rows in the Discharge Stations Table as "Used." These rows will be used in computation of discharge.',
+            )
+        )
+        self.pushbuttonUsedInMeasurement.setText(
+            _translate("MainWindow", "Used in Measurement")
+        )
+        self.pushbuttonNotUsedInMeasurement.setToolTip(
+            _translate(
+                "MainWindow",
+                'Mark selected rows in the Discharge Stations Table as "Not Used." These rows will not be used in computations of dishcarge.',
+            )
+        )
+        self.pushbuttonNotUsedInMeasurement.setText(
+            _translate("MainWindow", "Not Used in Measurement")
+        )
+        self.pushbuttonResetDischargeStationsTable.setToolTip(
+            _translate(
+                "MainWindow",
+                'Reset the Discharge Table values. This will apply the default alpha to all stations. Stations with NaN velocities are marked "Not Used"',
+            )
+        )
+        self.pushbuttonResetDischargeStationsTable.setText(
+            _translate("MainWindow", "Reset Discharge Stations Table")
+        )
+        self.groupboxDischargeResults.setTitle(
+            _translate("MainWindow", "Measurement Results")
+        )
+        self.label_14.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">User Rating:</span></p></body></html>',
+            )
+        )
+        self.comboboxUserRating.setToolTip(
+            _translate(
+                "MainWindow",
+                "Select the Quality Rating for this measurement. The default selection is based on the IVE uncertainty.",
+            )
+        )
+        self.comboboxUserRating.setItemText(
+            0, _translate("MainWindow", "Not Rated")
+        )
+        self.comboboxUserRating.setItemText(
+            1, _translate("MainWindow", "Excellent (<3%)")
+        )
+        self.comboboxUserRating.setItemText(
+            2, _translate("MainWindow", "Good (3-5%)")
+        )
+        self.comboboxUserRating.setItemText(
+            3, _translate("MainWindow", "Fair (5-8%)")
+        )
+        self.comboboxUserRating.setItemText(
+            4, _translate("MainWindow", "Poor (>8%)")
+        )
+        self.doublespinboxGlobalAlhpa.setToolTip(
+            _translate(
+                "MainWindow",
+                "Alpha value to be applied. Changing the value in this spinbox will cause the Discharge Stations Table to update.",
+            )
+        )
+        self.labelGlobalAlpha.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p>Global <span style=" font-size:12pt; font-style:italic;">α</span> (alpha) setting:</p></body></html>',
+            )
+        )
+        self.checkboxGlobalAlphaApplySelected.setToolTip(
+            _translate(
+                "MainWindow",
+                "When checked, alpha value changes will only apply to selected rows in the Discharge Stations Table.",
+            )
+        )
+        self.checkboxGlobalAlphaApplySelected.setText(
+            _translate("MainWindow", "Apply only to selected?")
+        )
+        self.labelDischargePlotsPlaceholder.setText(
+            _translate("MainWindow", "Place holder for Discharge Plots")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabDischarge),
+            _translate("MainWindow", "Discharge"),
+        )
+        self.groupboxComments.setTitle(
+            _translate("MainWindow", "Measurement Summary")
+        )
         self.label_21.setText(_translate("MainWindow", "Project Description"))
-        self.projectDescriptionTextEdit.setToolTip(_translate("MainWindow", "Enter project description notes"))
-        self.projectDescriptionTextEdit.setStatusTip(_translate("MainWindow", "Enter project description notes"))
-        self.projectDescriptionTextEdit.setWhatsThis(_translate("MainWindow", "Enter project description notes"))
-        self.projectDescriptionTextEdit.setPlaceholderText(_translate("MainWindow", "Enter project description notes"))
+        self.projectDescriptionTextEdit.setToolTip(
+            _translate("MainWindow", "Enter project description notes")
+        )
+        self.projectDescriptionTextEdit.setStatusTip(
+            _translate("MainWindow", "Enter project description notes")
+        )
+        self.projectDescriptionTextEdit.setWhatsThis(
+            _translate("MainWindow", "Enter project description notes")
+        )
+        self.projectDescriptionTextEdit.setPlaceholderText(
+            _translate("MainWindow", "Enter project description notes")
+        )
         self.label_17.setText(_translate("MainWindow", "Meas. No.:"))
         self.label_18.setText(_translate("MainWindow", "Station Name:"))
-        self.stationNumberLabel.setText(_translate("MainWindow", "<html><head/><body><p>Station Number:</p></body></html>"))
-        self.userNameLabel.setText(_translate("MainWindow", "<html><head/><body><p>Party:</p></body></html>"))
+        self.stationNumberLabel.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Station Number:</p></body></html>",
+            )
+        )
+        self.userNameLabel.setText(
+            _translate(
+                "MainWindow", "<html><head/><body><p>Party:</p></body></html>"
+            )
+        )
         self.label_19.setText(_translate("MainWindow", "Weather:"))
-        self.dateLabel.setText(_translate("MainWindow", "<html><head/><body><p>Meas. Date:</p></body></html>"))
+        self.dateLabel.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Meas. Date:</p></body></html>",
+            )
+        )
         self.label_15.setText(_translate("MainWindow", "Gage Height: "))
         self.label_11.setText(_translate("MainWindow", "Start Time: "))
         self.label_20.setText(_translate("MainWindow", "End Time:"))
-        self.measStartTime.setDisplayFormat(_translate("MainWindow", "h:mm:ss AP"))
-        self.measEndTime.setDisplayFormat(_translate("MainWindow", "h:mm:ss AP"))
-        self.groupBox_2.setTitle(_translate("MainWindow", "Application Comments"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabReporting), _translate("MainWindow", "Reporting"))
+        self.measStartTime.setDisplayFormat(
+            _translate("MainWindow", "h:mm:ss AP")
+        )
+        self.measEndTime.setDisplayFormat(
+            _translate("MainWindow", "h:mm:ss AP")
+        )
+        self.groupBox_2.setTitle(
+            _translate("MainWindow", "Application Comments")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabReporting),
+            _translate("MainWindow", "Reporting"),
+        )
         self.menuAbout.setTitle(_translate("MainWindow", "About"))
         self.menuMenu.setTitle(_translate("MainWindow", "File"))
         self.menuTools.setTitle(_translate("MainWindow", "Tools"))
@@ -2251,28 +4144,65 @@ class Ui_MainWindow(object):
         self.menuExport.setTitle(_translate("MainWindow", "Export"))
         self.actionOpen_Video.setText(_translate("MainWindow", "Import Video"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
-        self.actionOpen_Image_Folder.setText(_translate("MainWindow", "Import Image Frames Directory"))
-        self.actionOpen_Image_Folder.setShortcut(_translate("MainWindow", "Ctrl+I"))
-        self.actionAbout_IVy_Tools.setText(_translate("MainWindow", "About IVy Tools"))
-        self.actionCompute_coordinates_from_4_point_distances.setText(_translate("MainWindow", "Compute coordinates from 4-point distances"))
-        self.actionOpen_Ground_Control_Image.setText(_translate("MainWindow", "Import Ground Control Image"))
+        self.actionOpen_Image_Folder.setText(
+            _translate("MainWindow", "Import Image Frames Directory")
+        )
+        self.actionOpen_Image_Folder.setShortcut(
+            _translate("MainWindow", "Ctrl+I")
+        )
+        self.actionAbout_IVy_Tools.setText(
+            _translate("MainWindow", "About IVy Tools")
+        )
+        self.actionCompute_coordinates_from_4_point_distances.setText(
+            _translate(
+                "MainWindow", "Compute coordinates from 4-point distances"
+            )
+        )
+        self.actionOpen_Ground_Control_Image.setText(
+            _translate("MainWindow", "Import Ground Control Image")
+        )
         self.actionNew_Project.setText(_translate("MainWindow", "New Project"))
-        self.actionOpen_Project.setText(_translate("MainWindow", "Open Project"))
-        self.actionSave_Project.setText(_translate("MainWindow", "Save Project"))
-        self.actionImport_Ground_Control_Points_Table.setText(_translate("MainWindow", "Import Ground Control Points Table"))
-        self.actionImport_Bathymetry.setText(_translate("MainWindow", "Import Bathymetry"))
-        self.actionImport_Bathymetry.setToolTip(_translate("MainWindow", "Import bathymetry data from AreaComp3"))
+        self.actionOpen_Project.setText(
+            _translate("MainWindow", "Open Project")
+        )
+        self.actionSave_Project.setText(
+            _translate("MainWindow", "Save Project")
+        )
+        self.actionImport_Ground_Control_Points_Table.setText(
+            _translate("MainWindow", "Import Ground Control Points Table")
+        )
+        self.actionImport_Bathymetry.setText(
+            _translate("MainWindow", "Import Bathymetry")
+        )
+        self.actionImport_Bathymetry.setToolTip(
+            _translate("MainWindow", "Import bathymetry data from AreaComp3")
+        )
         self.actionUnits.setText(_translate("MainWindow", "Units"))
-        self.actionSummary_Report_PDF.setText(_translate("MainWindow", "Summary Report (PDF)"))
-        self.actionEstimate_STIV_Video_Sample_Rate.setText(_translate("MainWindow", "Estimate STIV Video Sample Rate"))
-        self.actionSave_Template_Ground_Control_Points_File.setText(_translate("MainWindow", "Save Template Ground Control Points File"))
-        self.actionOpen_Help_Documentation.setText(_translate("MainWindow", "Open Help Documentation"))
-        self.actionCheck_for_Updates.setText(_translate("MainWindow", "Check for Updates"))
+        self.actionSummary_Report_PDF.setText(
+            _translate("MainWindow", "Summary Report (PDF)")
+        )
+        self.actionEstimate_STIV_Video_Sample_Rate.setText(
+            _translate("MainWindow", "Estimate STIV Video Sample Rate")
+        )
+        self.actionSave_Template_Ground_Control_Points_File.setText(
+            _translate(
+                "MainWindow", "Save Template Ground Control Points File"
+            )
+        )
+        self.actionOpen_Help_Documentation.setText(
+            _translate("MainWindow", "Open Help Documentation")
+        )
+        self.actionCheck_for_Updates.setText(
+            _translate("MainWindow", "Check for Updates")
+        )
+
+
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

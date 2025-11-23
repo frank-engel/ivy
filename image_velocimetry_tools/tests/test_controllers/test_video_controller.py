@@ -11,7 +11,9 @@ from unittest.mock import Mock, MagicMock, patch
 pytest.importorskip("PyQt5")
 
 from PyQt5.QtCore import QObject
-from image_velocimetry_tools.gui.controllers.video_controller import VideoController
+from image_velocimetry_tools.gui.controllers.video_controller import (
+    VideoController,
+)
 from image_velocimetry_tools.gui.models.video_model import VideoModel
 from image_velocimetry_tools.services.video_service import VideoService
 
@@ -65,15 +67,20 @@ class TestVideoControllerInit:
         """Create a VideoService instance."""
         return VideoService()
 
-    def test_controller_init(self, mock_main_window, video_model, video_service):
+    def test_controller_init(
+        self, mock_main_window, video_model, video_service
+    ):
         """Test controller initialization."""
-        controller = VideoController(mock_main_window, video_model, video_service)
+        controller = VideoController(
+            mock_main_window, video_model, video_service
+        )
 
         assert controller.main_window == mock_main_window
         assert controller.video_model == video_model
         assert controller.video_service == video_service
         assert controller.model == video_model
         assert controller.service == video_service
+
 
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestVideoControllerClipTimes:
@@ -119,7 +126,7 @@ class TestVideoControllerClipTimes:
             "height": 1080,
             "avg_frame_rate": 30.0,
             "frame_count": 900,
-            "avg_timestep_ms": 33.33
+            "avg_timestep_ms": 33.33,
         }
 
         video_service = VideoService()
@@ -130,7 +137,7 @@ class TestVideoControllerClipTimes:
             "controller": controller,
             "window": mock_window,
             "model": video_model,
-            "service": video_service
+            "service": video_service,
         }
 
     def test_set_clip_start_time(self, setup):
@@ -187,6 +194,7 @@ class TestVideoControllerClipTimes:
         # Start time should be clamped to end time
         assert model.video_clip_start_time == 3000
 
+
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestVideoControllerModelSignals:
     """Tests for handling model signals."""
@@ -230,7 +238,7 @@ class TestVideoControllerModelSignals:
         return {
             "controller": controller,
             "window": mock_window,
-            "model": video_model
+            "model": video_model,
         }
 
     def test_on_model_video_loaded(self, setup):
@@ -258,7 +266,7 @@ class TestVideoControllerModelSignals:
             "height": 1080,
             "avg_frame_rate": 30.0,
             "frame_count": 900,
-            "avg_timestep_ms": 33.33
+            "avg_timestep_ms": 33.33,
         }
         model.video_metadata = metadata
 

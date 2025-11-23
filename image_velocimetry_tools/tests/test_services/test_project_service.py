@@ -39,19 +39,23 @@ def sample_project_dict():
         "ffmpeg_parameters": {
             "rotation": 0,
             "flip": "none",
-            "stabilize": False
-        }
+            "stabilize": False,
+        },
     }
 
 
 class TestProjectServiceSaveJSON:
     """Tests for save_project_to_json method."""
 
-    def test_save_valid_project_dict(self, project_service, temp_dir, sample_project_dict):
+    def test_save_valid_project_dict(
+        self, project_service, temp_dir, sample_project_dict
+    ):
         """Test saving a valid project dictionary to JSON."""
         json_path = os.path.join(temp_dir, "test_project.json")
 
-        result = project_service.save_project_to_json(sample_project_dict, json_path)
+        result = project_service.save_project_to_json(
+            sample_project_dict, json_path
+        )
 
         assert result is True
         assert os.path.exists(json_path)
@@ -62,28 +66,40 @@ class TestProjectServiceSaveJSON:
 
         assert loaded_data == sample_project_dict
 
-    def test_save_creates_parent_directory(self, project_service, temp_dir, sample_project_dict):
+    def test_save_creates_parent_directory(
+        self, project_service, temp_dir, sample_project_dict
+    ):
         """Test that save creates parent directory if it doesn't exist."""
         json_path = os.path.join(temp_dir, "subdir", "nested", "project.json")
 
-        result = project_service.save_project_to_json(sample_project_dict, json_path)
+        result = project_service.save_project_to_json(
+            sample_project_dict, json_path
+        )
 
         assert result is True
         assert os.path.exists(json_path)
 
-    def test_save_with_invalid_dict_raises_error(self, project_service, temp_dir):
+    def test_save_with_invalid_dict_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that saving non-dict raises ValueError."""
         json_path = os.path.join(temp_dir, "test.json")
 
-        with pytest.raises(ValueError, match="project_dict must be a dictionary"):
+        with pytest.raises(
+            ValueError, match="project_dict must be a dictionary"
+        ):
             project_service.save_project_to_json("not a dict", json_path)
 
-    def test_save_with_empty_path_raises_error(self, project_service, sample_project_dict):
+    def test_save_with_empty_path_raises_error(
+        self, project_service, sample_project_dict
+    ):
         """Test that empty path raises ValueError."""
         with pytest.raises(ValueError, match="json_path cannot be empty"):
             project_service.save_project_to_json(sample_project_dict, "")
 
-    def test_save_with_invalid_path_raises_error(self, project_service, sample_project_dict):
+    def test_save_with_invalid_path_raises_error(
+        self, project_service, sample_project_dict
+    ):
         """Test that invalid path raises IOError on all platforms."""
 
         # Windows: use a protected directory
@@ -98,13 +114,17 @@ class TestProjectServiceSaveJSON:
             invalid_path = "/root/cannot_write_here/project.json"
 
         with pytest.raises(IOError):
-            project_service.save_project_to_json(sample_project_dict, invalid_path)
+            project_service.save_project_to_json(
+                sample_project_dict, invalid_path
+            )
 
 
 class TestProjectServiceLoadJSON:
     """Tests for load_project_from_json method."""
 
-    def test_load_valid_project(self, project_service, temp_dir, sample_project_dict):
+    def test_load_valid_project(
+        self, project_service, temp_dir, sample_project_dict
+    ):
         """Test loading a valid project JSON file."""
         json_path = os.path.join(temp_dir, "test_project.json")
 
@@ -116,7 +136,9 @@ class TestProjectServiceLoadJSON:
 
         assert loaded_dict == sample_project_dict
 
-    def test_load_nonexistent_file_raises_error(self, project_service, temp_dir):
+    def test_load_nonexistent_file_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that loading non-existent file raises FileNotFoundError."""
         json_path = os.path.join(temp_dir, "does_not_exist.json")
 
@@ -202,7 +224,9 @@ class TestProjectServiceCreateArchive:
             assert "keep.txt" in names
             assert "exclude.dat" not in names
 
-    def test_create_archive_with_progress_callback(self, project_service, temp_dir):
+    def test_create_archive_with_progress_callback(
+        self, project_service, temp_dir
+    ):
         """Test that progress callback is called during archive creation."""
         source_dir = os.path.join(temp_dir, "source")
         os.makedirs(source_dir)
@@ -228,7 +252,9 @@ class TestProjectServiceCreateArchive:
         # Last call should be (5, 5)
         assert progress_calls[-1] == (5, 5)
 
-    def test_create_archive_nonexistent_source_raises_error(self, project_service, temp_dir):
+    def test_create_archive_nonexistent_source_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that non-existent source directory raises FileNotFoundError."""
         source_dir = os.path.join(temp_dir, "does_not_exist")
         zip_path = os.path.join(temp_dir, "test.zip")
@@ -236,11 +262,15 @@ class TestProjectServiceCreateArchive:
         with pytest.raises(FileNotFoundError):
             project_service.create_project_archive(source_dir, zip_path)
 
-    def test_create_archive_empty_path_raises_error(self, project_service, temp_dir):
+    def test_create_archive_empty_path_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that empty output path raises ValueError."""
         source_dir = temp_dir
 
-        with pytest.raises(ValueError, match="output_zip_path cannot be empty"):
+        with pytest.raises(
+            ValueError, match="output_zip_path cannot be empty"
+        ):
             project_service.create_project_archive(source_dir, "")
 
 
@@ -260,8 +290,7 @@ class TestProjectServiceExtractArchive:
         zip_path = os.path.join(temp_dir, "test.zip")
         with zipfile.ZipFile(zip_path, "w") as zipf:
             zipf.write(
-                os.path.join(source_dir, "test.txt"),
-                arcname="test.txt"
+                os.path.join(source_dir, "test.txt"), arcname="test.txt"
             )
 
         # Extract to new directory
@@ -276,7 +305,9 @@ class TestProjectServiceExtractArchive:
         with open(os.path.join(extract_dir, "test.txt"), "r") as f:
             assert f.read() == test_content
 
-    def test_extract_nonexistent_archive_raises_error(self, project_service, temp_dir):
+    def test_extract_nonexistent_archive_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that non-existent archive raises FileNotFoundError."""
         zip_path = os.path.join(temp_dir, "does_not_exist.zip")
         extract_dir = os.path.join(temp_dir, "extracted")
@@ -284,7 +315,9 @@ class TestProjectServiceExtractArchive:
         with pytest.raises(FileNotFoundError):
             project_service.extract_project_archive(zip_path, extract_dir)
 
-    def test_extract_corrupted_archive_raises_error(self, project_service, temp_dir):
+    def test_extract_corrupted_archive_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that corrupted archive raises BadZipFile."""
         # Create a corrupted ZIP file
         zip_path = os.path.join(temp_dir, "corrupted.zip")
@@ -296,18 +329,24 @@ class TestProjectServiceExtractArchive:
         with pytest.raises(zipfile.BadZipFile):
             project_service.extract_project_archive(zip_path, extract_dir)
 
-    def test_extract_empty_directory_raises_error(self, project_service, temp_dir):
+    def test_extract_empty_directory_raises_error(
+        self, project_service, temp_dir
+    ):
         """Test that empty extraction directory raises ValueError."""
         zip_path = os.path.join(temp_dir, "test.zip")
 
-        with pytest.raises(ValueError, match="extract_to_directory cannot be empty"):
+        with pytest.raises(
+            ValueError, match="extract_to_directory cannot be empty"
+        ):
             project_service.extract_project_archive(zip_path, "")
 
 
 class TestProjectServiceValidation:
     """Tests for validate_project_dict method."""
 
-    def test_validate_valid_project_dict(self, project_service, sample_project_dict):
+    def test_validate_valid_project_dict(
+        self, project_service, sample_project_dict
+    ):
         """Test validating a valid project dictionary."""
         errors = project_service.validate_project_dict(sample_project_dict)
 

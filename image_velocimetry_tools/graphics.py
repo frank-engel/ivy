@@ -269,9 +269,7 @@ class SimpleLineAnnotation(QtWidgets.QGraphicsLineItem):
         if self.line_length is not None:
             self.mode = "create_line"
         else:
-            self.mode = (
-                "normal"  # Mode to track whether in normal mode or line creation mode
-            )
+            self.mode = "normal"  # Mode to track whether in normal mode or line creation mode
 
     def update_draft_line(self, imagePos):
         """Update the draft line based on the current mouse position."""
@@ -296,7 +294,9 @@ class SimpleLineAnnotation(QtWidgets.QGraphicsLineItem):
         self.setPen(QtGui.QPen(QtGui.QColor("red"), 2))
         if self.mode == "create_line":
             if len(self.m_points) < 2:
-                self.draft_line = QtCore.QLineF(self.mapToScene(self.m_points[0]), p)
+                self.draft_line = QtCore.QLineF(
+                    self.mapToScene(self.m_points[0]), p
+                )
                 self.draft_line.setLength(self.line_length)
                 line_end = self.draft_line.p2()
                 self.draft_line.setP2(line_end)
@@ -320,7 +320,9 @@ class SimpleLineAnnotation(QtWidgets.QGraphicsLineItem):
         elif self.mode == "normal":
             # Normal mode behavior
             if len(self.m_points) < 2:
-                self.draft_line = QtCore.QLineF(self.mapToScene(self.m_points[0]), p)
+                self.draft_line = QtCore.QLineF(
+                    self.mapToScene(self.m_points[0]), p
+                )
                 self.update()
 
             if len(self.m_points) == 2:
@@ -357,7 +359,8 @@ class SimpleLineAnnotation(QtWidgets.QGraphicsLineItem):
         -----
         - This method simplifies the process of adding a line by accepting a list of points.
 
-        - Each point in the list is added to the line using the addPoint method."""
+        - Each point in the list is added to the line using the addPoint method.
+        """
         for p in points:
             self.addPoint(QtCore.QPointF(p[0], p[1]))
 
@@ -496,7 +499,12 @@ class GripItemPath(QtWidgets.QGraphicsPathItem):
     """A user grip-able point and path used as vertices for the PolygonAnnotation and SimpleLineAnnotation classes."""
 
     def __init__(
-        self, annotation_item, index, symbology="default", labels=True, label="label"
+        self,
+        annotation_item,
+        index,
+        symbology="default",
+        labels=True,
+        label="label",
     ):
         """Class init
 
@@ -520,10 +528,14 @@ class GripItemPath(QtWidgets.QGraphicsPathItem):
             self.setPath(self.symbol.marker)
             self.setBrush(QtGui.QColor(self.symbol.fill_color))
             self.setPen(
-                QtGui.QPen(QtGui.QColor(self.symbol.color), self.symbol.pen_width)
+                QtGui.QPen(
+                    QtGui.QColor(self.symbol.color), self.symbol.pen_width
+                )
             )
             self.m_annotation_item.setPen(
-                QtGui.QPen(QtGui.QColor(self.symbol.color), self.symbol.pen_width)
+                QtGui.QPen(
+                    QtGui.QColor(self.symbol.color), self.symbol.pen_width
+                )
             )
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
@@ -553,7 +565,10 @@ class GripItemPath(QtWidgets.QGraphicsPathItem):
 
     def itemChange(self, change, value):
         """Override the itemChange method for handling item position changes."""
-        if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
+        if (
+            change == QtWidgets.QGraphicsItem.ItemPositionChange
+            and self.isEnabled()
+        ):
             self.m_annotation_item.movePoint(self.m_index, value)
         return super(GripItemPath, self).itemChange(change, value)
 
@@ -770,7 +785,9 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         else:
             self.image_item = self.addPixmap(pixmap)
 
-        self.setSceneRect(QtCore.QRectF(pixmap.rect()))  # Set scene size to image size.
+        self.setSceneRect(
+            QtCore.QRectF(pixmap.rect())
+        )  # Set scene size to image size.
 
     def load_image(self, filename):
         """Load supplied filename as image"""
@@ -876,7 +893,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
         #   Qt.ScrollBarAlwaysOff: Never shows a scroll bar.
         #   Qt.ScrollBarAlwaysOn: Always shows a scroll bar.
         #   Qt.ScrollBarAsNeeded: Shows a scroll bar only when zoomed.
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Interactions (set buttons to None to disable interactions)
@@ -888,7 +907,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
             Qt.MouseButton.LeftButton
         )  # Double click sets a polygon
         self.panButton = Qt.MouseButton.MiddleButton  # Drag to pan.
-        self.wheelZoomFactor = 1.25  # Set to None or 1 to disable mouse wheel zoom.
+        self.wheelZoomFactor = (
+            1.25  # Set to None or 1 to disable mouse wheel zoom.
+        )
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
         # Stack of QRectF zoom boxes in scene coordinates.
@@ -929,7 +950,10 @@ class AnnotationView(QtWidgets.QGraphicsView):
         if filepath is None:
             filter_spec = "Images (*.jpg *.png *.tif *.bmp);;All files (*.*)"
             filepath, dummy = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Open image file.", QtCore.QDir.homePath(), filter_spec  # path
+                self,
+                "Open image file.",
+                QtCore.QDir.homePath(),
+                filter_spec,  # path
             )
         if len(filepath) and os.path.isdir(filepath):
             filter_spec = "Images (*.jpg *.png *.tif *.bmp);;All files (*.*)"
@@ -963,7 +987,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
             return arr
         else:
             # Convert to 32-bit RGBA format if not already
-            qimage = qimage.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
+            qimage = qimage.convertToFormat(
+                QtGui.QImage.Format.Format_RGBA8888
+            )
             ptr = qimage.constBits()
             ptr.setsize(qimage.byteCount())
             arr = np.array(ptr).reshape(height, width, 4)  # 4 channels: RGBA
@@ -1029,7 +1055,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
                 self.zoomStack[-1], self.aspectRatioMode
             )  # Show zoomed rect.
         else:
-            self.fitInView(self.sceneRect(), self.aspectRatioMode)  # Show entire image.
+            self.fitInView(
+                self.sceneRect(), self.aspectRatioMode
+            )  # Show entire image.
 
     def clearZoom(self):
         """Clear the zoom"""
@@ -1046,7 +1074,8 @@ class AnnotationView(QtWidgets.QGraphicsView):
             items = [
                 item
                 for item in self.scene.items()
-                if isinstance(item, GripItemPath) or isinstance(item, PolygonAnnotation)
+                if isinstance(item, GripItemPath)
+                or isinstance(item, PolygonAnnotation)
             ]
             for item in items:
                 self.scene.removeItem(item)
@@ -1093,13 +1122,14 @@ class AnnotationView(QtWidgets.QGraphicsView):
             items = [
                 item
                 for item in self.scene.items()
-                if isinstance(item,
-                              SimpleLineAnnotation) and item.pen().color() == target_color
+                if isinstance(item, SimpleLineAnnotation)
+                and item.pen().color() == target_color
             ]
             for item in items:
                 self.scene.removeItem(item)
-            self.scene.line_item = [item for item in self.scene.line_item if
-                                    item not in items]
+            self.scene.line_item = [
+                item for item in self.scene.line_item if item not in items
+            ]
 
     def clearPoints(self):
         """Clear any existing points."""
@@ -1107,7 +1137,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
             # self.scene.removeItem(self.scene.polygon_item)
             # Also have to remove the Grip item points
             items = [
-                item for item in self.scene.items() if isinstance(item, GripItemPath)
+                item
+                for item in self.scene.items()
+                if isinstance(item, GripItemPath)
             ]
             for item in items:
                 self.scene.removeItem(item)
@@ -1159,7 +1191,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
             self._isZooming = True
             return
 
-        if (self.zoomOutButton is not None) and (event.button() == self.zoomOutButton):
+        if (self.zoomOutButton is not None) and (
+            event.button() == self.zoomOutButton
+        ):
             if len(self.zoomStack):
                 self.zoomStack.pop()
                 self.updateViewer()
@@ -1225,10 +1259,12 @@ class AnnotationView(QtWidgets.QGraphicsView):
         viewRect = self.mapToScene(self.viewport().rect()).boundingRect()
 
         if zoomFactor < 1:  # Zooming out
-            expandedRect = sceneRect.adjusted(-viewRect.width() * 0.5,
-                                              -viewRect.height() * 0.5,
-                                              viewRect.width() * 0.5,
-                                              viewRect.height() * 0.5)
+            expandedRect = sceneRect.adjusted(
+                -viewRect.width() * 0.5,
+                -viewRect.height() * 0.5,
+                viewRect.width() * 0.5,
+                viewRect.height() * 0.5,
+            )
             self.setSceneRect(expandedRect)
 
         event.accept()
@@ -1248,7 +1284,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
                 delta = sceneViewport.topLeft() - self._scenePosition
                 self._scenePosition = sceneViewport.topLeft()
                 self.zoomStack[-1].translate(delta)
-                self.zoomStack[-1] = self.zoomStack[-1].intersected(self.sceneRect())
+                self.zoomStack[-1] = self.zoomStack[-1].intersected(
+                    self.sceneRect()
+                )
                 self.updateViewer()
                 self.viewChanged.emit()
 
@@ -1285,7 +1323,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
         ):
             QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
             zoomRect = (
-                self.scene.selectionArea().boundingRect().intersected(self.sceneRect())
+                self.scene.selectionArea()
+                .boundingRect()
+                .intersected(self.sceneRect())
             )
             # Clear current selection area (i.e. rubberband rect).
             self.scene.setSelectionArea(QtGui.QPainterPath())
@@ -1333,7 +1373,9 @@ class AnnotationView(QtWidgets.QGraphicsView):
                 )
                 delta = sceneViewport.topLeft() - self._scenePosition
                 self.zoomStack[-1].translate(delta)
-                self.zoomStack[-1] = self.zoomStack[-1].intersected(self.sceneRect())
+                self.zoomStack[-1] = self.zoomStack[-1].intersected(
+                    self.sceneRect()
+                )
                 self.viewChanged.emit()
             # Emit panned object positions
             if self.polygons_ndarray() is not None:
@@ -1355,19 +1397,25 @@ class AnnotationView(QtWidgets.QGraphicsView):
     def mouseDoubleClickEvent(self, event):
         """Show entire image."""
         # Zoom out on double click?
-        if (self.zoomOutButton is not None) and (event.button() == self.zoomOutButton):
+        if (self.zoomOutButton is not None) and (
+            event.button() == self.zoomOutButton
+        ):
             self.clearZoom()
             event.accept()
             return
 
         # Finish a point session Double Click?
-        if (self.scene.point_item != []) and (event.button() == self.endDigitizeButton):
+        if (self.scene.point_item != []) and (
+            event.button() == self.endDigitizeButton
+        ):
             self.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
             event.accept()
             return
 
         # Finish a line session Double Click?
-        if (self.scene.line_item != []) and (event.button() == self.endDigitizeButton):
+        if (self.scene.line_item != []) and (
+            event.button() == self.endDigitizeButton
+        ):
             self.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
             event.accept()
             return
@@ -1551,7 +1599,9 @@ class QtImageViewer(QGraphicsView):
         #   Qt.ScrollBarAlwaysOff: Never shows a scroll bar.
         #   Qt.ScrollBarAlwaysOn: Always shows a scroll bar.
         #   Qt.ScrollBarAsNeeded: Shows a scroll bar only when zoomed.
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Interactions (set buttons to None to disable interactions)
@@ -1565,7 +1615,9 @@ class QtImageViewer(QGraphicsView):
             Qt.MouseButton.LeftButton
         )  # Double click sets a polygon
         self.panButton = Qt.MouseButton.MiddleButton  # Drag to pan.
-        self.wheelZoomFactor = 1.25  # Set to None or 1 to disable mouse wheel zoom.
+        self.wheelZoomFactor = (
+            1.25  # Set to None or 1 to disable mouse wheel zoom.
+        )
 
         # Stack of QRectF zoom boxes in scene coordinates.
         # !!! If you update this manually, be sure to call updateViewer() to reflect any changes.
@@ -1589,7 +1641,9 @@ class QtImageViewer(QGraphicsView):
         self.drawROI = None
         self.polygon_item = PolygonROI(self)
 
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
     def sizeHint(self):
         """Override sizeHint
@@ -1664,7 +1718,9 @@ class QtImageViewer(QGraphicsView):
                 image = image.astype(np.uint8)
                 height, width = image.shape
                 bytes = image.tobytes()
-                qimage = QImage(bytes, width, height, QImage.Format.Format_Grayscale8)
+                qimage = QImage(
+                    bytes, width, height, QImage.Format.Format_Grayscale8
+                )
                 pixmap = QPixmap.fromImage(qimage)
         else:
             raise RuntimeError(
@@ -1680,7 +1736,9 @@ class QtImageViewer(QGraphicsView):
         #     For scientific image analysis, you probably don't want this.
         # self._pixmap.setTransformationMode(Qt.SmoothTransformation)
 
-        self.setSceneRect(QRectF(pixmap.rect()))  # Set scene size to image size.
+        self.setSceneRect(
+            QRectF(pixmap.rect())
+        )  # Set scene size to image size.
         self.updateViewer()
 
     def open(self, filepath=None, search_dir=QDir.homePath()):
@@ -1707,7 +1765,9 @@ class QtImageViewer(QGraphicsView):
                 self.zoomStack[-1], self.aspectRatioMode
             )  # Show zoomed rect.
         else:
-            self.fitInView(self.sceneRect(), self.aspectRatioMode)  # Show entire image.
+            self.fitInView(
+                self.sceneRect(), self.aspectRatioMode
+            )  # Show entire image.
 
     def clearZoom(self):
         """Clear the zoom levels"""
@@ -1735,7 +1795,10 @@ class QtImageViewer(QGraphicsView):
             return
 
         # # Draw ROI
-        if event.button() == Qt.MouseButton.LeftButton and self.drawROI is not None:
+        if (
+            event.button() == Qt.MouseButton.LeftButton
+            and self.drawROI is not None
+        ):
             if self.drawROI == "Ellipse":
                 # Click and drag to draw ellipse. +Shift for circle_vertex.
                 pass
@@ -1762,7 +1825,9 @@ class QtImageViewer(QGraphicsView):
             self._isZooming = True
             return
 
-        if (self.zoomOutButton is not None) and (event.button() == self.zoomOutButton):
+        if (self.zoomOutButton is not None) and (
+            event.button() == self.zoomOutButton
+        ):
             if len(self.zoomStack):
                 self.zoomStack.pop()
                 self.updateViewer()
@@ -1834,7 +1899,9 @@ class QtImageViewer(QGraphicsView):
         ):
             QGraphicsView.mouseReleaseEvent(self, event)
             zoomRect = (
-                self.scene.selectionArea().boundingRect().intersected(self.sceneRect())
+                self.scene.selectionArea()
+                .boundingRect()
+                .intersected(self.sceneRect())
             )
             # Clear current selection area (i.e. rubberband rect).
             self.scene.setSelectionArea(QPainterPath())
@@ -1882,7 +1949,9 @@ class QtImageViewer(QGraphicsView):
                 )
                 delta = sceneViewport.topLeft() - self._scenePosition
                 self.zoomStack[-1].translate(delta)
-                self.zoomStack[-1] = self.zoomStack[-1].intersected(self.sceneRect())
+                self.zoomStack[-1] = self.zoomStack[-1].intersected(
+                    self.sceneRect()
+                )
                 self.viewChanged.emit()
             event.accept()
             self._isPanning = False
@@ -1901,7 +1970,9 @@ class QtImageViewer(QGraphicsView):
     def mouseDoubleClickEvent(self, event):
         """Show entire image."""
         # Zoom out on double click?
-        if (self.zoomOutButton is not None) and (event.button() == self.zoomOutButton):
+        if (self.zoomOutButton is not None) and (
+            event.button() == self.zoomOutButton
+        ):
             self.clearZoom()
             event.accept()
             return
@@ -1982,7 +2053,9 @@ class QtImageViewer(QGraphicsView):
                 delta = sceneViewport.topLeft() - self._scenePosition
                 self._scenePosition = sceneViewport.topLeft()
                 self.zoomStack[-1].translate(delta)
-                self.zoomStack[-1] = self.zoomStack[-1].intersected(self.sceneRect())
+                self.zoomStack[-1] = self.zoomStack[-1].intersected(
+                    self.sceneRect()
+                )
                 self.updateViewer()
                 self.viewChanged.emit()
 
@@ -2119,7 +2192,8 @@ def quiver(x, y, u, v, autoscale=None, global_scale=None):
 
     if autoscale is not None and global_scale is not None:
         raise ValueError(
-            "Specify only one of global_scale or global_scale, not both.")
+            "Specify only one of global_scale or global_scale, not both."
+        )
 
     # Arrow head parameters
     alpha = 0.33  # Size of arrow head relative to the length of the vector
@@ -2189,16 +2263,17 @@ def quiver(x, y, u, v, autoscale=None, global_scale=None):
     # vectors = np.array(vectors)
 
     # Stack coordinates for easy plotting
-    vectors = np.array([
-                           [[x[i], y[i]], [head_x[i], head_y[i]]] for i in
-                           range(len(x))
-                       ] + [
-                           [[head_x[i], head_y[i]], [arrow_x1[i], arrow_y1[i]]]
-                           for i in range(len(x))
-                       ] + [
-                           [[head_x[i], head_y[i]], [arrow_x3[i], arrow_y3[i]]]
-                           for i in range(len(x))
-                       ])
+    vectors = np.array(
+        [[[x[i], y[i]], [head_x[i], head_y[i]]] for i in range(len(x))]
+        + [
+            [[head_x[i], head_y[i]], [arrow_x1[i], arrow_y1[i]]]
+            for i in range(len(x))
+        ]
+        + [
+            [[head_x[i], head_y[i]], [arrow_x3[i], arrow_y3[i]]]
+            for i in range(len(x))
+        ]
+    )
 
     return vectors
 

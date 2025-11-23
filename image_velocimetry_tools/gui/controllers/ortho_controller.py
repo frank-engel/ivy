@@ -18,9 +18,13 @@ from typing import Optional, Dict, Any, List, Tuple
 from PyQt5.QtCore import pyqtSlot, QDir, Qt
 from PyQt5 import QtWidgets, QtGui
 
-from image_velocimetry_tools.gui.controllers.base_controller import BaseController
+from image_velocimetry_tools.gui.controllers.base_controller import (
+    BaseController,
+)
 from image_velocimetry_tools.gui.models.ortho_model import OrthoModel
-from image_velocimetry_tools.services.orthorectification_service import OrthorectificationService
+from image_velocimetry_tools.services.orthorectification_service import (
+    OrthorectificationService,
+)
 from image_velocimetry_tools.graphics import Instructions
 from image_velocimetry_tools.common_functions import (
     find_matches_between_two_lists,
@@ -40,7 +44,7 @@ class OrthoController(BaseController):
         self,
         main_window,
         ortho_model: OrthoModel,
-        ortho_service: OrthorectificationService
+        ortho_service: OrthorectificationService,
     ):
         """Initialize the orthorectification controller.
 
@@ -59,10 +63,18 @@ class OrthoController(BaseController):
     def _connect_signals(self):
         """Connect UI signals to controller methods and model signals to UI updates."""
         # Model signals
-        self.ortho_model.gcp_table_loaded.connect(self.on_model_gcp_table_loaded)
-        self.ortho_model.gcp_table_changed.connect(self.on_model_gcp_table_changed)
-        self.ortho_model.gcp_image_loaded.connect(self.on_model_gcp_image_loaded)
-        self.ortho_model.rectification_calculated.connect(self.on_model_rectification_calculated)
+        self.ortho_model.gcp_table_loaded.connect(
+            self.on_model_gcp_table_loaded
+        )
+        self.ortho_model.gcp_table_changed.connect(
+            self.on_model_gcp_table_changed
+        )
+        self.ortho_model.gcp_image_loaded.connect(
+            self.on_model_gcp_image_loaded
+        )
+        self.ortho_model.rectification_calculated.connect(
+            self.on_model_rectification_calculated
+        )
 
         self.logger.debug("Orthorectification controller signals connected")
 
@@ -218,8 +230,7 @@ class OrthoController(BaseController):
         # Save copy as calibration image
         try:
             destination_path = os.path.join(
-                mw.swap_orthorectification_directory,
-                "!calibration_image.jpg"
+                mw.swap_orthorectification_directory, "!calibration_image.jpg"
             )
             shutil.copy(image_filename, destination_path)
         except Exception as e:
@@ -240,7 +251,9 @@ class OrthoController(BaseController):
             mw.sticky_settings.set("last_ortho_gcp_image_path", image_filename)
         except (KeyError, AttributeError):
             try:
-                mw.sticky_settings.new("last_ortho_gcp_image_path", image_filename)
+                mw.sticky_settings.new(
+                    "last_ortho_gcp_image_path", image_filename
+                )
             except AttributeError:
                 pass
 
@@ -270,7 +283,11 @@ class OrthoController(BaseController):
         # Get last GCP table path from sticky settings
         try:
             ss = mw.sticky_settings.get("last_orthotable_file_name")
-            last_path = ss if (ss is not None and isinstance(ss, str)) else QDir.homePath()
+            last_path = (
+                ss
+                if (ss is not None and isinstance(ss, str))
+                else QDir.homePath()
+            )
         except KeyError:
             last_path = QDir.homePath()
 
@@ -325,7 +342,9 @@ class OrthoController(BaseController):
                 return choices[idx]
 
             # Load and parse GCP CSV using existing utility
-            from image_velocimetry_tools.file_management import load_and_parse_gcp_csv
+            from image_velocimetry_tools.file_management import (
+                load_and_parse_gcp_csv,
+            )
 
             df, units = load_and_parse_gcp_csv(
                 file_name=file_name,
@@ -350,7 +369,9 @@ class OrthoController(BaseController):
         # Update model
         self.ortho_model.orthotable_dataframe = df.copy(deep=True)
         self.ortho_model.orthotable_file_name = file_name
-        self.ortho_model.orthotable_fname = os.path.splitext(os.path.basename(file_name))[0]
+        self.ortho_model.orthotable_fname = os.path.splitext(
+            os.path.basename(file_name)
+        )[0]
         self.ortho_model.orthotable_is_changed = False
         self.ortho_model.is_ortho_table_loaded = True
 
@@ -358,7 +379,9 @@ class OrthoController(BaseController):
         self.populate_table_widget(df)
 
         # Update table appearance
-        mw.orthoPointsTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        mw.orthoPointsTable.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectRows
+        )
         mw.orthoPointsTable.resizeColumnsToContents()
         mw.orthoPointsTable.resizeRowsToContents()
         mw.orthoPointsTable.selectRow(0)
@@ -373,12 +396,17 @@ class OrthoController(BaseController):
 
         # Save copy to project directory
         try:
-            dest = os.path.join(mw.swap_orthorectification_directory, "ground_control_points.csv")
+            dest = os.path.join(
+                mw.swap_orthorectification_directory,
+                "ground_control_points.csv",
+            )
             shutil.copy(file_name, dest)
         except Exception as e:
             mw.update_statusbar(f"Failed to save GCP table to project: {e}")
 
-        self.logger.info(f"GCP table loaded: {file_name} ({df.shape[0]} points, {units} units)")
+        self.logger.info(
+            f"GCP table loaded: {file_name} ({df.shape[0]} points, {units} units)"
+        )
         return True
 
     def save_gcp_table_dialog(self) -> bool:
@@ -392,7 +420,11 @@ class OrthoController(BaseController):
         # Get current filename or default
         try:
             ss = mw.sticky_settings.get("last_orthotable_file_name")
-            default_name = ss if ss else f"{QDir.homePath()}{os.sep}IVy_Points_Table_{mw.display_units}.csv"
+            default_name = (
+                ss
+                if ss
+                else f"{QDir.homePath()}{os.sep}IVy_Points_Table_{mw.display_units}.csv"
+            )
         except KeyError:
             default_name = f"{QDir.homePath()}{os.sep}IVy_Points_Table_{mw.display_units}.csv"
 
@@ -425,7 +457,9 @@ class OrthoController(BaseController):
 
         # Update model
         self.ortho_model.orthotable_file_name = file_name
-        self.ortho_model.orthotable_fname = os.path.splitext(os.path.basename(file_name))[0]
+        self.ortho_model.orthotable_fname = os.path.splitext(
+            os.path.basename(file_name)
+        )[0]
         self.ortho_model.orthotable_is_changed = False
 
         # Update sticky settings
@@ -460,7 +494,9 @@ class OrthoController(BaseController):
                     item = dataframe.iat[i, j] * mw.survey_units["L"]
                 else:
                     item = dataframe.iat[i, j]
-                mw.orthoPointsTable.setItem(i, j, QtWidgets.QTableWidgetItem(str(item)))
+                mw.orthoPointsTable.setItem(
+                    i, j, QtWidgets.QTableWidgetItem(str(item))
+                )
 
         # Set headers
         for j in range(len(dataframe.columns)):
@@ -497,7 +533,9 @@ class OrthoController(BaseController):
         mw.orthoPointsTable.setColumnCount(len(headers))
         self.ortho_model._orthotable_has_headers = True
         mw.orthoPointsTable.setHorizontalHeaderLabels(headers)
-        mw.orthoPointsTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        mw.orthoPointsTable.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectRows
+        )
         self.ortho_model.orthotable_is_changed = False
         mw.orthoPointsTable.resizeColumnsToContents()
         mw.orthoPointsTable.resizeRowsToContents()
@@ -529,7 +567,9 @@ class OrthoController(BaseController):
     def change_table_selection_mode(self):
         """Enable extended selection mode for GCP table."""
         mw = self.main_window
-        mw.orthoPointsTable.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        mw.orthoPointsTable.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
 
     def update_table_cell(self):
         """Update a GCP table cell from the edit line widget."""
@@ -561,7 +601,9 @@ class OrthoController(BaseController):
         mw = self.main_window
 
         if mw.orthoPointsTable.selectionModel().hasSelection():
-            row = mw.orthoPointsTable.selectionModel().selectedIndexes()[0].row()
+            row = (
+                mw.orthoPointsTable.selectionModel().selectedIndexes()[0].row()
+            )
             return int(row)
         return None
 
@@ -574,7 +616,11 @@ class OrthoController(BaseController):
         mw = self.main_window
 
         if mw.orthoPointsTable.selectionModel().hasSelection():
-            column = mw.orthoPointsTable.selectionModel().selectedIndexes()[0].column()
+            column = (
+                mw.orthoPointsTable.selectionModel()
+                .selectedIndexes()[0]
+                .column()
+            )
             return int(column)
         return None
 
@@ -614,8 +660,12 @@ class OrthoController(BaseController):
 
         # Confirm removal
         remove = QtWidgets.QMessageBox()
-        remove.setText("This will remove the selected row, and cannot be undone. Are you sure?")
-        remove.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+        remove.setText(
+            "This will remove the selected row, and cannot be undone. Are you sure?"
+        )
+        remove.setStandardButtons(
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel
+        )
         result = remove.exec()
 
         if result == QtWidgets.QMessageBox.Yes:
@@ -674,7 +724,9 @@ class OrthoController(BaseController):
         mw = self.main_window
 
         # Create crosshairs cursor
-        pixmap = QtGui.QPixmap(mw.__icon_path__ + os.sep + "crosshairs-solid.svg")
+        pixmap = QtGui.QPixmap(
+            mw.__icon_path__ + os.sep + "crosshairs-solid.svg"
+        )
         pixmap = pixmap.scaledToWidth(32)
         cursor = QtGui.QCursor(pixmap, hotX=16, hotY=16)
 
@@ -687,7 +739,9 @@ class OrthoController(BaseController):
                 mw.ortho_original_image.leftMouseButtonReleased.disconnect()
             except TypeError:
                 pass  # Wasn't connected
-            mw.ortho_original_image.leftMouseButtonReleased.connect(self.handle_digitized_point)
+            mw.ortho_original_image.leftMouseButtonReleased.connect(
+                self.handle_digitized_point
+            )
         else:
             # Disable digitization mode
             mw.ortho_original_image.setCursor(Qt.ArrowCursor)
@@ -710,7 +764,9 @@ class OrthoController(BaseController):
         self.ortho_model._ortho_original_image_current_pixel = [x, y]
 
         logging.debug(f"Pixel Info: x: {x}, y: {y}")
-        logging.debug(f"Current selected GCP table row: {mw.orthoPointsTable.currentRow()}")
+        logging.debug(
+            f"Current selected GCP table row: {mw.orthoPointsTable.currentRow()}"
+        )
 
         if mw.toolbuttonOrthoOrigImageDigitizePoint.isChecked():
             # Update table with pixel coordinates
@@ -749,7 +805,9 @@ class OrthoController(BaseController):
         # Update orthotable_dataframe with pixel info from GUI table
         if self.ortho_model.orthotable_dataframe.empty:
             ortho_dict = mw.get_table_as_dict(mw.orthoPointsTable)
-            self.ortho_model.orthotable_dataframe = pd.DataFrame.from_dict(ortho_dict)
+            self.ortho_model.orthotable_dataframe = pd.DataFrame.from_dict(
+                ortho_dict
+            )
 
         with mw.wait_cursor():
             current_table_data = mw.get_table_as_dict(mw.orthoPointsTable)
@@ -764,12 +822,16 @@ class OrthoController(BaseController):
                 # Get non-empty values for each column
                 non_empty_xpixel = [
                     (index, value)
-                    for index, value in enumerate(current_table_data[xpixel_key])
+                    for index, value in enumerate(
+                        current_table_data[xpixel_key]
+                    )
                     if value != ""
                 ]
                 non_empty_ypixel = [
                     (index, value)
-                    for index, value in enumerate(current_table_data[ypixel_key])
+                    for index, value in enumerate(
+                        current_table_data[ypixel_key]
+                    )
                     if value != ""
                 ]
 
@@ -777,7 +839,9 @@ class OrthoController(BaseController):
                 try:
                     non_empty_rectification = [
                         (index, value)
-                        for index, value in enumerate(current_table_data[rectification_key])
+                        for index, value in enumerate(
+                            current_table_data[rectification_key]
+                        )
                         if value != ""
                     ]
                 except KeyError:
@@ -786,7 +850,9 @@ class OrthoController(BaseController):
                 try:
                     non_empty_validation = [
                         (index, value)
-                        for index, value in enumerate(current_table_data[validation_key])
+                        for index, value in enumerate(
+                            current_table_data[validation_key]
+                        )
                         if value != ""
                     ]
                 except KeyError:
@@ -797,27 +863,35 @@ class OrthoController(BaseController):
                     for index_x, value_x in non_empty_xpixel:
                         self.ortho_model.orthotable_dataframe.iloc[
                             index_x,
-                            self.ortho_model.orthotable_dataframe.columns.get_loc("X (pixel)"),
+                            self.ortho_model.orthotable_dataframe.columns.get_loc(
+                                "X (pixel)"
+                            ),
                         ] = value_x
 
                     for index_y, value_y in non_empty_ypixel:
                         self.ortho_model.orthotable_dataframe.iloc[
                             index_y,
-                            self.ortho_model.orthotable_dataframe.columns.get_loc("Y (pixel)"),
+                            self.ortho_model.orthotable_dataframe.columns.get_loc(
+                                "Y (pixel)"
+                            ),
                         ] = value_y
 
                     if non_empty_rectification is not None:
                         for index_r, value_r in non_empty_rectification:
                             self.ortho_model.orthotable_dataframe.iloc[
                                 index_r,
-                                self.ortho_model.orthotable_dataframe.columns.get_loc(rectification_key),
+                                self.ortho_model.orthotable_dataframe.columns.get_loc(
+                                    rectification_key
+                                ),
                             ] = value_r
 
                     if non_empty_validation is not None:
                         for index_v, value_v in non_empty_validation:
                             self.ortho_model.orthotable_dataframe.iloc[
                                 index_v,
-                                self.ortho_model.orthotable_dataframe.columns.get_loc(validation_key),
+                                self.ortho_model.orthotable_dataframe.columns.get_loc(
+                                    validation_key
+                                ),
                             ] = value_v
 
         self.plot_gcp_points_on_original_image()
@@ -831,7 +905,9 @@ class OrthoController(BaseController):
         mw.ortho_original_image.clearPolygons()
 
         # Get points to plot
-        rectification_points = self.get_points_to_plot(which_points="rectification")
+        rectification_points = self.get_points_to_plot(
+            which_points="rectification"
+        )
         validation_points = self.get_points_to_plot(which_points="validation")
 
         # Plot rectification points
@@ -842,7 +918,9 @@ class OrthoController(BaseController):
                 labels=rectification_points["labels"],
             )
 
-    def get_points_to_plot(self, which_points: str = "rectification") -> Optional[Dict[str, List]]:
+    def get_points_to_plot(
+        self, which_points: str = "rectification"
+    ) -> Optional[Dict[str, List]]:
         """Get GCP points from table for plotting on image.
 
         Args:
@@ -873,8 +951,11 @@ class OrthoController(BaseController):
         # Filter points based on flag using string_to_boolean
         try:
             # Convert string values to boolean (handles "y", "yes", "true", "1", etc.)
-            bool_values = df[use_column].fillna("").astype(str).map(
-                lambda x: string_to_boolean(x) if x else False
+            bool_values = (
+                df[use_column]
+                .fillna("")
+                .astype(str)
+                .map(lambda x: string_to_boolean(x) if x else False)
             )
             filtered_df = df[bool_values]
         except (ValueError, TypeError) as e:
@@ -886,10 +967,12 @@ class OrthoController(BaseController):
 
         # Extract pixel coordinates and labels
         try:
-            points = list(zip(
-                filtered_df["X (pixel)"].astype(float),
-                filtered_df["Y (pixel)"].astype(float)
-            ))
+            points = list(
+                zip(
+                    filtered_df["X (pixel)"].astype(float),
+                    filtered_df["Y (pixel)"].astype(float),
+                )
+            )
             labels = filtered_df["# ID"].astype(str).tolist()
         except KeyError as e:
             logging.warning(f"Missing required column: {e}")
@@ -945,10 +1028,14 @@ class OrthoController(BaseController):
             return
 
         # Match selected points to full table
-        matched_point_labels = find_matches_between_two_lists(points_dict["labels"], labels)
+        matched_point_labels = find_matches_between_two_lists(
+            points_dict["labels"], labels
+        )
 
         pixel_coords = np.array(points_dict["points"])
-        world_coords_array = np.array([world_coords[index[0]] for index in matched_point_labels])
+        world_coords_array = np.array(
+            [world_coords[index[0]] for index in matched_point_labels]
+        )
         num_points = pixel_coords.shape[0]
 
         # Get water surface elevation
@@ -960,33 +1047,35 @@ class OrthoController(BaseController):
         try:
             destination_path = os.path.join(
                 mw.swap_orthorectification_directory,
-                "ground_control_points.csv"
+                "ground_control_points.csv",
             )
             dict_data = mw.get_table_as_dict(mw.orthoPointsTable)
-            pd.DataFrame(dict_data).fillna("").to_csv(destination_path, index=False)
+            pd.DataFrame(dict_data).fillna("").to_csv(
+                destination_path, index=False
+            )
         except Exception as e:
             mw.update_statusbar(f"Failed to save GCP table to project: {e}")
 
         # Validate GCP configuration
         validation_errors = self.ortho_service.validate_gcp_configuration(
-            pixel_coords,
-            world_coords_array
+            pixel_coords, world_coords_array
         )
         if validation_errors:
-            error_msg = "GCP validation errors:\\n" + "\\n".join(validation_errors)
+            error_msg = "GCP validation errors:\\n" + "\\n".join(
+                validation_errors
+            )
             logging.error(error_msg)
             mw.warning_dialog(
                 "Invalid GCP Configuration",
                 error_msg,
                 style="ok",
-                icon=mw.__icon_path__ + os.sep + "IVy_logo.ico"
+                icon=mw.__icon_path__ + os.sep + "IVy_logo.ico",
             )
             return
 
         # Determine rectification method
         method = self.ortho_service.determine_rectification_method(
-            num_points,
-            world_coords_array
+            num_points, world_coords_array
         )
 
         logging.debug(
@@ -1000,9 +1089,13 @@ class OrthoController(BaseController):
 
         # Calculate parameters based on method
         if method == "scale":
-            self._calculate_scale_rectification(image, pixel_coords, world_coords_array)
+            self._calculate_scale_rectification(
+                image, pixel_coords, world_coords_array
+            )
         elif method == "homography":
-            self._calculate_homography_rectification(image, pixel_coords, world_coords_array)
+            self._calculate_homography_rectification(
+                image, pixel_coords, world_coords_array
+            )
         elif method == "camera matrix":
             self._calculate_camera_matrix_rectification(
                 image, pixel_coords, world_coords_array, water_surface_elev
@@ -1011,7 +1104,7 @@ class OrthoController(BaseController):
             mw.warning_dialog(
                 "Unknown Method",
                 f"Unknown rectification method: {method}",
-                style="ok"
+                style="ok",
             )
             return
 
@@ -1037,6 +1130,7 @@ class OrthoController(BaseController):
 
             # Save rectified image as t00000.jpg in swap_image_directory
             from PIL import Image
+
             output_path = os.path.join(mw.swap_image_directory, "t00000.jpg")
             Image.fromarray(rectified_image).save(output_path)
             logging.info(f"Saved rectified image to: {output_path}")
@@ -1044,9 +1138,13 @@ class OrthoController(BaseController):
             # Load rectified image into Grid Preparation tab
             try:
                 mw.gridpreparation.imageBrowser.scene.load_image(output_path)
-                logging.debug("Loaded rectified image into Grid Preparation tab")
+                logging.debug(
+                    "Loaded rectified image into Grid Preparation tab"
+                )
             except Exception as e:
-                logging.warning(f"Failed to load image into Grid Preparation tab: {e}")
+                logging.warning(
+                    f"Failed to load image into Grid Preparation tab: {e}"
+                )
 
             # Load rectified image into STIV tab
             try:
@@ -1066,20 +1164,30 @@ class OrthoController(BaseController):
             try:
                 mw.rectified_xs_image.scene.load_image(output_path)
                 mw.rectified_xs_image.setEnabled(True)
-                logging.debug("Loaded rectified image into Cross-section rectified view")
+                logging.debug(
+                    "Loaded rectified image into Cross-section rectified view"
+                )
             except Exception as e:
-                logging.warning(f"Failed to load image into Cross-section rectified view: {e}")
+                logging.warning(
+                    f"Failed to load image into Cross-section rectified view: {e}"
+                )
 
             # Load perspective image into Cross-section tab (perspective view)
             try:
                 # Get the original GCP image
                 original_image_path = mw.ortho_original_image.image_file_path
                 if original_image_path and os.path.exists(original_image_path):
-                    mw.perspective_xs_image.scene.load_image(original_image_path)
+                    mw.perspective_xs_image.scene.load_image(
+                        original_image_path
+                    )
                     mw.perspective_xs_image.setEnabled(True)
-                    logging.debug("Loaded perspective image into Cross-section perspective view")
+                    logging.debug(
+                        "Loaded perspective image into Cross-section perspective view"
+                    )
             except Exception as e:
-                logging.warning(f"Failed to load image into Cross-section perspective view: {e}")
+                logging.warning(
+                    f"Failed to load image into Cross-section perspective view: {e}"
+                )
 
         except Exception as e:
             logging.error(f"Error saving and propagating rectified image: {e}")
@@ -1088,7 +1196,7 @@ class OrthoController(BaseController):
         self,
         image: np.ndarray,
         pixel_coords: np.ndarray,
-        world_coords: np.ndarray
+        world_coords: np.ndarray,
     ):
         """Calculate scale-based rectification parameters (2 GCPs, nadir view).
 
@@ -1101,13 +1209,13 @@ class OrthoController(BaseController):
 
         # Calculate scale parameters using service
         scale_params = self.ortho_service.calculate_scale_parameters(
-            pixel_coords,
-            world_coords[:, 0:2],
-            image.shape
+            pixel_coords, world_coords[:, 0:2], image.shape
         )
 
         # Update model rectification parameters
-        mw.rectification_parameters["homography_matrix"] = scale_params["homography_matrix"]
+        mw.rectification_parameters["homography_matrix"] = scale_params[
+            "homography_matrix"
+        ]
         mw.rectification_parameters["extent"] = scale_params["extent"]
         mw.rectification_parameters["pad_x"] = scale_params["pad_x"]
         mw.rectification_parameters["pad_y"] = scale_params["pad_y"]
@@ -1126,21 +1234,29 @@ class OrthoController(BaseController):
             "scale",
             pixel_gsd,
             pixel_distance=scale_params["pixel_distance"],
-            ground_distance=scale_params["ground_distance"]
+            ground_distance=scale_params["ground_distance"],
         )
         mw.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
-        mw.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
+        mw.reprojection_error_pixels = quality_metrics[
+            "reprojection_error_pixels"
+        ]
 
         # For scale method, image not transformed (nadir assumption)
         transformed_image = image
 
         # Apply flips if needed
-        if self.ortho_model.is_ortho_flip_x or self.ortho_model.is_ortho_flip_y:
-            from image_velocimetry_tools.image_processing_tools import flip_image_array
+        if (
+            self.ortho_model.is_ortho_flip_x
+            or self.ortho_model.is_ortho_flip_y
+        ):
+            from image_velocimetry_tools.image_processing_tools import (
+                flip_image_array,
+            )
+
             transformed_image = flip_image_array(
                 transformed_image,
                 flip_x=self.ortho_model.is_ortho_flip_x,
-                flip_y=self.ortho_model.is_ortho_flip_y
+                flip_y=self.ortho_model.is_ortho_flip_y,
             )
 
         # Display rectified image
@@ -1166,7 +1282,7 @@ class OrthoController(BaseController):
         self,
         image: np.ndarray,
         pixel_coords: np.ndarray,
-        world_coords: np.ndarray
+        world_coords: np.ndarray,
     ):
         """Calculate homography-based rectification (4+ GCPs on same plane).
 
@@ -1184,7 +1300,9 @@ class OrthoController(BaseController):
         # Check for existing homography matrix
         existing_homography = None
         if mw.is_homography_matrix:
-            existing_homography = mw.rectification_parameters.get("homography_matrix")
+            existing_homography = mw.rectification_parameters.get(
+                "homography_matrix"
+            )
 
         # Calculate homography parameters using service
         homography_params = self.ortho_service.calculate_homography_parameters(
@@ -1193,23 +1311,31 @@ class OrthoController(BaseController):
             world_coords,
             homography_matrix=existing_homography,
             pad_x=pad_x,
-            pad_y=pad_y
+            pad_y=pad_y,
         )
 
         # Get transformed image
         transformed_image = homography_params["transformed_image"]
 
         # Apply flips if needed
-        if self.ortho_model.is_ortho_flip_x or self.ortho_model.is_ortho_flip_y:
-            from image_velocimetry_tools.image_processing_tools import flip_image_array
+        if (
+            self.ortho_model.is_ortho_flip_x
+            or self.ortho_model.is_ortho_flip_y
+        ):
+            from image_velocimetry_tools.image_processing_tools import (
+                flip_image_array,
+            )
+
             transformed_image = flip_image_array(
                 transformed_image,
                 flip_x=self.ortho_model.is_ortho_flip_x,
-                flip_y=self.ortho_model.is_ortho_flip_y
+                flip_y=self.ortho_model.is_ortho_flip_y,
             )
 
         # Update model rectification parameters
-        mw.rectification_parameters["homography_matrix"] = homography_params["homography_matrix"]
+        mw.rectification_parameters["homography_matrix"] = homography_params[
+            "homography_matrix"
+        ]
         mw.rectification_parameters["extent"] = homography_params["extent"]
         mw.rectification_parameters["pad_x"] = homography_params["pad_x"]
         mw.rectification_parameters["pad_y"] = homography_params["pad_y"]
@@ -1227,14 +1353,20 @@ class OrthoController(BaseController):
         quality_metrics = self.ortho_service.calculate_quality_metrics(
             "homography",
             pixel_gsd,
-            homography_matrix=mw.rectification_parameters["homography_matrix"]
+            homography_matrix=mw.rectification_parameters["homography_matrix"],
         )
         if "estimated_view_angle" in quality_metrics:
-            mw.rectification_parameters["estimated_view_angle"] = quality_metrics["estimated_view_angle"]
-            logging.info(f"Estimated view angle: {quality_metrics['estimated_view_angle']:.2f}°")
+            mw.rectification_parameters["estimated_view_angle"] = (
+                quality_metrics["estimated_view_angle"]
+            )
+            logging.info(
+                f"Estimated view angle: {quality_metrics['estimated_view_angle']:.2f}°"
+            )
 
         mw.rectification_rmse_m = quality_metrics["rectification_rmse_m"]
-        mw.reprojection_error_pixels = quality_metrics["reprojection_error_pixels"]
+        mw.reprojection_error_pixels = quality_metrics[
+            "reprojection_error_pixels"
+        ]
 
         # Display rectified image
         mw.ortho_rectified_image.scene.clearImage()
@@ -1260,7 +1392,7 @@ class OrthoController(BaseController):
         image: np.ndarray,
         pixel_coords: np.ndarray,
         world_coords: np.ndarray,
-        water_surface_elev: float
+        water_surface_elev: float,
     ):
         """Calculate camera matrix rectification (6+ GCPs with varying elevations).
 
@@ -1275,7 +1407,9 @@ class OrthoController(BaseController):
         # Check for existing camera matrix
         existing_camera_matrix = None
         if mw.is_camera_matrix:
-            existing_camera_matrix = mw.rectification_parameters.get("camera_matrix")
+            existing_camera_matrix = mw.rectification_parameters.get(
+                "camera_matrix"
+            )
 
         # Calculate camera matrix parameters using service
         camera_params = self.ortho_service.calculate_camera_matrix_parameters(
@@ -1284,23 +1418,31 @@ class OrthoController(BaseController):
             world_coords,
             water_surface_elev,
             camera_matrix=existing_camera_matrix,
-            padding_percent=0.03
+            padding_percent=0.03,
         )
 
         # Get transformed image
         transformed_image = camera_params["transformed_image"]
 
         # Apply flips if needed
-        if self.ortho_model.is_ortho_flip_x or self.ortho_model.is_ortho_flip_y:
-            from image_velocimetry_tools.image_processing_tools import flip_image_array
+        if (
+            self.ortho_model.is_ortho_flip_x
+            or self.ortho_model.is_ortho_flip_y
+        ):
+            from image_velocimetry_tools.image_processing_tools import (
+                flip_image_array,
+            )
+
             transformed_image = flip_image_array(
                 transformed_image,
                 flip_x=self.ortho_model.is_ortho_flip_x,
-                flip_y=self.ortho_model.is_ortho_flip_y
+                flip_y=self.ortho_model.is_ortho_flip_y,
             )
 
         # Update model rectification parameters
-        mw.rectification_parameters["camera_matrix"] = camera_params["camera_matrix"]
+        mw.rectification_parameters["camera_matrix"] = camera_params[
+            "camera_matrix"
+        ]
         mw.rectification_parameters["extent"] = camera_params["extent"]
         mw.rectification_parameters["pixel_coords"] = pixel_coords
         mw.rectification_parameters["world_coords"] = world_coords
@@ -1334,11 +1476,11 @@ class OrthoController(BaseController):
 
         # Draw projection lines from camera through GCPs to water surface
         self._draw_projection_lines(
-            camera_params['camera_position'],
+            camera_params["camera_position"],
             pixel_coords,
             world_coords,
             water_surface_elev,
-            mw.rectification_parameters["camera_matrix"]
+            mw.rectification_parameters["camera_matrix"],
         )
 
         logging.info(
@@ -1352,7 +1494,7 @@ class OrthoController(BaseController):
         pixel_coords: np.ndarray,
         world_coords: np.ndarray,
         water_surface_elev: float,
-        camera_matrix: np.ndarray
+        camera_matrix: np.ndarray,
     ):
         """Draw projection lines from camera through GCP points to water surface.
 
@@ -1429,9 +1571,13 @@ class OrthoController(BaseController):
 
         # Store projected points in model
         if projected_points:
-            self.ortho_model._rectified_transformed_gcp_points = np.array(projected_points)
+            self.ortho_model._rectified_transformed_gcp_points = np.array(
+                projected_points
+            )
 
-        self.logger.info(f"Drew {len(projected_points)} projection lines to water surface")
+        self.logger.info(
+            f"Drew {len(projected_points)} projection lines to water surface"
+        )
 
     def _add_dashed_line_to_scene(self, scene, points: list):
         """Add a dashed red line to the annotation scene.

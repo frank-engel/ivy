@@ -7,4 +7,11 @@ from .ortho_model import OrthoModel
 from .grid_model import GridModel
 from .settings_model import SettingsModel
 
-__all__ = ['BaseModel', 'VideoModel', 'ProjectModel', 'OrthoModel', 'GridModel', 'SettingsModel']
+__all__ = [
+    "BaseModel",
+    "VideoModel",
+    "ProjectModel",
+    "OrthoModel",
+    "GridModel",
+    "SettingsModel",
+]

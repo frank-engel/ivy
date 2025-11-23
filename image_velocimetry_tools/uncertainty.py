@@ -42,20 +42,20 @@ class Uncertainty:
             "u_b": 0.005,  # random uncert in width at 1 sigma
             "u_c": 0,  # instrument repeatability
             "u_alpha": 0.03,
-            "u_rect": 0.03
+            "u_rect": 0.03,
         }
 
         # ISO Method
         self.u_iso = {
-            "u_s": np.nan,      # systematic
-            "u_c": np.nan,      # instrument repeatability
-            "u_d": np.nan,      # random uncert in depth at 1 sigma
-            "u_v": np.nan,      # uncert in mean velocity
-            "u_b": np.nan,      # random uncert in width at 1 sigma
-            "u_m": np.nan,      # uncert due to num of verticals at 1 sigma
-            "u_p": np.nan,      # uncert due to num points in the vertical
+            "u_s": np.nan,  # systematic
+            "u_c": np.nan,  # instrument repeatability
+            "u_d": np.nan,  # random uncert in depth at 1 sigma
+            "u_v": np.nan,  # uncert in mean velocity
+            "u_b": np.nan,  # random uncert in width at 1 sigma
+            "u_m": np.nan,  # uncert due to num of verticals at 1 sigma
+            "u_p": np.nan,  # uncert due to num points in the vertical
             "u_alpha": np.nan,  # uncert due to alpha estimation
-            "u_rect": np.nan,   # uncert due to orthorectification
+            "u_rect": np.nan,  # uncert due to orthorectification
             "u_q": np.nan,
             "u95_q": np.nan,
         }
@@ -133,8 +133,9 @@ class Uncertainty:
         self.total_discharge = None
         self.method = method
 
-    def compute_uncertainty(self, stations_dict, total_discharge=None,
-                            ortho_info=None):
+    def compute_uncertainty(
+        self, stations_dict, total_discharge=None, ortho_info=None
+    ):
         """Driver function to compute the uncertainty
 
         Args:
@@ -161,8 +162,6 @@ class Uncertainty:
                 raise ValueError("Scene width must be positive")
             return rmse_m / scene_width_m
 
-
-
         # Use the data to adjust uncertainty parameters before
         # computing
         u_m = np.interp(
@@ -185,16 +184,40 @@ class Uncertainty:
         else:
             u_rect = None
 
+        self.iso_uncertainty(
+            data=data,
+            u_m=u_m,
+            u_so=u_so,
+            u_sm=u_sm,
+            u_c=u_c,
+            u_b=u_b,
+            u_alpha=u_alpha,
+            u_rect=u_rect,
+        )
 
+        self.ive_uncertainty(
+            data=data,
+            u_so=u_so,
+            u_sm=u_sm,
+            u_b=u_b,
+            u_alpha=u_alpha,
+            u_rect=u_rect,
+        )
 
-        self.iso_uncertainty(data=data, u_m=u_m, u_so=u_so, u_sm=u_sm,
-                             u_c=u_c, u_b=u_b, u_alpha=u_alpha, u_rect=u_rect)
-
-        self.ive_uncertainty(data=data, u_so=u_so, u_sm=u_sm, u_b=u_b,
-                             u_alpha=u_alpha, u_rect=u_rect)
-
-    def iso_uncertainty(self, data, u_m, u_so, u_sm, u_c, u_b, u_d=None,
-                        u_p=None, u_v=None, u_alpha=None, u_rect=None):
+    def iso_uncertainty(
+        self,
+        data,
+        u_m,
+        u_so,
+        u_sm,
+        u_c,
+        u_b,
+        u_d=None,
+        u_p=None,
+        u_v=None,
+        u_alpha=None,
+        u_rect=None,
+    ):
         """
         Compute discharge uncertainty using the ISO 748 method.
 
@@ -228,12 +251,13 @@ class Uncertainty:
         # The range of error in alpha is ~5-15%
         default_u_p = 0.07  # 7% for alpha-corrected surface velocities
         default_u_v = 0.08  # 8% due to limited exposure time
-        default_u_alpha = 0.03 # 3% guess, used if none provided
+        default_u_alpha = 0.03  # 3% guess, used if none provided
         deg_free = 1  #
         effective_u_alpha = u_alpha if u_alpha is not None else default_u_alpha
         effective_u_rect = u_rect if u_rect is not None else 0
-        u_s = np.sqrt(u_so ** 2 + u_sm ** 2 + effective_u_alpha ** 2 +
-                      effective_u_rect**2)
+        u_s = np.sqrt(
+            u_so**2 + u_sm**2 + effective_u_alpha**2 + effective_u_rect**2
+        )
 
         u2_b_sum = 0.0
         u2_d_sum = 0.0
@@ -249,22 +273,23 @@ class Uncertainty:
                 continue
 
             # Per ISO 748 Table E.3, unless overridden
-            local_u_d = u_d if u_d is not None else (
-                0.005 if depth > 0.3 else 0.015)
+            local_u_d = (
+                u_d if u_d is not None else (0.005 if depth > 0.3 else 0.015)
+            )
             local_u_p = u_p if u_p is not None else default_u_p
             local_u_v = u_v if u_v is not None else default_u_v
 
             if np.any(np.isnan([local_u_d, local_u_p, local_u_v])):
                 continue
 
-            u2_b_sum += q_cms ** 2 * u_b ** 2
-            u2_d_sum += q_cms ** 2 * local_u_d ** 2
-            u2_p_sum += q_cms ** 2 * local_u_p ** 2
-            u2_v_sum += q_cms ** 2 * (local_u_v ** 2) / deg_free
-            u2_c_sum += q_cms ** 2 * (u_c ** 2) / deg_free
+            u2_b_sum += q_cms**2 * u_b**2
+            u2_d_sum += q_cms**2 * local_u_d**2
+            u2_p_sum += q_cms**2 * local_u_p**2
+            u2_v_sum += q_cms**2 * (local_u_v**2) / deg_free
+            u2_c_sum += q_cms**2 * (u_c**2) / deg_free
 
         total_q = data["Unit Discharge"].astype(float).sum()
-        q_total_sqr = total_q ** 2 if total_q > 0 else np.nan
+        q_total_sqr = total_q**2 if total_q > 0 else np.nan
 
         # Normalize component variances
         u2_b = u2_b_sum / q_total_sqr
@@ -273,7 +298,7 @@ class Uncertainty:
         u2_v = u2_v_sum / q_total_sqr
         u2_c = u2_c_sum / q_total_sqr
 
-        u2_q = u_s ** 2 + u_m ** 2 + u2_b + u2_d + u2_p + u2_v + u2_c
+        u2_q = u_s**2 + u_m**2 + u2_b + u2_d + u2_p + u2_v + u2_c
         uq = np.sqrt(u2_q)
 
         self.u_iso = {
@@ -287,7 +312,7 @@ class Uncertainty:
             "u_s": u_s,
             "u_m": u_m,
             "u_alpha": u_alpha,
-            "u_rect": u_rect
+            "u_rect": u_rect,
         }
 
         self.u_iso_contribution = {
@@ -296,15 +321,17 @@ class Uncertainty:
             "u_p": u2_p / u2_q,
             "u_v": u2_v / u2_q,
             "u_c": u2_c / u2_q,
-            "u_s": u_s ** 2 / u2_q,
-            "u_m": u_m ** 2 / u2_q,
-            "u_alpha": u_alpha ** 2 / u2_q,
-            "u_rect": u_alpha ** 2 / u2_q
+            "u_s": u_s**2 / u2_q,
+            "u_m": u_m**2 / u2_q,
+            "u_alpha": u_alpha**2 / u2_q,
+            "u_rect": u_alpha**2 / u2_q,
         }
 
         self.u_iso_contribution_df = pd.DataFrame([self.u_iso_contribution])
 
-    def ive_uncertainty(self, data, u_so, u_sm, u_b, u_alpha=None, u_rect=None):
+    def ive_uncertainty(
+        self, data, u_so, u_sm, u_b, u_alpha=None, u_rect=None
+    ):
         """Compute uncertainty of velocity-area based discharge using the IVE method.
 
         The Interpolated Variance Estimator (IVE) method is described in:
@@ -330,8 +357,11 @@ class Uncertainty:
 
         # Compute systematic uncertainty with optional u_alpha
         u_s = np.sqrt(
-            u_so ** 2 + u_sm ** 2 + (u_alpha ** 2 if u_alpha else 0) + (
-                u_rect ** 2 if u_rect else 0))
+            u_so**2
+            + u_sm**2
+            + (u_alpha**2 if u_alpha else 0)
+            + (u_rect**2 if u_rect else 0)
+        )
 
         # Convert relevant columns to float arrays
         depth = data["Depth"].astype(float).values
@@ -346,14 +376,17 @@ class Uncertainty:
         velocity = np.where(
             (np.isnan(velocity)) | (velocity <= 0) | (~np.isfinite(velocity)),
             np.nan,
-            velocity
+            velocity,
         )
 
         n = len(data)
 
         # Use provided total discharge or compute it
-        total_q = self.total_discharge if self.total_discharge is not None else np.sum(
-            unit_q)
+        total_q = (
+            self.total_discharge
+            if self.total_discharge is not None
+            else np.sum(unit_q)
+        )
 
         # Prepare for summation
         sum_delta_d = 0.0
@@ -381,9 +414,9 @@ class Uncertainty:
 
             # Validity check
             if not np.any(np.isnan([delta_d, delta_v, weight])):
-                denom = 2 * (1 - weight + weight ** 2)
-                sum_delta_d += delta_d ** 2 / denom
-                sum_delta_v += delta_v ** 2 / denom
+                denom = 2 * (1 - weight + weight**2)
+                sum_delta_d += delta_d**2 / denom
+                sum_delta_v += delta_v**2 / denom
 
         # Compute standard deviations
         s_d = np.sqrt(sum_delta_d / (n - 5))
@@ -400,13 +433,13 @@ class Uncertainty:
             if np.isnan(q) or d <= 0 or v <= 0:
                 continue
 
-            q2 = q ** 2
-            u2_d += ((q2 * (s_d / d)) ** 2) / total_q ** 2
-            u2_v += ((q2 * (s_v / v)) ** 2) / total_q ** 2
-            u2_b += (q2 * u_b ** 2) / total_q ** 2
+            q2 = q**2
+            u2_d += ((q2 * (s_d / d)) ** 2) / total_q**2
+            u2_v += ((q2 * (s_v / v)) ** 2) / total_q**2
+            u2_b += (q2 * u_b**2) / total_q**2
 
         # Total uncertainty (Eq. 17, without um)
-        u2_q = u_s ** 2 + u2_d + u2_v + u2_b
+        u2_q = u_s**2 + u2_d + u2_v + u2_b
         uq = np.sqrt(u2_q)
 
         self.u_ive = {
@@ -424,9 +457,9 @@ class Uncertainty:
             "u_d": u2_d / u2_q,
             "u_v": u2_v / u2_q,
             "u_b": u2_b / u2_q,
-            "u_s": u_s ** 2 / u2_q,
-            "u_alpha": u_alpha ** 2 / u2_q,
-            "u_rect": u_alpha ** 2 / u2_q
+            "u_s": u_s**2 / u2_q,
+            "u_alpha": u_alpha**2 / u2_q,
+            "u_rect": u_alpha**2 / u2_q,
         }
 
         self.u_ive_contribution_df = pd.DataFrame([self.u_ive_contribution])
@@ -507,7 +540,10 @@ class ULollipopPlot(object):
         if self.fig.ax.viewLim.intervalx[0] < self.fig.ax.viewLim.intervalx[1]:
             if (
                 pos[0]
-                < (self.fig.ax.viewLim.intervalx[0] + self.fig.ax.viewLim.intervalx[1])
+                < (
+                    self.fig.ax.viewLim.intervalx[0]
+                    + self.fig.ax.viewLim.intervalx[1]
+                )
                 / 2
             ):
                 self.annot._x = -20
@@ -531,7 +567,10 @@ class ULollipopPlot(object):
         if self.fig.ax.viewLim.intervaly[0] < self.fig.ax.viewLim.intervaly[1]:
             if (
                 pos[1]
-                > (self.fig.ax.viewLim.intervaly[0] + self.fig.ax.viewLim.intervaly[1])
+                > (
+                    self.fig.ax.viewLim.intervaly[0]
+                    + self.fig.ax.viewLim.intervaly[1]
+                )
                 / 2
             ):
                 self.annot._y = -40
@@ -540,7 +579,10 @@ class ULollipopPlot(object):
         else:
             if (
                 pos[1]
-                > (self.fig.ax.viewLim.intervaly[0] + self.fig.ax.viewLim.intervaly[1])
+                > (
+                    self.fig.ax.viewLim.intervaly[0]
+                    + self.fig.ax.viewLim.intervaly[1]
+                )
                 / 2
             ):
                 self.annot._y = 20

@@ -93,20 +93,22 @@ class STIVTab:
         Returns:
             tuple: the STIV magnitudes_mps and directions
         """
-        magnitudes_mps, directions, stis, thetas = two_dimensional_stiv_exhaustive(
-            x_origin=self.grid[:, 0].astype(float),
-            y_origin=self.grid[:, 1].astype(float),
-            image_stack=self.image_stack,
-            num_pixels=self.num_pixels,
-            phi_origin=self.phi_origin,
-            d_phi=self.d_phi,
-            phi_range=self.phi_range,
-            pixel_gsd=self.pixel_gsd,
-            d_t=self.d_t,
-            sigma=self.ivy_framework.stiv_gaussian_blur_sigma,
-            max_vel_threshold=self.max_velocity_threshold_mps,
-            # map_file_path=self.map_file_path,
-            progress_signal=progress_callback,
+        magnitudes_mps, directions, stis, thetas = (
+            two_dimensional_stiv_exhaustive(
+                x_origin=self.grid[:, 0].astype(float),
+                y_origin=self.grid[:, 1].astype(float),
+                image_stack=self.image_stack,
+                num_pixels=self.num_pixels,
+                phi_origin=self.phi_origin,
+                d_phi=self.d_phi,
+                phi_range=self.phi_range,
+                pixel_gsd=self.pixel_gsd,
+                d_t=self.d_t,
+                sigma=self.ivy_framework.stiv_gaussian_blur_sigma,
+                max_vel_threshold=self.max_velocity_threshold_mps,
+                # map_file_path=self.map_file_path,
+                progress_signal=progress_callback,
+            )
         )
 
         self.magnitudes_mps = magnitudes_mps
@@ -218,7 +220,9 @@ class STIReviewTab:
         self.Table.horizontalHeader().setBackgroundRole(QtGui.QPalette.Window)
 
         # Connect signals
-        self.Table.selectionModel().selectionChanged.connect(self.table_make_all_white)
+        self.Table.selectionModel().selectionChanged.connect(
+            self.table_make_all_white
+        )
         self.Table.itemClicked.connect(self.table_get_item)
         self.Table.cellChanged.connect(self.table_finished_edit)
         self.TableLineEdit = QtWidgets.QLineEdit()
@@ -262,24 +266,32 @@ class STIReviewTab:
                     parent=None,
                 )
             else:
-                dialog = ImageDialog(sti_image_path=self.sti_paths[row], parent=None)
+                dialog = ImageDialog(
+                    sti_image_path=self.sti_paths[row], parent=None
+                )
             if dialog.exec_() == QDialog.Accepted:
                 average_direction = dialog.average_direction
                 # Delegate to service for velocity calculation
                 gsd = self.ivy_framework.pixel_ground_scale_distance_m
                 dt = self.ivy_framework.extraction_timestep_ms / 1000
-                manual_velocity_mps = self.stiv_service.compute_velocity_from_manual_angle(
-                    average_direction, gsd, dt, dialog.is_upstream
+                manual_velocity_mps = (
+                    self.stiv_service.compute_velocity_from_manual_angle(
+                        average_direction, gsd, dt, dialog.is_upstream
+                    )
                 )
 
                 if not np.isnan(manual_velocity_mps):
-                    logging.debug(f"Average direction: {average_direction} degrees")
+                    logging.debug(
+                        f"Average direction: {average_direction} degrees"
+                    )
 
                 # Set manual velocity for the current row in the Table
                 new_item = QtWidgets.QTableWidgetItem(
                     f"{manual_velocity_mps * self.survey_units['V']:.2f}"
                 )
-                self.Table.setItem(row, column, QtWidgets.QTableWidgetItem(new_item))
+                self.Table.setItem(
+                    row, column, QtWidgets.QTableWidgetItem(new_item)
+                )
 
                 # Draw the manual line on the image
                 sti_image_path = self.sti_paths[row]
@@ -329,7 +341,8 @@ class STIReviewTab:
                 # Truncate the text to 120 characters
                 truncated_text = current_text[:240]
                 logging.warning(
-                    f"Comment truncated to 240 characters. " f"Original: {current_text}"
+                    f"Comment truncated to 240 characters. "
+                    f"Original: {current_text}"
                 )
 
                 # Update the table with the truncated text
@@ -341,7 +354,8 @@ class STIReviewTab:
                 QtWidgets.QMessageBox.warning(
                     self.Table,
                     "Comment Too Long",
-                    "The comment exceeded 240 characters and has been " "truncated.",
+                    "The comment exceeded 240 characters and has been "
+                    "truncated.",
                 )
             else:
                 logging.debug(f"User added a comment: {current_text}")
@@ -350,7 +364,9 @@ class STIReviewTab:
             pass
 
     @staticmethod
-    def draw_manual_lines_on_image(sti_image_path, theta_deg, average_direction):
+    def draw_manual_lines_on_image(
+        sti_image_path, theta_deg, average_direction
+    ):
         """
         Draws manual lines on the image based on provided angles.
 
@@ -381,7 +397,9 @@ class STIReviewTab:
         # In essence, invert the angle relative to 180°
         average_direction = 90 + (90 - average_direction)
 
-        sti_pixmap = draw_line_on_pixmap(sti_pixmap, average_direction, color=Qt.red)
+        sti_pixmap = draw_line_on_pixmap(
+            sti_pixmap, average_direction, color=Qt.red
+        )
 
         return sti_pixmap
 
@@ -599,26 +617,43 @@ class STIReviewTab:
         self.Table.setRowCount(num_rows)
 
         # Populate the table with data
-        for row, (magnitudes_mps, direction, theta, sti_image_path) in enumerate(
-            zip(magnitudes_mps, directions, thetas, sti_images)
-        ):
+        for row, (
+            magnitudes_mps,
+            direction,
+            theta,
+            sti_image_path,
+        ) in enumerate(zip(magnitudes_mps, directions, thetas, sti_images)):
             # Assuming the data is in the order: ID, STI, Velocity
             # Direction, STI Angle, Original Velocity Magnitude, Manual
             # Velocity Magnitude, (Comment not part of this loop)
             item = QtWidgets.QTableWidgetItem(str(row + 1))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)  # Make non-editable
+            item.setFlags(
+                item.flags() & ~QtCore.Qt.ItemIsEditable
+            )  # Make non-editable
             self.Table.setItem(row, 0, QtWidgets.QTableWidgetItem(item))  # ID
             item = QtWidgets.QTableWidgetItem(f"{direction:.1f}")
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)  # Make non-editable
-            self.Table.setItem(row, 2, QtWidgets.QTableWidgetItem(item))  # Vel Dir
+            item.setFlags(
+                item.flags() & ~QtCore.Qt.ItemIsEditable
+            )  # Make non-editable
+            self.Table.setItem(
+                row, 2, QtWidgets.QTableWidgetItem(item)
+            )  # Vel Dir
             item = QtWidgets.QTableWidgetItem(f"{theta:.1f}")
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)  # Make non-editable
-            self.Table.setItem(row, 3, QtWidgets.QTableWidgetItem(item))  # STI Angle
+            item.setFlags(
+                item.flags() & ~QtCore.Qt.ItemIsEditable
+            )  # Make non-editable
+            self.Table.setItem(
+                row, 3, QtWidgets.QTableWidgetItem(item)
+            )  # STI Angle
             item = QtWidgets.QTableWidgetItem(
                 f'{magnitudes_mps * self.survey_units["V"]:.2f}'
             )
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)  # Make non-editable
-            self.Table.setItem(row, 4, QtWidgets.QTableWidgetItem(item))  # Orig Vel
+            item.setFlags(
+                item.flags() & ~QtCore.Qt.ItemIsEditable
+            )  # Make non-editable
+            self.Table.setItem(
+                row, 4, QtWidgets.QTableWidgetItem(item)
+            )  # Orig Vel
             item = QtWidgets.QTableWidgetItem(
                 f'{magnitudes_mps * self.survey_units["V"]:.2f}'
             )
@@ -667,7 +702,9 @@ class STIReviewTab:
                 data.append(float(item.text()))  # Assuming the data is numeric
             else:
                 # Handle empty cells or non-numeric data appropriately
-                data.append(np.nan)  # For example, you can add NaN for empty cells
+                data.append(
+                    np.nan
+                )  # For example, you can add NaN for empty cells
 
         # Convert the data list into a NumPy array
         data_array = np.array(data)
@@ -688,7 +725,11 @@ class STIReviewTab:
         """
         # Find where manual changes are applied, if nothing changed,
         # do nothing else
-        idx = [index for index, element in enumerate(self.manual_sti_lines) if element]
+        idx = [
+            index
+            for index, element in enumerate(self.manual_sti_lines)
+            if element
+        ]
         if idx:
             # Load the original results using service
             csv_file_path = (
@@ -696,7 +737,9 @@ class STIReviewTab:
                 f"{os.sep}"
                 f"stiv_results.csv"
             )
-            stiv_data = self.stiv_service.load_stiv_results_from_csv(csv_file_path)
+            stiv_data = self.stiv_service.load_stiv_results_from_csv(
+                csv_file_path
+            )
 
             # Extract manual velocities from the table
             manual_velocities = self.extract_manual_velocity_data()
@@ -706,16 +749,18 @@ class STIReviewTab:
                 stiv_data=stiv_data,
                 manual_velocities=manual_velocities,
                 manual_indices=idx,
-                tagline_direction=stiv_data['Tagline_Direction'][0]
+                tagline_direction=stiv_data["Tagline_Direction"][0],
             )
 
             # Send updated scalar magnitudes
             result_dict = {
                 "idx": idx,
-                "manual_velocity": result['scalar_projections'],
-                "normal_direction_geo": stiv_data['Normal_Direction']
+                "manual_velocity": result["scalar_projections"],
+                "normal_direction_geo": stiv_data["Normal_Direction"],
             }
-            self.ivy_framework.stiv.magnitude_normals_mps = result['scalar_projections']
+            self.ivy_framework.stiv.magnitude_normals_mps = result[
+                "scalar_projections"
+            ]
             self.ivy_framework.signal_manual_vectors.emit(result_dict)
 
             # Update the discharge results tab
@@ -726,7 +771,9 @@ class STIReviewTab:
         self.table_load_data(sti_images=self.sti_paths)
         # Update the discharge results
         # self.ivy_tools.dischargecomputaton.update_discharge_results()
-        self.ivy_framework.dischargecomputaton.table_load_data(reset_table=True)
+        self.ivy_framework.dischargecomputaton.table_load_data(
+            reset_table=True
+        )
         self.update_discharge_results_in_tab()
 
 
@@ -767,7 +814,9 @@ class ImageDialog(QDialog):
         image_layout = QGridLayout()
         sti_label = QLabel()
         orig_sti_pixmap = QPixmap(sti_image_path)
-        sti_pixmap = draw_line_on_pixmap(orig_sti_pixmap, self.theta, color=Qt.yellow)
+        sti_pixmap = draw_line_on_pixmap(
+            orig_sti_pixmap, self.theta, color=Qt.yellow
+        )
         sti_label.setPixmap(sti_pixmap)
         self.image.scene.setImage(sti_pixmap)
         image_layout.addWidget(self.image, 0, 0)
@@ -807,7 +856,9 @@ class ImageDialog(QDialog):
         button_layout.addWidget(cancel_button)
 
         # Adjust size policy to make the Add Line button expandable
-        add_line_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        add_line_button.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Preferred
+        )
 
         # Add stretch to push the buttons to the right side
         button_layout.addStretch()
@@ -822,9 +873,13 @@ class ImageDialog(QDialog):
 
     def add_line(self):
         """Add a manual STI streak angle line when user clicks the Add Line button"""
-        self.image.scene.set_current_instruction(Instructions.SIMPLE_LINE_INSTRUCTION)
+        self.image.scene.set_current_instruction(
+            Instructions.SIMPLE_LINE_INSTRUCTION
+        )
         self.lines.append(self.image.scene.line_item[-1])
-        self.image.scene.line_item[-1].setPen(QtGui.QPen(QtGui.QColor("yellow"), 1.5))
+        self.image.scene.line_item[-1].setPen(
+            QtGui.QPen(QtGui.QColor("yellow"), 1.5)
+        )
 
     def upstream_flow(self):
         """Set the velocity upstream or downstream according to the checkbox"""
@@ -862,14 +917,20 @@ class ImageDialog(QDialog):
             if self.average_direction < 0:
                 self.average_direction += 360
         else:
-            self.average_direction = self.theta  # Default if no lines are drawn
+            self.average_direction = (
+                self.theta
+            )  # Default if no lines are drawn
 
         # Close the dialog
-        logging.debug(f"MANUAL STI: Avg. Line angle: {self.average_direction:.2f}")
+        logging.debug(
+            f"MANUAL STI: Avg. Line angle: {self.average_direction:.2f}"
+        )
         self.accept()
 
 
-def draw_line_on_pixmap(original_pixmap, angle_degrees=np.nan, color=Qt.yellow):
+def draw_line_on_pixmap(
+    original_pixmap, angle_degrees=np.nan, color=Qt.yellow
+):
     """Render a streak angle line on the supplied STI image.
 
     Args:
@@ -890,7 +951,9 @@ def draw_line_on_pixmap(original_pixmap, angle_degrees=np.nan, color=Qt.yellow):
     # Determine the aspect ratio scaling factor
     width = modified_pixmap.width()
     height = modified_pixmap.height()
-    scale_x = width / max(width, height)  # Normalize scaling based on the largest dimension
+    scale_x = width / max(
+        width, height
+    )  # Normalize scaling based on the largest dimension
     scale_y = height / max(width, height)
 
     # Create a QPainter and set it to paint on the modified QPixmap
@@ -922,7 +985,8 @@ def draw_line_on_pixmap(original_pixmap, angle_degrees=np.nan, color=Qt.yellow):
     start_y = center_y - dy
 
     # Draw the line on the modified QPixmap
-    painter.drawLine(start_x, start_y, end_x, end_y)
+    # Convert to integers for PyQt5's drawLine(int, int, int, int) overload
+    painter.drawLine(int(start_x), int(start_y), int(end_x), int(end_y))
 
     # End painting
     painter.end()

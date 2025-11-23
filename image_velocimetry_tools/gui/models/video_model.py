@@ -98,7 +98,9 @@ class VideoModel(BaseModel):
         if "duration" in metadata:
             self._video_duration = metadata["duration"]
         if "width" in metadata and "height" in metadata:
-            self._video_resolution = f"{metadata['width']}x{metadata['height']}"
+            self._video_resolution = (
+                f"{metadata['width']}x{metadata['height']}"
+            )
         if "avg_frame_rate" in metadata:
             self._video_frame_rate = metadata["avg_frame_rate"]
         if "frame_count" in metadata:
@@ -145,7 +147,9 @@ class VideoModel(BaseModel):
         """Set clip start time in milliseconds."""
         if time_ms != self._video_clip_start_time:
             self._video_clip_start_time = time_ms
-            self.clip_times_changed.emit(self._video_clip_start_time, self._video_clip_end_time)
+            self.clip_times_changed.emit(
+                self._video_clip_start_time, self._video_clip_end_time
+            )
             self._emit_state_change("video_clip_start_time", time_ms)
 
     @property
@@ -158,7 +162,9 @@ class VideoModel(BaseModel):
         """Set clip end time in milliseconds."""
         if time_ms != self._video_clip_end_time:
             self._video_clip_end_time = time_ms
-            self.clip_times_changed.emit(self._video_clip_start_time, self._video_clip_end_time)
+            self.clip_times_changed.emit(
+                self._video_clip_start_time, self._video_clip_end_time
+            )
             self._emit_state_change("video_clip_end_time", time_ms)
 
     @property
@@ -325,7 +331,9 @@ class VideoModel(BaseModel):
         if "video_metadata" in data:
             self.video_metadata = data["video_metadata"]
         if "video_clip_start_time" in data and "video_clip_end_time" in data:
-            self.set_clip_times(data["video_clip_start_time"], data["video_clip_end_time"])
+            self.set_clip_times(
+                data["video_clip_start_time"], data["video_clip_end_time"]
+            )
         if "video_clip_filename" in data:
             self.video_clip_filename = data["video_clip_filename"]
         if "video_rotation" in data:

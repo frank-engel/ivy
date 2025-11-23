@@ -37,9 +37,7 @@ class OrthorectificationService(BaseService):
         super().__init__(logger_name)
 
     def determine_rectification_method(
-        self,
-        num_points: int,
-        world_coords: np.ndarray
+        self, num_points: int, world_coords: np.ndarray
     ) -> str:
         """Determine which rectification method to use based on GCPs.
 
@@ -107,7 +105,7 @@ class OrthorectificationService(BaseService):
         self,
         pixel_coords: np.ndarray,
         world_coords: np.ndarray,
-        image_shape: Tuple[int, int, int]
+        image_shape: Tuple[int, int, int],
     ) -> Dict[str, Any]:
         """Calculate parameters for scale-based rectification.
 
@@ -152,9 +150,7 @@ class OrthorectificationService(BaseService):
         homography_matrix = calculate_homography_matrix_simple(point_pairs)
 
         # Extent is just the bounding box of the original image
-        extent = bounding_box_naive(
-            [(0, image_shape[0]), (0, image_shape[1])]
-        )
+        extent = bounding_box_naive([(0, image_shape[0]), (0, image_shape[1])])
 
         return {
             "pixel_gsd": pixel_gsd,
@@ -173,7 +169,7 @@ class OrthorectificationService(BaseService):
         world_coords: np.ndarray,
         homography_matrix: Optional[np.ndarray] = None,
         pad_x: int = 200,
-        pad_y: int = 200
+        pad_y: int = 200,
     ) -> Dict[str, Any]:
         """Calculate parameters for homography-based rectification.
 
@@ -231,7 +227,7 @@ class OrthorectificationService(BaseService):
         world_coords: np.ndarray,
         water_surface_elevation: float,
         camera_matrix: Optional[np.ndarray] = None,
-        padding_percent: float = 0.03
+        padding_percent: float = 0.03,
     ) -> Dict[str, Any]:
         """Calculate parameters for camera matrix-based rectification.
 
@@ -261,7 +257,7 @@ class OrthorectificationService(BaseService):
             image=image,
             world_points=world_coords,
             image_points=pixel_coords,
-            elevation=water_surface_elevation
+            elevation=water_surface_elevation,
         )
 
         # Calculate camera matrix if not provided
@@ -278,12 +274,14 @@ class OrthorectificationService(BaseService):
         bbox = bounding_box_naive(world_coords)
         extent = np.array(
             [bbox[0][0], bbox[1][0], bbox[0][1], bbox[1][1]]
-        ) * np.array([
-            1 - padding_percent,
-            1 + padding_percent,
-            1 - padding_percent,
-            1 + padding_percent
-        ])
+        ) * np.array(
+            [
+                1 - padding_percent,
+                1 + padding_percent,
+                1 - padding_percent,
+                1 + padding_percent,
+            ]
+        )
 
         # Get rectified image
         transformed_image = cam.get_top_view_of_image(
@@ -307,7 +305,7 @@ class OrthorectificationService(BaseService):
         method: str,
         pixel_gsd: float,
         homography_matrix: Optional[np.ndarray] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, float]:
         """Calculate quality metrics for rectification.
 
@@ -330,9 +328,7 @@ class OrthorectificationService(BaseService):
             pixel_distance = kwargs.get("pixel_distance", 0)
             ground_distance = kwargs.get("ground_distance", 0)
             rmse = estimate_scale_based_rmse(
-                pixel_gsd,
-                ground_distance,
-                pixel_error_per_point=2.0
+                pixel_gsd, ground_distance, pixel_error_per_point=2.0
             )
             metrics["rectification_rmse_m"] = rmse
             metrics["reprojection_error_pixels"] = rmse / pixel_gsd
@@ -349,12 +345,16 @@ class OrthorectificationService(BaseService):
                     f"Estimated view angle: {view_angle:.2f}°, RMSE: {rmse:.4f}m"
                 )
             else:
-                self.logger.warning("Homography matrix not provided, cannot calculate metrics")
+                self.logger.warning(
+                    "Homography matrix not provided, cannot calculate metrics"
+                )
 
         elif method == "camera matrix":
             # For camera matrix, metrics depend on camera calibration
             # This would need reprojection error calculation
-            self.logger.debug("Camera matrix quality metrics require reprojection calculation")
+            self.logger.debug(
+                "Camera matrix quality metrics require reprojection calculation"
+            )
 
         return metrics
 
@@ -364,7 +364,7 @@ class OrthorectificationService(BaseService):
         method: str,
         rectification_params: Dict[str, Any],
         flip_x: bool = False,
-        flip_y: bool = False
+        flip_y: bool = False,
     ) -> np.ndarray:
         """Rectify a single image using calculated parameters.
 
@@ -386,16 +386,24 @@ class OrthorectificationService(BaseService):
             # Apply homography transformation
             _, _, _, _, _ = rectify_homography(
                 image=image,
-                points_world_coordinates=rectification_params["world_coords"][:, 0:2],
-                points_perspective_image_coordinates=rectification_params["pixel_coords"],
+                points_world_coordinates=rectification_params["world_coords"][
+                    :, 0:2
+                ],
+                points_perspective_image_coordinates=rectification_params[
+                    "pixel_coords"
+                ],
                 homography_matrix=rectification_params["homography_matrix"],
                 pad_x=rectification_params["pad_x"],
                 pad_y=rectification_params["pad_y"],
             )
             transformed_image, _, _, _, _ = rectify_homography(
                 image=image,
-                points_world_coordinates=rectification_params["world_coords"][:, 0:2],
-                points_perspective_image_coordinates=rectification_params["pixel_coords"],
+                points_world_coordinates=rectification_params["world_coords"][
+                    :, 0:2
+                ],
+                points_perspective_image_coordinates=rectification_params[
+                    "pixel_coords"
+                ],
                 homography_matrix=rectification_params["homography_matrix"],
                 pad_x=rectification_params["pad_x"],
                 pad_y=rectification_params["pad_y"],
@@ -417,17 +425,13 @@ class OrthorectificationService(BaseService):
 
         # Apply flipping if requested
         transformed_image = flip_image_array(
-            image=transformed_image,
-            flip_x=flip_x,
-            flip_y=flip_y
+            image=transformed_image, flip_x=flip_x, flip_y=flip_y
         )
 
         return transformed_image
 
     def validate_gcp_configuration(
-        self,
-        pixel_coords: np.ndarray,
-        world_coords: np.ndarray
+        self, pixel_coords: np.ndarray, world_coords: np.ndarray
     ) -> List[str]:
         """Validate ground control point configuration.
 

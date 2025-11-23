@@ -44,7 +44,9 @@ class GridPreparationTab:
                 Instructions.POINT_INSTRUCTION
             )
         else:
-            self.imageBrowser.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
+            self.imageBrowser.scene.set_current_instruction(
+                Instructions.NO_INSTRUCTION
+            )
             self.ivy_framework.toolbuttonCreatePoint.setChecked(False)
             self.ivy_framework.toolbuttonCreatePoint.repaint()
 
@@ -58,7 +60,9 @@ class GridPreparationTab:
                 Instructions.SIMPLE_LINE_INSTRUCTION
             )
         else:
-            self.imageBrowser.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
+            self.imageBrowser.scene.set_current_instruction(
+                Instructions.NO_INSTRUCTION
+            )
             self.ivy_framework.toolbuttonCreatePoint.setChecked(False)
             self.ivy_framework.toolbuttonCreatePoint.repaint()
 
@@ -69,7 +73,9 @@ class GridPreparationTab:
             self.clear_point()
             self.clear_line()
             if self.ivy_framework.rectified_xs_image.scene.line_item:
-                xs_line = self.ivy_framework.rectified_xs_image.scene.line_item[-1]
+                xs_line = (
+                    self.ivy_framework.rectified_xs_image.scene.line_item[-1]
+                )
             else:
                 return
             line_eps = np.array(
@@ -87,7 +93,9 @@ class GridPreparationTab:
                 QtGui.QPen(QtGui.QColor("yellow"), 5)
             )
         else:
-            self.imageBrowser.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
+            self.imageBrowser.scene.set_current_instruction(
+                Instructions.NO_INSTRUCTION
+            )
             self.ivy_framework.toolbuttonCreateMask.setChecked(False)
             self.ivy_framework.toolbuttonCreateMask.repaint()
 
@@ -98,7 +106,9 @@ class GridPreparationTab:
                 Instructions.POLYGON_INSTRUCTION
             )
         else:
-            self.imageBrowser.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
+            self.imageBrowser.scene.set_current_instruction(
+                Instructions.NO_INSTRUCTION
+            )
             self.ivy_framework.toolbuttonCreateMask.setChecked(False)
             self.ivy_framework.toolbuttonCreatePoint.repaint()
 
@@ -191,13 +201,15 @@ class GridGenerator:
             self.vert_grid_size,
             self.horz_grid_size,
             mask_polygons=mask_polygons,
-            clean_mask=True
+            clean_mask=True,
         )
         logging.debug(f"Grid generated using GridService")
         self.enable_image_velocimetry_tabs()
         return self.grid
 
-    def make_line(self, image, line_start, line_end, num_points, mask_polygons):
+    def make_line(
+        self, image, line_start, line_end, num_points, mask_polygons
+    ):
         """
         Generate evenly spaced points along a line in unmasked regions of the image.
 
@@ -221,7 +233,7 @@ class GridGenerator:
             line_end,
             num_points,
             mask_polygons=mask_polygons,
-            clean_mask=True
+            clean_mask=True,
         )
         logging.debug(f"Line Grid generated using GridService")
         self.enable_image_velocimetry_tabs()

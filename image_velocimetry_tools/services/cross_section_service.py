@@ -48,8 +48,7 @@ class CrossSectionService:
 
     @staticmethod
     def compute_pixel_to_real_world_conversion(
-        pixel_distance: Union[float, np.ndarray],
-        real_world_width: float
+        pixel_distance: Union[float, np.ndarray], real_world_width: float
     ) -> Union[float, np.ndarray]:
         """
         Compute conversion factor from pixel distance to real-world distance.
@@ -68,7 +67,11 @@ class CrossSectionService:
         """
         # Handle array input
         if isinstance(pixel_distance, np.ndarray):
-            pixel_distance = pixel_distance[0] if len(pixel_distance) > 0 else pixel_distance
+            pixel_distance = (
+                pixel_distance[0]
+                if len(pixel_distance) > 0
+                else pixel_distance
+            )
 
         conversion_factor = real_world_width / pixel_distance
         return conversion_factor
@@ -78,8 +81,8 @@ class CrossSectionService:
         stations: Union[List, np.ndarray],
         elevations: Union[List, np.ndarray],
         target_elevation: float,
-        mode: str = 'all',
-        epsilon: float = 1e-1
+        mode: str = "all",
+        epsilon: float = 1e-1,
     ) -> List[float]:
         """
         Find station values where elevations cross a target elevation.
@@ -135,11 +138,13 @@ class CrossSectionService:
             y1, y2 = elevations[index], elevations[index + 1]
 
             # Linear interpolation formula
-            interpolated_station = x1 + (target_elevation - y1) * (x2 - x1) / (y2 - y1)
+            interpolated_station = x1 + (target_elevation - y1) * (x2 - x1) / (
+                y2 - y1
+            )
             result_stations.append(interpolated_station)
 
         # Filter to first and last if requested
-        if mode.lower() == 'firstlast' and len(result_stations) > 2:
+        if mode.lower() == "firstlast" and len(result_stations) > 2:
             result_stations = [result_stations[0], result_stations[-1]]
 
         return result_stations
@@ -148,7 +153,7 @@ class CrossSectionService:
     def interpolate_elevations(
         stations: Union[List, np.ndarray],
         elevations: Union[List, np.ndarray],
-        target_stations: Union[List, np.ndarray]
+        target_stations: Union[List, np.ndarray],
     ) -> np.ndarray:
         """
         Interpolate elevations at target station locations.
@@ -181,8 +186,7 @@ class CrossSectionService:
 
     @staticmethod
     def check_duplicate_stations(
-        stations: Union[List, np.ndarray],
-        tolerance: float = 1e-6
+        stations: Union[List, np.ndarray], tolerance: float = 1e-6
     ) -> List[int]:
         """
         Check for duplicate station values within a tolerance.
@@ -209,28 +213,28 @@ class CrossSectionService:
         stations = np.array(stations)
 
         # Create DataFrame for easier duplicate detection
-        df = pd.DataFrame({'station': stations, 'index': range(len(stations))})
+        df = pd.DataFrame({"station": stations, "index": range(len(stations))})
 
         # Round to tolerance for comparison
         # Convert tolerance to number of decimal places
         if tolerance > 0:
             decimals = int(-np.log10(tolerance))
-            df['rounded'] = df['station'].round(decimals)
+            df["rounded"] = df["station"].round(decimals)
         else:
-            df['rounded'] = df['station']
+            df["rounded"] = df["station"]
 
         # Find duplicates
-        duplicates = df[df.duplicated(subset=['rounded'], keep=False)]
+        duplicates = df[df.duplicated(subset=["rounded"], keep=False)]
 
         # Return indices of duplicates
-        return duplicates['index'].tolist()
+        return duplicates["index"].tolist()
 
     @staticmethod
     def compute_wetted_width(
         stations: Union[List, np.ndarray],
         elevations: Union[List, np.ndarray],
         water_surface_elevation: float,
-        mode: str = 'firstlast'
+        mode: str = "firstlast",
     ) -> float:
         """
         Compute wetted width at a given water surface elevation.
@@ -302,8 +306,7 @@ class CrossSectionService:
 
     @staticmethod
     def convert_stations_to_metric(
-        stations: Union[List, np.ndarray],
-        current_units: str
+        stations: Union[List, np.ndarray], current_units: str
     ) -> np.ndarray:
         """
         Convert station values to metric units.
@@ -322,7 +325,7 @@ class CrossSectionService:
         """
         stations = np.array(stations)
 
-        if current_units == 'English':
+        if current_units == "English":
             # Convert feet to meters
             stations = stations * 0.3048
 
@@ -330,8 +333,7 @@ class CrossSectionService:
 
     @staticmethod
     def convert_elevations_to_metric(
-        elevations: Union[List, np.ndarray],
-        current_units: str
+        elevations: Union[List, np.ndarray], current_units: str
     ) -> np.ndarray:
         """
         Convert elevation values to metric units.
@@ -350,7 +352,7 @@ class CrossSectionService:
         """
         elevations = np.array(elevations)
 
-        if current_units == 'English':
+        if current_units == "English":
             # Convert feet to meters
             elevations = elevations * 0.3048
 
@@ -358,9 +360,7 @@ class CrossSectionService:
 
     @staticmethod
     def validate_station_range(
-        station: float,
-        min_station: float,
-        max_station: float
+        station: float, min_station: float, max_station: float
     ) -> bool:
         """
         Validate that a station value is within acceptable range.
@@ -385,7 +385,7 @@ class CrossSectionService:
     def compute_channel_area(
         stations: Union[List, np.ndarray],
         elevations: Union[List, np.ndarray],
-        water_surface_elevation: float
+        water_surface_elevation: float,
     ) -> float:
         """
         Compute cross-sectional area at a given water surface elevation.

@@ -35,34 +35,28 @@ def sample_stiv_csv_content():
 def sample_stiv_data():
     """Sample STIV data dictionary."""
     return {
-        'X': np.array([10.0, 15.0, 20.0]),
-        'Y': np.array([20.0, 25.0, 30.0]),
-        'U': np.array([1.5, 2.0, 1.2]),
-        'V': np.array([0.5, 1.0, 0.8]),
-        'Magnitude': np.array([1.58, 2.24, 1.44]),
-        'Scalar_Projection': np.array([1.4, 1.8, 1.0]),
-        'Direction': np.array([18.43, 26.57, 33.69]),
-        'Tagline_Direction': np.array([90.0, 90.0, 90.0]),
-        'Normal_Direction': np.array([0.0, 0.0, 0.0])
+        "X": np.array([10.0, 15.0, 20.0]),
+        "Y": np.array([20.0, 25.0, 30.0]),
+        "U": np.array([1.5, 2.0, 1.2]),
+        "V": np.array([0.5, 1.0, 0.8]),
+        "Magnitude": np.array([1.58, 2.24, 1.44]),
+        "Scalar_Projection": np.array([1.4, 1.8, 1.0]),
+        "Direction": np.array([18.43, 26.57, 33.69]),
+        "Tagline_Direction": np.array([90.0, 90.0, 90.0]),
+        "Normal_Direction": np.array([0.0, 0.0, 0.0]),
     }
 
 
 @pytest.fixture
 def survey_units_english():
     """English survey units conversion factors."""
-    return {
-        'V': 3.28084,  # m/s to ft/s
-        'label_V': 'ft/s'
-    }
+    return {"V": 3.28084, "label_V": "ft/s"}  # m/s to ft/s
 
 
 @pytest.fixture
 def survey_units_metric():
     """Metric survey units conversion factors."""
-    return {
-        'V': 1.0,  # m/s to m/s
-        'label_V': 'm/s'
-    }
+    return {"V": 1.0, "label_V": "m/s"}  # m/s to m/s
 
 
 class TestComputeSTIVelocity:
@@ -229,29 +223,35 @@ class TestLoadSTIVResultsFromCSV:
     def test_load_valid_csv(self, stiv_service, sample_stiv_csv_content):
         """Test loading valid STIV results CSV."""
         # Create temporary CSV file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".csv"
+        ) as f:
             f.write(sample_stiv_csv_content)
             temp_path = f.name
 
         try:
             data = stiv_service.load_stiv_results_from_csv(temp_path)
 
-            assert 'Magnitude' in data
-            assert 'Scalar_Projection' in data
-            assert 'Direction' in data
-            assert len(data['Magnitude']) == 3
-            assert np.isclose(data['Magnitude'][0], 1.58, rtol=1e-2)
+            assert "Magnitude" in data
+            assert "Scalar_Projection" in data
+            assert "Direction" in data
+            assert len(data["Magnitude"]) == 3
+            assert np.isclose(data["Magnitude"][0], 1.58, rtol=1e-2)
         finally:
             os.unlink(temp_path)
 
     def test_load_nonexistent_file(self, stiv_service):
         """Test loading nonexistent CSV file."""
         with pytest.raises(FileNotFoundError):
-            stiv_service.load_stiv_results_from_csv('/nonexistent/path.csv')
+            stiv_service.load_stiv_results_from_csv("/nonexistent/path.csv")
 
-    def test_extract_specific_columns(self, stiv_service, sample_stiv_csv_content):
+    def test_extract_specific_columns(
+        self, stiv_service, sample_stiv_csv_content
+    ):
         """Test that specific columns are correctly extracted."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".csv"
+        ) as f:
             f.write(sample_stiv_csv_content)
             temp_path = f.name
 
@@ -260,16 +260,12 @@ class TestLoadSTIVResultsFromCSV:
 
             # Check magnitudes
             np.testing.assert_allclose(
-                data['Magnitude'],
-                np.array([1.58, 2.24, 1.44]),
-                rtol=1e-2
+                data["Magnitude"], np.array([1.58, 2.24, 1.44]), rtol=1e-2
             )
 
             # Check directions
             np.testing.assert_allclose(
-                data['Direction'],
-                np.array([18.43, 26.57, 33.69]),
-                rtol=1e-2
+                data["Direction"], np.array([18.43, 26.57, 33.69]), rtol=1e-2
             )
         finally:
             os.unlink(temp_path)
@@ -289,12 +285,14 @@ class TestPrepareTableData:
         )
 
         assert len(table_data) == 3
-        assert table_data[0]['id'] == 1
-        assert np.isclose(table_data[0]['original_velocity'], 1.5, rtol=1e-5)
-        assert np.isclose(table_data[0]['direction'], 18.0, rtol=1e-5)
-        assert np.isclose(table_data[0]['theta'], 45.0, rtol=1e-5)
+        assert table_data[0]["id"] == 1
+        assert np.isclose(table_data[0]["original_velocity"], 1.5, rtol=1e-5)
+        assert np.isclose(table_data[0]["direction"], 18.0, rtol=1e-5)
+        assert np.isclose(table_data[0]["theta"], 45.0, rtol=1e-5)
 
-    def test_english_units_conversion(self, stiv_service, survey_units_english):
+    def test_english_units_conversion(
+        self, stiv_service, survey_units_english
+    ):
         """Test table data preparation with English units."""
         magnitudes_mps = np.array([1.0])
         directions = np.array([0.0])
@@ -306,9 +304,9 @@ class TestPrepareTableData:
 
         # 1.0 m/s * 3.28084 = 3.28084 ft/s
         assert np.isclose(
-            table_data[0]['original_velocity'],
-            1.0 * survey_units_english['V'],
-            rtol=1e-5
+            table_data[0]["original_velocity"],
+            1.0 * survey_units_english["V"],
+            rtol=1e-5,
         )
 
     def test_nan_theta_handling(self, stiv_service, survey_units_metric):
@@ -321,10 +319,12 @@ class TestPrepareTableData:
             magnitudes_mps, directions, thetas, survey_units_metric
         )
 
-        assert np.isnan(table_data[0]['theta'])
-        assert np.isnan(table_data[1]['theta'])
+        assert np.isnan(table_data[0]["theta"])
+        assert np.isnan(table_data[1]["theta"])
 
-    def test_manual_velocity_initialization(self, stiv_service, survey_units_metric):
+    def test_manual_velocity_initialization(
+        self, stiv_service, survey_units_metric
+    ):
         """Test that manual velocity is initialized to original velocity."""
         magnitudes_mps = np.array([2.5])
         directions = np.array([30.0])
@@ -335,9 +335,9 @@ class TestPrepareTableData:
         )
 
         assert np.isclose(
-            table_data[0]['manual_velocity'],
-            table_data[0]['original_velocity'],
-            rtol=1e-5
+            table_data[0]["manual_velocity"],
+            table_data[0]["original_velocity"],
+            rtol=1e-5,
         )
 
 
@@ -351,32 +351,38 @@ class TestApplyManualCorrections:
         tagline_direction = 90.0
 
         result = stiv_service.apply_manual_corrections(
-            sample_stiv_data, manual_velocities, manual_indices, tagline_direction
+            sample_stiv_data,
+            manual_velocities,
+            manual_indices,
+            tagline_direction,
         )
 
-        assert 'scalar_projections' in result
-        assert len(result['scalar_projections']) == 3
+        assert "scalar_projections" in result
+        assert len(result["scalar_projections"]) == 3
         # Only indices 0 and 2 should be updated
         assert not np.isclose(
-            result['scalar_projections'][0],
-            sample_stiv_data['Scalar_Projection'][0]
+            result["scalar_projections"][0],
+            sample_stiv_data["Scalar_Projection"][0],
         )
 
     def test_no_manual_corrections(self, stiv_service, sample_stiv_data):
         """Test with no manual corrections applied."""
-        manual_velocities = sample_stiv_data['Magnitude'].copy()
+        manual_velocities = sample_stiv_data["Magnitude"].copy()
         manual_indices = []  # No manual edits
         tagline_direction = 90.0
 
         result = stiv_service.apply_manual_corrections(
-            sample_stiv_data, manual_velocities, manual_indices, tagline_direction
+            sample_stiv_data,
+            manual_velocities,
+            manual_indices,
+            tagline_direction,
         )
 
         # Scalar projections should remain unchanged
         np.testing.assert_allclose(
-            result['scalar_projections'],
-            sample_stiv_data['Scalar_Projection'],
-            rtol=1e-5
+            result["scalar_projections"],
+            sample_stiv_data["Scalar_Projection"],
+            rtol=1e-5,
         )
 
     def test_all_manual_corrections(self, stiv_service, sample_stiv_data):
@@ -386,13 +392,16 @@ class TestApplyManualCorrections:
         tagline_direction = 90.0
 
         result = stiv_service.apply_manual_corrections(
-            sample_stiv_data, manual_velocities, manual_indices, tagline_direction
+            sample_stiv_data,
+            manual_velocities,
+            manual_indices,
+            tagline_direction,
         )
 
-        assert len(result['scalar_projections']) == 3
+        assert len(result["scalar_projections"]) == 3
         # All should be recalculated
         for i in range(3):
-            assert result['scalar_projections'][i] is not None
+            assert result["scalar_projections"][i] is not None
 
 
 class TestComputeOptimumSampleTime:
@@ -403,7 +412,9 @@ class TestComputeOptimumSampleTime:
         gsd = 0.15  # meters
         velocity = 2.0  # m/s
 
-        sample_time_ms = stiv_service.compute_optimum_sample_time(gsd, velocity)
+        sample_time_ms = stiv_service.compute_optimum_sample_time(
+            gsd, velocity
+        )
 
         # This should call the optimum_stiv_sample_time function
         assert sample_time_ms > 0
@@ -414,7 +425,9 @@ class TestComputeOptimumSampleTime:
         gsd = 0.15
         velocity = 6.0  # High velocity
 
-        sample_time_ms = stiv_service.compute_optimum_sample_time(gsd, velocity)
+        sample_time_ms = stiv_service.compute_optimum_sample_time(
+            gsd, velocity
+        )
 
         # Higher velocity should result in shorter sample time
         assert sample_time_ms > 0
@@ -424,7 +437,9 @@ class TestComputeOptimumSampleTime:
         gsd = 0.15
         velocity = 0.5  # Low velocity
 
-        sample_time_ms = stiv_service.compute_optimum_sample_time(gsd, velocity)
+        sample_time_ms = stiv_service.compute_optimum_sample_time(
+            gsd, velocity
+        )
 
         # Lower velocity should result in longer sample time
         assert sample_time_ms > 0
@@ -438,7 +453,9 @@ class TestComputeFrameStep:
         sample_time_ms = 100.0  # 100 ms
         video_frame_rate = 30.0  # 30 fps
 
-        frame_step = stiv_service.compute_frame_step(sample_time_ms, video_frame_rate)
+        frame_step = stiv_service.compute_frame_step(
+            sample_time_ms, video_frame_rate
+        )
 
         # Video frame time = 1000/30 = 33.33 ms
         # Frame step = round(100 / 33.33) = round(3) = 3
@@ -449,7 +466,9 @@ class TestComputeFrameStep:
         sample_time_ms = 1.0  # Very short sample time
         video_frame_rate = 30.0
 
-        frame_step = stiv_service.compute_frame_step(sample_time_ms, video_frame_rate)
+        frame_step = stiv_service.compute_frame_step(
+            sample_time_ms, video_frame_rate
+        )
 
         # Even with very short sample time, frame step should be at least 1
         assert frame_step >= 1
@@ -459,7 +478,9 @@ class TestComputeFrameStep:
         sample_time_ms = 100.0
         video_frame_rate = 60.0  # High frame rate
 
-        frame_step = stiv_service.compute_frame_step(sample_time_ms, video_frame_rate)
+        frame_step = stiv_service.compute_frame_step(
+            sample_time_ms, video_frame_rate
+        )
 
         # Video frame time = 1000/60 = 16.67 ms
         # Frame step = round(100 / 16.67) = round(6) = 6
@@ -470,7 +491,9 @@ class TestComputeFrameStep:
         sample_time_ms = 87.5
         video_frame_rate = 29.97
 
-        frame_step = stiv_service.compute_frame_step(sample_time_ms, video_frame_rate)
+        frame_step = stiv_service.compute_frame_step(
+            sample_time_ms, video_frame_rate
+        )
 
         assert isinstance(frame_step, int)
 

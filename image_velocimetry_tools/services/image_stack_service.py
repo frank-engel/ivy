@@ -49,7 +49,9 @@ class ImageStackService(BaseService):
             image_paths, map_file_path, map_file_size_thres
         )
         if validation_errors:
-            raise ValueError(f"Invalid parameters: {', '.join(validation_errors)}")
+            raise ValueError(
+                f"Invalid parameters: {', '.join(validation_errors)}"
+            )
 
         # Create the image stack using the existing function
         image_stack = create_grayscale_image_stack(
@@ -94,7 +96,9 @@ class ImageStackService(BaseService):
             if not os.path.exists(path):
                 errors.append(f"Image file not found: {path}")
                 if i >= 5:  # Only report first 5 missing files
-                    errors.append(f"... and {len(image_paths) - 5} more missing files")
+                    errors.append(
+                        f"... and {len(image_paths) - 5} more missing files"
+                    )
                     break
 
         # Validate map file size threshold
@@ -105,7 +109,9 @@ class ImageStackService(BaseService):
         if map_file_path:
             map_dir = os.path.dirname(map_file_path)
             if map_dir and not os.path.exists(map_dir):
-                errors.append(f"Memory map directory does not exist: {map_dir}")
+                errors.append(
+                    f"Memory map directory does not exist: {map_dir}"
+                )
 
         return errors
 
@@ -124,7 +130,9 @@ class ImageStackService(BaseService):
         Returns:
             Estimated memory usage in bytes
         """
-        return estimate_image_stack_memory_usage(height, width, num_images, num_bands)
+        return estimate_image_stack_memory_usage(
+            height, width, num_images, num_bands
+        )
 
     def should_use_memory_map(
         self,
@@ -145,7 +153,9 @@ class ImageStackService(BaseService):
         Returns:
             True if memory mapping is recommended, False otherwise
         """
-        estimated_bytes = self.estimate_memory_usage(height, width, num_images, num_bands=1)
+        estimated_bytes = self.estimate_memory_usage(
+            height, width, num_images, num_bands=1
+        )
         return estimated_bytes > map_file_size_thres
 
     def get_preprocessing_parameters(
@@ -173,7 +183,11 @@ class ImageStackService(BaseService):
         """
         return {
             "do_clahe": do_clahe,
-            "clahe_parameters": (clahe_clip, clahe_horz_tiles, clahe_vert_tiles),
+            "clahe_parameters": (
+                clahe_clip,
+                clahe_horz_tiles,
+                clahe_vert_tiles,
+            ),
             "do_auto_contrast": do_auto_contrast,
             "auto_contrast_percent": auto_contrast_percent,
         }
@@ -209,6 +223,8 @@ class ImageStackService(BaseService):
         # Validate auto-contrast parameters
         if auto_contrast_percent is not None:
             if not 0 <= auto_contrast_percent <= 100:
-                errors.append("Auto-contrast percentage must be between 0 and 100")
+                errors.append(
+                    "Auto-contrast percentage must be between 0 and 100"
+                )
 
         return errors

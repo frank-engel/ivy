@@ -16,20 +16,17 @@ def grid_service():
 @pytest.fixture
 def sample_mask_polygon():
     """Create a sample mask polygon."""
-    return [np.array([
-        [10, 10],
-        [100, 10],
-        [100, 100],
-        [10, 100]
-    ])]
+    return [np.array([[10, 10], [100, 10], [100, 100], [10, 100]])]
 
 
 class TestCreateMask:
     """Tests for create_mask method."""
 
-    @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
-    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
-    def test_create_mask_basic(self, mock_clean, mock_create, grid_service, sample_mask_polygon):
+    @patch("image_velocimetry_tools.services.grid_service.create_binary_mask")
+    @patch("image_velocimetry_tools.services.grid_service.close_small_gaps")
+    def test_create_mask_basic(
+        self, mock_clean, mock_create, grid_service, sample_mask_polygon
+    ):
         """Test basic mask creation."""
         mock_create.return_value = np.ones((480, 640), dtype=np.uint8)
         mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
@@ -40,28 +37,36 @@ class TestCreateMask:
         mock_create.assert_called_once_with(sample_mask_polygon, 640, 480)
         mock_clean.assert_called_once()
 
-    @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
-    def test_create_mask_without_cleaning(self, mock_create, grid_service, sample_mask_polygon):
+    @patch("image_velocimetry_tools.services.grid_service.create_binary_mask")
+    def test_create_mask_without_cleaning(
+        self, mock_create, grid_service, sample_mask_polygon
+    ):
         """Test mask creation without cleaning."""
         mock_create.return_value = np.ones((480, 640), dtype=np.uint8)
 
-        result = grid_service.create_mask(sample_mask_polygon, 640, 480, clean=False)
+        result = grid_service.create_mask(
+            sample_mask_polygon, 640, 480, clean=False
+        )
 
         assert result.shape == (480, 640)
         mock_create.assert_called_once()
 
-    def test_create_mask_invalid_width(self, grid_service, sample_mask_polygon):
+    def test_create_mask_invalid_width(
+        self, grid_service, sample_mask_polygon
+    ):
         """Test that invalid width raises ValueError."""
         with pytest.raises(ValueError, match="image_width must be positive"):
             grid_service.create_mask(sample_mask_polygon, 0, 480)
 
-    def test_create_mask_invalid_height(self, grid_service, sample_mask_polygon):
+    def test_create_mask_invalid_height(
+        self, grid_service, sample_mask_polygon
+    ):
         """Test that invalid height raises ValueError."""
         with pytest.raises(ValueError, match="image_height must be positive"):
             grid_service.create_mask(sample_mask_polygon, 640, -1)
 
-    @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
-    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
+    @patch("image_velocimetry_tools.services.grid_service.create_binary_mask")
+    @patch("image_velocimetry_tools.services.grid_service.close_small_gaps")
     def test_create_mask_with_custom_cleaning_params(
         self, mock_clean, mock_create, grid_service, sample_mask_polygon
     ):
@@ -70,24 +75,26 @@ class TestCreateMask:
         mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         grid_service.create_mask(
-            sample_mask_polygon, 640, 480,
+            sample_mask_polygon,
+            640,
+            480,
             kernel_size=7,
             area_threshold=0.05,
-            blur_sigma=2.0
+            blur_sigma=2.0,
         )
 
         mock_clean.assert_called_once_with(
             mock_create.return_value,
             kernel_size=7,
             area_threshold=0.05,
-            blur_sigma=2.0
+            blur_sigma=2.0,
         )
 
 
 class TestGenerateRegularGrid:
     """Tests for generate_regular_grid method."""
 
-    @patch('image_velocimetry_tools.services.grid_service.generate_grid')
+    @patch("image_velocimetry_tools.services.grid_service.generate_grid")
     def test_generate_grid_basic(self, mock_generate, grid_service):
         """Test basic grid generation."""
         mock_points = np.array([[10, 10], [20, 10], [10, 20], [20, 20]])
@@ -101,11 +108,16 @@ class TestGenerateRegularGrid:
         assert binary_mask.shape == (480, 640)
         mock_generate.assert_called_once()
 
-    @patch('image_velocimetry_tools.services.grid_service.generate_grid')
-    @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
-    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
+    @patch("image_velocimetry_tools.services.grid_service.generate_grid")
+    @patch("image_velocimetry_tools.services.grid_service.create_binary_mask")
+    @patch("image_velocimetry_tools.services.grid_service.close_small_gaps")
     def test_generate_grid_with_mask(
-        self, mock_clean, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
+        self,
+        mock_clean,
+        mock_create_mask,
+        mock_generate,
+        grid_service,
+        sample_mask_polygon,
     ):
         """Test grid generation with mask polygons."""
         mock_points = np.array([[10, 10], [20, 10]])
@@ -114,8 +126,7 @@ class TestGenerateRegularGrid:
         mock_clean.return_value = np.ones((480, 640), dtype=np.uint8)
 
         grid_points, binary_mask = grid_service.generate_regular_grid(
-            640, 480, 10, 10,
-            mask_polygons=sample_mask_polygon
+            640, 480, 10, 10, mask_polygons=sample_mask_polygon
         )
 
         assert len(grid_points) == 2
@@ -135,19 +146,25 @@ class TestGenerateRegularGrid:
 
     def test_generate_grid_invalid_vertical_spacing(self, grid_service):
         """Test that invalid vertical spacing raises ValueError."""
-        with pytest.raises(ValueError, match="vertical_spacing must be positive"):
+        with pytest.raises(
+            ValueError, match="vertical_spacing must be positive"
+        ):
             grid_service.generate_regular_grid(640, 480, 0, 10)
 
     def test_generate_grid_invalid_horizontal_spacing(self, grid_service):
         """Test that invalid horizontal spacing raises ValueError."""
-        with pytest.raises(ValueError, match="horizontal_spacing must be positive"):
+        with pytest.raises(
+            ValueError, match="horizontal_spacing must be positive"
+        ):
             grid_service.generate_regular_grid(640, 480, 10, -5)
 
 
 class TestGenerateLineGrid:
     """Tests for generate_line_grid method."""
 
-    @patch('image_velocimetry_tools.services.grid_service.generate_points_along_line')
+    @patch(
+        "image_velocimetry_tools.services.grid_service.generate_points_along_line"
+    )
     def test_generate_line_basic(self, mock_generate, grid_service):
         """Test basic line grid generation."""
         mock_points = np.array([[10, 10], [20, 20], [30, 30]])
@@ -164,11 +181,18 @@ class TestGenerateLineGrid:
         assert binary_mask.shape == (480, 640)
         mock_generate.assert_called_once()
 
-    @patch('image_velocimetry_tools.services.grid_service.generate_points_along_line')
-    @patch('image_velocimetry_tools.services.grid_service.create_binary_mask')
-    @patch('image_velocimetry_tools.services.grid_service.close_small_gaps')
+    @patch(
+        "image_velocimetry_tools.services.grid_service.generate_points_along_line"
+    )
+    @patch("image_velocimetry_tools.services.grid_service.create_binary_mask")
+    @patch("image_velocimetry_tools.services.grid_service.close_small_gaps")
     def test_generate_line_with_mask(
-        self, mock_clean, mock_create_mask, mock_generate, grid_service, sample_mask_polygon
+        self,
+        mock_clean,
+        mock_create_mask,
+        mock_generate,
+        grid_service,
+        sample_mask_polygon,
     ):
         """Test line grid generation with mask polygons."""
         mock_points = np.array([[10, 10], [50, 50]])
@@ -180,8 +204,12 @@ class TestGenerateLineGrid:
         line_end = np.array([100, 100])
 
         line_points, binary_mask = grid_service.generate_line_grid(
-            640, 480, line_start, line_end, 10,
-            mask_polygons=sample_mask_polygon
+            640,
+            480,
+            line_start,
+            line_end,
+            10,
+            mask_polygons=sample_mask_polygon,
         )
 
         assert len(line_points) == 2
@@ -210,7 +238,9 @@ class TestGenerateLineGrid:
         line_start = np.array([10])  # Wrong shape
         line_end = np.array([100, 100])
 
-        with pytest.raises(ValueError, match="line_start must be a 2-element array"):
+        with pytest.raises(
+            ValueError, match="line_start must be a 2-element array"
+        ):
             grid_service.generate_line_grid(640, 480, line_start, line_end, 10)
 
     def test_generate_line_invalid_line_end(self, grid_service):
@@ -218,7 +248,9 @@ class TestGenerateLineGrid:
         line_start = np.array([10, 10])
         line_end = np.array([100, 100, 100])  # Wrong shape
 
-        with pytest.raises(ValueError, match="line_end must be a 2-element array"):
+        with pytest.raises(
+            ValueError, match="line_end must be a 2-element array"
+        ):
             grid_service.generate_line_grid(640, 480, line_start, line_end, 10)
 
 
@@ -227,12 +259,7 @@ class TestCalculateGridStatistics:
 
     def test_calculate_stats_basic(self, grid_service):
         """Test basic grid statistics calculation."""
-        grid_points = np.array([
-            [10, 20],
-            [50, 30],
-            [90, 40],
-            [30, 60]
-        ])
+        grid_points = np.array([[10, 20], [50, 30], [90, 40], [30, 60]])
 
         stats = grid_service.calculate_grid_statistics(grid_points)
 
@@ -246,12 +273,7 @@ class TestCalculateGridStatistics:
 
     def test_calculate_stats_with_gsd(self, grid_service):
         """Test statistics calculation with pixel GSD."""
-        grid_points = np.array([
-            [0, 0],
-            [100, 0],
-            [0, 100],
-            [100, 100]
-        ])
+        grid_points = np.array([[0, 0], [100, 0], [0, 100], [100, 100]])
 
         pixel_gsd = 0.02  # 2 cm/pixel
 
@@ -331,7 +353,9 @@ class TestValidateGridParameters:
 
     def test_validate_spacing_too_large(self, grid_service):
         """Test validation catches spacing larger than image."""
-        errors = grid_service.validate_grid_parameters(640, 480, 1000, "regular")
+        errors = grid_service.validate_grid_parameters(
+            640, 480, 1000, "regular"
+        )
 
         assert len(errors) > 0
         assert any("larger than" in error.lower() for error in errors)

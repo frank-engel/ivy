@@ -30,7 +30,9 @@ class TestCreateGrayscaleImageStack(unittest.TestCase):
 
     def test_memory_usage(self):
         image_paths = self.image_paths
-        print(f"Total number of images that will be stacked: {len(image_paths)}")
+        print(
+            f"Total number of images that will be stacked: {len(image_paths)}"
+        )
 
         first_image = cv2.imread(image_paths[0], cv2.IMREAD_GRAYSCALE)
         height, width = first_image.shape
@@ -102,7 +104,9 @@ class TestCreateGrayscaleImageStack(unittest.TestCase):
         elapsed_time = end_time - start_time
 
         # Print the time it took to create the image_stack
-        print(f"Time to create image_stack with memory_map: {elapsed_time:.2f} seconds")
+        print(
+            f"Time to create image_stack with memory_map: {elapsed_time:.2f} seconds"
+        )
 
         # Optionally, you can assert that the creation time is within an acceptable range
         # For example, check if it took less than 10 seconds

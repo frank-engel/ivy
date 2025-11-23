@@ -7,9 +7,14 @@ from typing import Tuple, Union, Any
 import numpy as np
 from PIL import Image
 from PyQt5.QtCore import pyqtSignal, QObject
-from numpy import ndarray, dtype, signedinteger, unsignedinteger, floating, \
-    timedelta64
-from numpy.typing import _8Bit, _64Bit
+from numpy import (
+    ndarray,
+    dtype,
+    signedinteger,
+    unsignedinteger,
+    floating,
+    timedelta64,
+)
 from scipy.interpolate import RegularGridInterpolator, interp2d
 from scipy.ndimage import zoom
 from scipy.optimize import minimize_scalar
@@ -171,7 +176,9 @@ def normalize_image_array(image_array, target_size):
     new_size = tuple(
         int(round(dim * scale_factor)) for dim in normalized_array.shape[:2]
     )
-    normalized_array = zoom(normalized_array, (scale_factor, scale_factor, 1), order=1)
+    normalized_array = zoom(
+        normalized_array, (scale_factor, scale_factor, 1), order=1
+    )
 
     # Create a square array of the target size
     square_array = np.zeros((target_size, target_size, 3))
@@ -195,7 +202,9 @@ def apply_standardization_filter(space_time_image):
     Returns:
         np.ndarray: The filtered space-time image.
     """
-    averaged_space_time_image = np.mean(space_time_image, axis=-1, keepdims=True)
+    averaged_space_time_image = np.mean(
+        space_time_image, axis=-1, keepdims=True
+    )
 
     # Calculate the mean and standard deviation along the time axis
     mean_t = np.mean(averaged_space_time_image, axis=0)
@@ -234,7 +243,9 @@ def compute_angle_to_yaxis(point1, point2):
 
     """
     if len(point1) != 2 or len(point2) != 2:
-        raise ValueError("Invalid input. Points should be tuples with two elements.")
+        raise ValueError(
+            "Invalid input. Points should be tuples with two elements."
+        )
 
     x1, y1 = point1
     x2, y2 = point2
@@ -245,7 +256,9 @@ def compute_angle_to_yaxis(point1, point2):
     yy1 = np.max([y1, y2])
     yy2 = np.min([y1, y2])
 
-    angle_radians = np.arccos((yy1 - yy2) / np.sqrt((x1 - x2) ** 2 + (yy1 - yy2) ** 2))
+    angle_radians = np.arccos(
+        (yy1 - yy2) / np.sqrt((x1 - x2) ** 2 + (yy1 - yy2) ** 2)
+    )
     return np.degrees(angle_radians)
 
 
@@ -403,7 +416,9 @@ def two_dimensional_stiv_exhaustive(
     # This angle will become the center of the +/-phiRange range relative to
     # the initial guess that we will consider as alternative search line
     # orientations, so subtract/add phiRange to get the lower/upper limit
-    phi = np.arange(phi_origin_ari - phi_range, phi_origin_ari + phi_range + 1, d_phi)
+    phi = np.arange(
+        phi_origin_ari - phi_range, phi_origin_ari + phi_range + 1, d_phi
+    )
 
     # Set up an array to hold values of the integral of the ACF, denoted by P
     # in Han et al. (2021)
@@ -428,7 +443,9 @@ def two_dimensional_stiv_exhaustive(
     # Use a vectorized approach that doesn't need to double loop
     pixel_lag_expanded = pixel_lag_sub[:, np.newaxis]
     frame_lag_expanded = frame_lag_sub[np.newaxis, :]
-    theta_grid, rho_grid = cartesian_to_polar(frame_lag_expanded, pixel_lag_expanded)
+    theta_grid, rho_grid = cartesian_to_polar(
+        frame_lag_expanded, pixel_lag_expanded
+    )
 
     # Prepare for numerical integration of the ACF over rho in polar
     # coordinates
@@ -466,8 +483,9 @@ def two_dimensional_stiv_exhaustive(
         theta_max_i[:] = np.nan
         for i_phi in range(len(phi)):
             # Given the origin and current angle, define search line end points
-            x1, y1 = polar_to_cartesian(np.deg2rad(phi[i_phi]), num_pixels,
-                                        isImage=True)
+            x1, y1 = polar_to_cartesian(
+                np.deg2rad(phi[i_phi]), num_pixels, isImage=True
+            )
             x_end_points = np.array([x_origin[i_node], x_origin[i_node] + x1])
             y_end_points = np.array([y_origin[i_node], y_origin[i_node] + y1])
 
@@ -523,7 +541,9 @@ def two_dimensional_stiv_exhaustive(
 
             # Calculate the ACF of the STI and
             reversed_normalized_sti = np.flip(normalized_sti, axis=(0, 1))
-            R = fftconvolve(normalized_sti, reversed_normalized_sti, mode="full")
+            R = fftconvolve(
+                normalized_sti, reversed_normalized_sti, mode="full"
+            )
             R = R / np.max(R)
 
             # Crop to central portion of the ACF We know that the center of
@@ -531,8 +551,14 @@ def two_dimensional_stiv_exhaustive(
             # 0) and the ACF has a value of 1, so go out by half the maximum
             # lag in each direction from this center point
             R_sub = R[
-                num_pixels - num_pixels // 2 : num_pixels + num_pixels // 2 + 1,
-                num_frames - num_frames // 2 : num_frames + num_frames // 2 + 1,
+                num_pixels
+                - num_pixels // 2 : num_pixels
+                + num_pixels // 2
+                + 1,
+                num_frames
+                - num_frames // 2 : num_frames
+                + num_frames // 2
+                + 1,
             ]
 
             # Radiate rays on the ACF from the origin at lag (0,0)
@@ -560,7 +586,9 @@ def two_dimensional_stiv_exhaustive(
 
             # Stack the x and t coordinates along with the corresponding
             # theta values
-            coordinates = np.column_stack((x_coords.flatten(), t_coords.flatten()))
+            coordinates = np.column_stack(
+                (x_coords.flatten(), t_coords.flatten())
+            )
 
             # Interpolate the ACF values along all rays
             acfRay = acf_interpolator(coordinates).reshape(len(theta), -1)
@@ -765,7 +793,8 @@ def two_dimensional_stiv_optimized(
         # same as our nPix input, but recalculate here just to be safe
         # dist = int(num_pixels)
         dist = np.hypot(
-            np.abs(np.diff(y_end_points, axis=0)), np.abs(np.diff(x_end_points, axis=0))
+            np.abs(np.diff(y_end_points, axis=0)),
+            np.abs(np.diff(x_end_points, axis=0)),
         ).astype(int)
 
         # Create regularly spaced points along this line
@@ -892,7 +921,7 @@ def two_dimensional_stiv_optimized(
     # This method can be noisier and produce obvious junk
     magnitudes[
         (magnitudes < -max_vel_threshold) | (magnitudes > max_vel_threshold)
-        ] = np.nan
+    ] = np.nan
 
     # Magnitudes should only be returned as positive
     magnitudes = np.abs(magnitudes)
@@ -974,15 +1003,17 @@ def process_node(args):
     peak[:] = np.nan
     for i_phi in range(len(phi)):
         # Given the origin and current angle, define search line end points
-        x1, y1 = polar_to_cartesian(np.deg2rad(phi[i_phi]), num_pixels,
-                                    isImage=True)
+        x1, y1 = polar_to_cartesian(
+            np.deg2rad(phi[i_phi]), num_pixels, isImage=True
+        )
         x_end_points = np.array([x_origin, x_origin + x1])
         y_end_points = np.array([y_origin, y_origin + y1])
 
         # Get length of this line in pixel units, which should be the
         # same as our nPix input, but recalculate here just to be safe
         dist = np.hypot(
-            np.abs(np.diff(y_end_points, axis=0)), np.abs(np.diff(x_end_points, axis=0))
+            np.abs(np.diff(y_end_points, axis=0)),
+            np.abs(np.diff(x_end_points, axis=0)),
         ).astype(int)
 
         # Create regularly spaced points along this line
@@ -1100,7 +1131,9 @@ def two_dimensional_stiv_parallel(
     image_stack = create_grayscale_image_stack(image_glob)
 
     phi_origin_ari = geographic_to_arithmetic(phi_origin)
-    phi = np.arange(phi_origin_ari - phi_range, phi_origin_ari + phi_range + 1, d_phi)
+    phi = np.arange(
+        phi_origin_ari - phi_range, phi_origin_ari + phi_range + 1, d_phi
+    )
     phi_rad = np.deg2rad(phi)
     pixel_lag = np.arange(-num_pixels, num_pixels + 1)
     num_frames = image_stack.shape[2]
@@ -1110,7 +1143,9 @@ def two_dimensional_stiv_parallel(
     frame_lag_sub = frame_lag[num_frames // 2 : -num_frames // 2]
     pixel_lag_expanded = pixel_lag_sub[:, np.newaxis]
     frame_lag_expanded = frame_lag_sub[np.newaxis, :]
-    theta_grid, rho_grid = cartesian_to_polar(frame_lag_expanded, pixel_lag_expanded)
+    theta_grid, rho_grid = cartesian_to_polar(
+        frame_lag_expanded, pixel_lag_expanded
+    )
 
     rho_max = np.min([np.max(pixel_lag_sub), np.max(frame_lag_sub)])
     rho = np.arange(0, rho_max + d_rho, d_rho)

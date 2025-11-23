@@ -63,7 +63,9 @@ class ImageProcessor(QObject):
         self.do_clahe = do_clahe
         self.do_auto_contrast = do_auto_contrast
 
-    def image_stack_creator(self, image_paths, map_file_path, map_file_size_thres):
+    def image_stack_creator(
+        self, image_paths, map_file_path, map_file_size_thres
+    ):
         """Create an image stack for processing multiple images
 
         Args:
@@ -71,7 +73,11 @@ class ImageProcessor(QObject):
             map_file_path (str): path to the map file
             map_file_size_thres (float): size threshold of the map file in bytes
         """
-        if image_paths is None or map_file_path is None or map_file_size_thres is None:
+        if (
+            image_paths is None
+            or map_file_path is None
+            or map_file_size_thres is None
+        ):
             # Handle the case where arguments are missing
             return
         logging.debug(f" IMAGE STACK: Starting to create the image stack")
@@ -122,12 +128,17 @@ class ImageProcessor(QObject):
                 )
 
             if do_auto_contrast:
-                cv_image, alpha, beta = automatic_brightness_and_contrast_adjustment(
-                    cv_image, clip_histogram_percentage=auto_contrast_percent
+                cv_image, alpha, beta = (
+                    automatic_brightness_and_contrast_adjustment(
+                        cv_image,
+                        clip_histogram_percentage=auto_contrast_percent,
+                    )
                 )
 
             # Save the processed image as a JPG file
-            output_file = os.path.join(image_root_path, f"f{image_index:05d}.jpg")
+            output_file = os.path.join(
+                image_root_path, f"f{image_index:05d}.jpg"
+            )
             cv2.imwrite(output_file, cv_image)
 
             # Introduce a delay
@@ -161,12 +172,16 @@ def image_file_to_numpy_array(in_file):
     return np.array(image)
 
 
-def convert_opencv_image_to_qt_pixmap(opencv_image, display_width, display_height):
+def convert_opencv_image_to_qt_pixmap(
+    opencv_image, display_width, display_height
+):
     """Convert from an opencv image to QPixmap"""
     rgb_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
     h, w, ch = rgb_image.shape
     bytes_per_line = ch * w
-    converted = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+    converted = QImage(
+        rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888
+    )
     p = converted.scaled(display_width, display_height, Qt.KeepAspectRatio)
     return QPixmap.fromImage(p)
 
@@ -182,7 +197,9 @@ def apply_clahe_to_image(
     return clahe.apply(gray)
 
 
-def automatic_brightness_and_contrast_adjustment(image, clip_histogram_percentage=1.0):
+def automatic_brightness_and_contrast_adjustment(
+    image, clip_histogram_percentage=1.0
+):
     """Apply an automated histogram adjustment to an opencv image. Returns the gain and bias parameters.
 
     This function computes an optimize histogram strech by figuring out what the best gain and bias should
@@ -290,7 +307,9 @@ def create_change_overlay_image(image_paths):
         base_folder = os.path.dirname(image_paths[0])
 
         # Generate a new file name for the modified image
-        file_name, file_extension = os.path.splitext(os.path.basename(image_paths[0]))
+        file_name, file_extension = os.path.splitext(
+            os.path.basename(image_paths[0])
+        )
         modified_image_path = os.path.join(
             base_folder, f"!{file_name}_change_overlay{file_extension}"
         )
@@ -387,7 +406,10 @@ def convert_image_file_to_grayscale(path, height, width, dtype):
 
 
 def create_grayscale_image_stack(
-    image_paths, progress_callback=None, map_file_path=None, map_file_size_thres=1e9
+    image_paths,
+    progress_callback=None,
+    map_file_path=None,
+    map_file_size_thres=1e9,
 ):
     """
     Load a list of image files, convert them to grayscale, and create an image stack.
@@ -465,7 +487,10 @@ def create_grayscale_image_stack(
 
         # Create a memory-mapped array with the same shape as the image stack
         image_stack = np.memmap(
-            map_file_path, dtype=dtype, mode="w+", shape=(height, width, num_images)
+            map_file_path,
+            dtype=dtype,
+            mode="w+",
+            shape=(height, width, num_images),
         )
 
         # Directly assign the data to the memory-mapped array
@@ -652,7 +677,9 @@ def create_grayscale_image_stack_hdf5(image_paths, hdf5_file_path):
     num_images = len(image_paths)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        grayscale_images = list(executor.map(load_and_convert_image, range(num_images)))
+        grayscale_images = list(
+            executor.map(load_and_convert_image, range(num_images))
+        )
 
     # Convert the list of grayscale images to a NumPy array
     image_stack = np.dstack(grayscale_images)
@@ -824,7 +851,9 @@ def create_binary_mask(polygons, image_width, image_height):
     return binary_mask
 
 
-def close_small_gaps(binary_mask, kernel_size=5, area_threshold=0.03, blur_sigma=1.0):
+def close_small_gaps(
+    binary_mask, kernel_size=5, area_threshold=0.03, blur_sigma=1.0
+):
     """
     Close small gaps and smooth a binary mask.
 
@@ -860,7 +889,9 @@ def close_small_gaps(binary_mask, kernel_size=5, area_threshold=0.03, blur_sigma
     closed_mask = cv2.dilate(binary_mask, kernel, iterations=1)
 
     # Find connected components and their areas
-    _, labels, stats, _ = cv2.connectedComponentsWithStats(closed_mask, connectivity=8)
+    _, labels, stats, _ = cv2.connectedComponentsWithStats(
+        closed_mask, connectivity=8
+    )
 
     # Get the total number of pixels in the image
     total_pixels = closed_mask.size
@@ -871,7 +902,9 @@ def close_small_gaps(binary_mask, kernel_size=5, area_threshold=0.03, blur_sigma
             closed_mask[labels == label] = 0
 
     # Apply Gaussian blur to smooth the binary mask
-    smoothed_mask = cv2.GaussianBlur(closed_mask.astype(np.float32), (0, 0), blur_sigma)
+    smoothed_mask = cv2.GaussianBlur(
+        closed_mask.astype(np.float32), (0, 0), blur_sigma
+    )
 
     # Threshold the smoothed mask to set values less than 1 to 0
     thresholded_mask = np.where(smoothed_mask < 1, 0, smoothed_mask)
@@ -920,12 +953,16 @@ def generate_points_along_line(
 
     """
     # Ensure the line points are within the image bounds
-    line_start = np.clip(line_start, [0, 0], [image_width - 1, image_height - 1])
+    line_start = np.clip(
+        line_start, [0, 0], [image_width - 1, image_height - 1]
+    )
     line_end = np.clip(line_end, [0, 0], [image_width - 1, image_height - 1])
 
     # Generate evenly spaced points along the line
     t_values = np.linspace(0, 1, number_points)
-    line_points = np.outer(1 - t_values, line_start) + np.outer(t_values, line_end)
+    line_points = np.outer(1 - t_values, line_start) + np.outer(
+        t_values, line_end
+    )
     line_points = np.round(line_points).astype(int)
 
     # Filter points to keep only those in unmasked regions
@@ -986,7 +1023,8 @@ def generate_grid(
 
     # Filter the coordinates to include only those within the image bounds
     valid_coords = unmasked_coords[
-        (unmasked_coords[:, 0] < image_height) & (unmasked_coords[:, 1] < image_width)
+        (unmasked_coords[:, 0] < image_height)
+        & (unmasked_coords[:, 1] < image_width)
     ]
 
     # Generate grid nodes based on the specified spacing
@@ -1003,7 +1041,10 @@ def generate_grid(
     grid_points = grid_points[
         (grid_points[:, 0] < image_width)
         & (grid_points[:, 1] < image_height)
-        & (mask[grid_points[:, 1].astype(int), grid_points[:, 0].astype(int)] == 1)
+        & (
+            mask[grid_points[:, 1].astype(int), grid_points[:, 0].astype(int)]
+            == 1
+        )
     ]
 
     return grid_points
@@ -1028,7 +1069,9 @@ def resize_and_save_image(
         return
 
     # Step 2: Resize the image
-    resized_image = imutils.resize(image, width=new_size[0], height=new_size[1])
+    resized_image = imutils.resize(
+        image, width=new_size[0], height=new_size[1]
+    )
 
     # Step 3: Save the resized image
     if overwrite or not cv2.os.path.exists(output_filename):
@@ -1037,8 +1080,9 @@ def resize_and_save_image(
         pass
 
 
-def flip_image_array(image: np.ndarray, flip_x: bool = False, flip_y: bool =
-False) -> np.ndarray:
+def flip_image_array(
+    image: np.ndarray, flip_x: bool = False, flip_y: bool = False
+) -> np.ndarray:
     """
     Flip a NumPy image array along horizontal and/or vertical axes.
 
@@ -1061,7 +1105,9 @@ False) -> np.ndarray:
     return image
 
 
-def flip_and_save_images(image_folder, flip_x=False, flip_y=False, progress_callback=None):
+def flip_and_save_images(
+    image_folder, flip_x=False, flip_y=False, progress_callback=None
+):
     images_to_process = os.listdir(image_folder)
     num_images = len(images_to_process)
     idx = 0

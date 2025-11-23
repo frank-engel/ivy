@@ -9,7 +9,9 @@ import numpy as np
 import pytest
 from typing import List
 
-from image_velocimetry_tools.services.cross_section_service import CrossSectionService
+from image_velocimetry_tools.services.cross_section_service import (
+    CrossSectionService,
+)
 
 
 @pytest.fixture
@@ -21,19 +23,15 @@ def cross_section_service():
 @pytest.fixture
 def sample_points():
     """Sample x/y coordinate points."""
-    return np.array([
-        [0.0, 0.0],
-        [3.0, 4.0],
-        [6.0, 8.0]
-    ])
+    return np.array([[0.0, 0.0], [3.0, 4.0], [6.0, 8.0]])
 
 
 @pytest.fixture
 def sample_cross_section_data():
     """Sample cross-section station and elevation data."""
     return {
-        'stations': np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0]),
-        'elevations': np.array([10.0, 8.0, 6.0, 7.0, 9.0, 11.0])
+        "stations": np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0]),
+        "elevations": np.array([10.0, 8.0, 6.0, 7.0, 9.0, 11.0]),
     }
 
 
@@ -94,8 +92,10 @@ class TestComputePixelToRealWorldConversion:
         pixel_distance = 100.0  # pixels
         real_world_width = 50.0  # meters
 
-        conversion_factor = cross_section_service.compute_pixel_to_real_world_conversion(
-            pixel_distance, real_world_width
+        conversion_factor = (
+            cross_section_service.compute_pixel_to_real_world_conversion(
+                pixel_distance, real_world_width
+            )
         )
 
         # 50 meters / 100 pixels = 0.5 meters/pixel
@@ -106,8 +106,10 @@ class TestComputePixelToRealWorldConversion:
         pixel_distance = 75.0
         real_world_width = 75.0
 
-        conversion_factor = cross_section_service.compute_pixel_to_real_world_conversion(
-            pixel_distance, real_world_width
+        conversion_factor = (
+            cross_section_service.compute_pixel_to_real_world_conversion(
+                pixel_distance, real_world_width
+            )
         )
 
         assert np.isclose(conversion_factor, 1.0, rtol=1e-5)
@@ -117,8 +119,10 @@ class TestComputePixelToRealWorldConversion:
         pixel_distance = 10.0
         real_world_width = 1000.0  # Large real world distance
 
-        conversion_factor = cross_section_service.compute_pixel_to_real_world_conversion(
-            pixel_distance, real_world_width
+        conversion_factor = (
+            cross_section_service.compute_pixel_to_real_world_conversion(
+                pixel_distance, real_world_width
+            )
         )
 
         assert np.isclose(conversion_factor, 100.0, rtol=1e-5)
@@ -128,8 +132,10 @@ class TestComputePixelToRealWorldConversion:
         pixel_distance = np.array([100.0])
         real_world_width = 50.0
 
-        conversion_factor = cross_section_service.compute_pixel_to_real_world_conversion(
-            pixel_distance, real_world_width
+        conversion_factor = (
+            cross_section_service.compute_pixel_to_real_world_conversion(
+                pixel_distance, real_world_width
+            )
         )
 
         assert np.isclose(conversion_factor, 0.5, rtol=1e-5)
@@ -154,14 +160,16 @@ class TestFindStationCrossings:
         assert np.isclose(crossings[0], 5.0, rtol=1e-3)
         assert np.isclose(crossings[1], 15.0, rtol=1e-3)
 
-    def test_firstlast_mode(self, cross_section_service, sample_cross_section_data):
+    def test_firstlast_mode(
+        self, cross_section_service, sample_cross_section_data
+    ):
         """Test firstlast mode returns only first and last crossings."""
-        stations = sample_cross_section_data['stations']
-        elevations = sample_cross_section_data['elevations']
+        stations = sample_cross_section_data["stations"]
+        elevations = sample_cross_section_data["elevations"]
         target_elevation = 8.0
 
         crossings = cross_section_service.find_station_crossings(
-            stations, elevations, target_elevation, mode='firstlast'
+            stations, elevations, target_elevation, mode="firstlast"
         )
 
         # Should return only first and last crossing
@@ -176,7 +184,7 @@ class TestFindStationCrossings:
         target_elevation = 9.0
 
         crossings = cross_section_service.find_station_crossings(
-            stations, elevations, target_elevation, mode='all'
+            stations, elevations, target_elevation, mode="all"
         )
 
         # Should find 4 crossings
@@ -206,7 +214,9 @@ class TestFindStationCrossings:
         )
 
         # Should detect crossing despite small numerical difference
-        assert len(crossings) >= 0  # May or may not detect depending on epsilon
+        assert (
+            len(crossings) >= 0
+        )  # May or may not detect depending on epsilon
 
     def test_exact_match_at_point(self, cross_section_service):
         """Test when target elevation exactly matches a data point."""

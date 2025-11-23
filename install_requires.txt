@@ -1,0 +1,52 @@
+# Install requirements for image_velocimetry_tools
+# This file uses relaxed version constraints suitable for PyPI distribution
+# For exact reproducible environment, see requirements.txt
+#
+# NOTE: Runtime dependencies only. Dev tools (pytest, sphinx, black, etc.)
+# are NOT included here - install separately if needed for development.
+
+# Core scientific computing
+# Note: numpy 1.26.x versions are compatible; relaxed to avoid conflicts with numba
+numpy>=1.26.2,<1.27.0
+pandas==1.4.0
+scipy==1.10.0
+matplotlib==3.6.3
+
+# Image processing
+opencv-python-headless
+pillow
+imageio
+imutils
+qimage2ndarray>=1.9.0,<2.0
+
+# Machine learning (for STIV)
+# Note: We explicitly pin numba 0.58.x to work around areacomp3 JIT compilation issues
+# areacomp3 declares numba~=0.61.0, but that version has stricter JIT rules that fail
+# with areacomp3's @numba.jit decorated methods. Pip will install our version (0.58.x)
+# and show dependency conflict warnings - these are expected and can be ignored.
+numba
+scikit-image
+
+# GUI
+PyQt5>=5.15.6,<6.0
+
+# Video processing
+# Note: ffmpeg binary must be installed separately and available in PATH
+# or in ./bin/ directory. No Python package required.
+
+# Data formats
+h5py>=3.10.0,<4.0
+
+# Geospatial
+shapely>=1.8.5,<3.0
+
+# Statistics
+
+# Other utilities
+python-dateutil>=2.9.0
+tqdm>=4.67.1,<5.0
+reportlab>=4.1.0,<5.0
+colormap
+
+# Cross-section analysis (USGS internal package)
+areacomp3 @ git+https://code.usgs.gov/RIVRS/areacomp.git@master

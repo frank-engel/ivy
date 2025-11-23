@@ -1,4 +1,5 @@
 """IVy module that manages openCV functions"""
+
 import logging
 
 import cv2
@@ -36,18 +37,22 @@ def opencv_get_video_metadata(file_path, status_callback=None):
 
     # If OpenCV frame count is invalid, fallback
     if frame_count <= 0 or frame_count > 1e6:
-        msg = ("[Warning] OpenCV frame count invalid, "
-               "using slower fallback. Press OK to attempt "
-               "parsing the video.")
+        msg = (
+            "[Warning] OpenCV frame count invalid, "
+            "using slower fallback. Press OK to attempt "
+            "parsing the video."
+        )
         logging.warning(msg)
         if status_callback:
             status_callback(msg)
         frame_count = count_frames_manual(file_path)
 
         if frame_count is None:
-            msg = ("[Warning] OpenCV manual frame count fallback failed, "
-                   "counting frames using full ffprobe decode (SLOWEST). "
-                   "Press OK to attempt parsing the video.")
+            msg = (
+                "[Warning] OpenCV manual frame count fallback failed, "
+                "counting frames using full ffprobe decode (SLOWEST). "
+                "Press OK to attempt parsing the video."
+            )
             logging.warning(msg)
             if status_callback:
                 status_callback(msg)
@@ -61,17 +66,19 @@ def opencv_get_video_metadata(file_path, status_callback=None):
 
     cap.release()
 
-    res.update({
-        "width": width,
-        "height": height,
-        "bitrate_kbs": -999,  # OpenCV limitation
-        "duration": duration,
-        "avg_frame_rate": fps,
-        "avg_timestep_ms": 1 / fps * 1000 if fps > 0 else -1,
-        "frame_count": int(frame_count),
-        "codec_info": codec,
-        "pixel_fmt": "-999",  # OpenCV limitation
-    })
+    res.update(
+        {
+            "width": width,
+            "height": height,
+            "bitrate_kbs": -999,  # OpenCV limitation
+            "duration": duration,
+            "avg_frame_rate": fps,
+            "avg_timestep_ms": 1 / fps * 1000 if fps > 0 else -1,
+            "frame_count": int(frame_count),
+            "codec_info": codec,
+            "pixel_fmt": "-999",  # OpenCV limitation
+        }
+    )
 
     return res
 

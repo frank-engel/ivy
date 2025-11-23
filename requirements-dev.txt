@@ -1,0 +1,19 @@
+# Development dependencies for IVyTools
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code quality
+black>=24.0.0
+flake8>=6.0.0
+isort>=5.12.0
+
+# Documentation
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.0.0
+
+# Override qrev's ancient py version (1.8.0) with modern version
+# qrev requires py==1.8.0 which is incompatible with pytest on Python 3.11
+py>=1.11.0

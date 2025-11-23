@@ -7,7 +7,9 @@ import pytest
 from PyQt5.QtCore import QDir, QCoreApplication
 from PyQt5.QtWidgets import QApplication
 
-from image_velocimetry_tools.gui.controllers.project_controller import ProjectController
+from image_velocimetry_tools.gui.controllers.project_controller import (
+    ProjectController,
+)
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.services.project_service import ProjectService
 
@@ -85,7 +87,9 @@ def project_service(qapp):
 @pytest.fixture(scope="function")
 def project_controller(qapp, mock_main_window, project_model, project_service):
     """Create a fresh ProjectController instance for each test."""
-    controller = ProjectController(mock_main_window, project_model, project_service)
+    controller = ProjectController(
+        mock_main_window, project_model, project_service
+    )
     yield controller
     # Cleanup: block all signals before destruction
     controller.blockSignals(True)
@@ -95,7 +99,13 @@ def project_controller(qapp, mock_main_window, project_model, project_service):
 class TestProjectControllerInit:
     """Tests for ProjectController initialization."""
 
-    def test_init_stores_references(self, project_controller, mock_main_window, project_model, project_service):
+    def test_init_stores_references(
+        self,
+        project_controller,
+        mock_main_window,
+        project_model,
+        project_service,
+    ):
         """Test that controller stores references to main window, model, and service."""
         assert project_controller.main_window == mock_main_window
         assert project_controller.project_model == project_model
@@ -104,23 +114,30 @@ class TestProjectControllerInit:
     def test_init_connects_signals(self, project_controller):
         """Test that signals are connected during initialization."""
         # Verify that signal connections were made by checking receiver count
-        assert project_controller.project_model.receivers(
-            project_controller.project_model.project_created
-        ) > 0
+        assert (
+            project_controller.project_model.receivers(
+                project_controller.project_model.project_created
+            )
+            > 0
+        )
 
 
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestNewProject:
     """Tests for new_project method."""
 
-    def test_new_project_sets_default_filename(self, project_controller, project_model):
+    def test_new_project_sets_default_filename(
+        self, project_controller, project_model
+    ):
         """Test that new project sets a default filename."""
         project_controller.new_project()
 
         assert project_model.project_filename is not None
         assert project_model.project_filename.endswith("New_IVy_Project.ivy")
 
-    def test_new_project_emits_created_signal(self, project_controller, project_model):
+    def test_new_project_emits_created_signal(
+        self, project_controller, project_model
+    ):
         """Test that new project emits project_created signal."""
         signal_emitted = False
 
@@ -135,15 +152,18 @@ class TestNewProject:
 
     def test_new_project_calls_clear_project(self, project_controller):
         """Test that new project calls clear_project."""
-        with patch.object(project_controller, 'clear_project') as mock_clear:
+        with patch.object(project_controller, "clear_project") as mock_clear:
             project_controller.new_project()
             mock_clear.assert_called_once()
+
 
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestOpenProject:
     """Tests for open_project method."""
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
     def test_open_project_user_cancels(self, mock_dialog, project_controller):
         """Test that open_project returns False when user cancels."""
         mock_dialog.return_value = ("", "")  # User cancelled
@@ -152,49 +172,72 @@ class TestOpenProject:
 
         assert result is False
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_extracts_archive(self, mock_dialog, project_controller, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_extracts_archive(
+        self, mock_dialog, project_controller, tmp_path
+    ):
         """Test that open_project extracts the project archive."""
         project_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (project_file, "")
 
-        with patch.object(project_controller.project_service, 'extract_project_archive') as mock_extract:
-            with patch.object(project_controller.project_service, 'load_project_from_json') as mock_load:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ) as mock_extract:
+            with patch.object(
+                project_controller.project_service, "load_project_from_json"
+            ) as mock_load:
                 mock_load.return_value = {"test": "data"}
 
                 result = project_controller.open_project()
 
                 mock_extract.assert_called_once_with(
-                    project_file,
-                    project_controller.main_window.swap_directory
+                    project_file, project_controller.main_window.swap_directory
                 )
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_loads_json(self, mock_dialog, project_controller, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_loads_json(
+        self, mock_dialog, project_controller, tmp_path
+    ):
         """Test that open_project loads project data from JSON."""
         project_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (project_file, "")
 
-        with patch.object(project_controller.project_service, 'extract_project_archive'):
-            with patch.object(project_controller.project_service, 'load_project_from_json') as mock_load:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ):
+            with patch.object(
+                project_controller.project_service, "load_project_from_json"
+            ) as mock_load:
                 mock_load.return_value = {"test": "data"}
 
                 result = project_controller.open_project()
 
                 expected_json_path = os.path.join(
                     project_controller.main_window.swap_directory,
-                    "project_data.json"
+                    "project_data.json",
                 )
                 mock_load.assert_called_once_with(expected_json_path)
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_updates_model(self, mock_dialog, project_controller, project_model, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_updates_model(
+        self, mock_dialog, project_controller, project_model, tmp_path
+    ):
         """Test that open_project updates the project model."""
         project_file = str(tmp_path / "my_project.ivy")
         mock_dialog.return_value = (project_file, "")
 
-        with patch.object(project_controller.project_service, 'extract_project_archive'):
-            with patch.object(project_controller.project_service, 'load_project_from_json') as mock_load:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ):
+            with patch.object(
+                project_controller.project_service, "load_project_from_json"
+            ) as mock_load:
                 mock_load.return_value = {"test": "data"}
 
                 project_controller.open_project()
@@ -202,8 +245,12 @@ class TestOpenProject:
                 assert project_model.project_filename == project_file
                 assert project_model.project_name == "my_project"
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_emits_loaded_signal(self, mock_dialog, project_controller, project_model, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_emits_loaded_signal(
+        self, mock_dialog, project_controller, project_model, tmp_path
+    ):
         """Test that open_project emits project_loaded signal."""
         project_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (project_file, "")
@@ -218,8 +265,12 @@ class TestOpenProject:
 
         project_model.project_loaded.connect(on_loaded)
 
-        with patch.object(project_controller.project_service, 'extract_project_archive'):
-            with patch.object(project_controller.project_service, 'load_project_from_json') as mock_load:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ):
+            with patch.object(
+                project_controller.project_service, "load_project_from_json"
+            ) as mock_load:
                 mock_load.return_value = {"test": "data"}
 
                 project_controller.open_project()
@@ -227,13 +278,19 @@ class TestOpenProject:
         assert signal_emitted
         assert received_path == project_file
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_handles_extract_error(self, mock_dialog, project_controller, mock_main_window, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_handles_extract_error(
+        self, mock_dialog, project_controller, mock_main_window, tmp_path
+    ):
         """Test that open_project handles extraction errors gracefully."""
         project_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (project_file, "")
 
-        with patch.object(project_controller.project_service, 'extract_project_archive') as mock_extract:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ) as mock_extract:
             mock_extract.side_effect = ValueError("Bad archive")
 
             result = project_controller.open_project()
@@ -241,14 +298,22 @@ class TestOpenProject:
             assert result is False
             mock_main_window.warning_dialog.assert_called_once()
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName')
-    def test_open_project_handles_json_load_error(self, mock_dialog, project_controller, mock_main_window, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getOpenFileName"
+    )
+    def test_open_project_handles_json_load_error(
+        self, mock_dialog, project_controller, mock_main_window, tmp_path
+    ):
         """Test that open_project handles JSON loading errors gracefully."""
         project_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (project_file, "")
 
-        with patch.object(project_controller.project_service, 'extract_project_archive'):
-            with patch.object(project_controller.project_service, 'load_project_from_json') as mock_load:
+        with patch.object(
+            project_controller.project_service, "extract_project_archive"
+        ):
+            with patch.object(
+                project_controller.project_service, "load_project_from_json"
+            ) as mock_load:
                 mock_load.side_effect = ValueError("Bad JSON")
 
                 result = project_controller.open_project()
@@ -256,11 +321,14 @@ class TestOpenProject:
                 assert result is False
                 mock_main_window.warning_dialog.assert_called_once()
 
+
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestSaveProject:
     """Tests for save_project method."""
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
     def test_save_project_user_cancels(self, mock_dialog, project_controller):
         """Test that save_project returns False when user cancels."""
         mock_dialog.return_value = ("", "")  # User cancelled
@@ -269,67 +337,108 @@ class TestSaveProject:
 
         assert result is False
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_adds_ivy_extension(self, mock_dialog, project_controller, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_adds_ivy_extension(
+        self, mock_dialog, project_controller, tmp_path
+    ):
         """Test that save_project adds .ivy extension if missing."""
         save_file = str(tmp_path / "my_project")  # No extension
         mock_dialog.return_value = (save_file, "")
 
-        with patch.object(project_controller.project_service, 'save_project_to_json'):
-            with patch.object(project_controller.project_service, 'create_project_archive'):
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ):
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ):
                 project_controller.save_project({"test": "data"})
 
                 # Should have added .ivy extension
-                assert project_controller.project_model.project_filename.endswith(".ivy")
+                assert (
+                    project_controller.project_model.project_filename.endswith(
+                        ".ivy"
+                    )
+                )
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_saves_to_json(self, mock_dialog, project_controller, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_saves_to_json(
+        self, mock_dialog, project_controller, tmp_path
+    ):
         """Test that save_project saves data to JSON."""
         save_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (save_file, "")
 
         project_dict = {"key": "value", "number": 42}
 
-        with patch.object(project_controller.project_service, 'save_project_to_json') as mock_save:
-            with patch.object(project_controller.project_service, 'create_project_archive'):
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ) as mock_save:
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ):
                 project_controller.save_project(project_dict)
 
                 expected_json_path = os.path.join(
                     project_controller.main_window.swap_directory,
-                    "project_data.json"
+                    "project_data.json",
                 )
-                mock_save.assert_called_once_with(project_dict, expected_json_path)
+                mock_save.assert_called_once_with(
+                    project_dict, expected_json_path
+                )
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_creates_archive(self, mock_dialog, project_controller, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_creates_archive(
+        self, mock_dialog, project_controller, tmp_path
+    ):
         """Test that save_project creates project archive."""
         save_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (save_file, "")
 
-        with patch.object(project_controller.project_service, 'save_project_to_json'):
-            with patch.object(project_controller.project_service, 'create_project_archive') as mock_archive:
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ):
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ) as mock_archive:
                 project_controller.save_project({"test": "data"})
 
                 mock_archive.assert_called_once_with(
-                    save_file,
-                    project_controller.main_window.swap_directory
+                    save_file, project_controller.main_window.swap_directory
                 )
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_updates_model(self, mock_dialog, project_controller, project_model, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_updates_model(
+        self, mock_dialog, project_controller, project_model, tmp_path
+    ):
         """Test that save_project updates the project model."""
         save_file = str(tmp_path / "my_project.ivy")
         mock_dialog.return_value = (save_file, "")
 
-        with patch.object(project_controller.project_service, 'save_project_to_json'):
-            with patch.object(project_controller.project_service, 'create_project_archive'):
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ):
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ):
                 project_controller.save_project({"test": "data"})
 
                 assert project_model.project_filename == save_file
                 assert project_model.project_name == "my_project"
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_emits_saved_signal(self, mock_dialog, project_controller, project_model, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_emits_saved_signal(
+        self, mock_dialog, project_controller, project_model, tmp_path
+    ):
         """Test that save_project emits project_saved signal."""
         save_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (save_file, "")
@@ -344,20 +453,30 @@ class TestSaveProject:
 
         project_model.project_saved.connect(on_saved)
 
-        with patch.object(project_controller.project_service, 'save_project_to_json'):
-            with patch.object(project_controller.project_service, 'create_project_archive'):
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ):
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ):
                 project_controller.save_project({"test": "data"})
 
         assert signal_emitted
         assert received_path == save_file
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_handles_json_save_error(self, mock_dialog, project_controller, mock_main_window, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_handles_json_save_error(
+        self, mock_dialog, project_controller, mock_main_window, tmp_path
+    ):
         """Test that save_project handles JSON saving errors gracefully."""
         save_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (save_file, "")
 
-        with patch.object(project_controller.project_service, 'save_project_to_json') as mock_save:
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ) as mock_save:
             mock_save.side_effect = ValueError("Cannot save JSON")
 
             result = project_controller.save_project({"test": "data"})
@@ -365,14 +484,22 @@ class TestSaveProject:
             assert result is False
             mock_main_window.warning_dialog.assert_called_once()
 
-    @patch('image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName')
-    def test_save_project_handles_archive_error(self, mock_dialog, project_controller, mock_main_window, tmp_path):
+    @patch(
+        "image_velocimetry_tools.gui.controllers.project_controller.QtWidgets.QFileDialog.getSaveFileName"
+    )
+    def test_save_project_handles_archive_error(
+        self, mock_dialog, project_controller, mock_main_window, tmp_path
+    ):
         """Test that save_project handles archive creation errors gracefully."""
         save_file = str(tmp_path / "test.ivy")
         mock_dialog.return_value = (save_file, "")
 
-        with patch.object(project_controller.project_service, 'save_project_to_json'):
-            with patch.object(project_controller.project_service, 'create_project_archive') as mock_archive:
+        with patch.object(
+            project_controller.project_service, "save_project_to_json"
+        ):
+            with patch.object(
+                project_controller.project_service, "create_project_archive"
+            ) as mock_archive:
                 mock_archive.side_effect = IOError("Cannot create archive")
 
                 result = project_controller.save_project({"test": "data"})
@@ -380,11 +507,14 @@ class TestSaveProject:
                 assert result is False
                 mock_main_window.warning_dialog.assert_called_once()
 
+
 @pytest.mark.skip(reason="This test is temporarily disabled")
 class TestClearProject:
     """Tests for clear_project method."""
 
-    def test_clear_project_resets_model(self, project_controller, project_model):
+    def test_clear_project_resets_model(
+        self, project_controller, project_model
+    ):
         """Test that clear_project resets the project model."""
         # Set some values
         project_model.project_filename = "/path/to/project.ivy"
@@ -396,7 +526,9 @@ class TestClearProject:
         assert project_model.project_name is None
         assert not project_model.is_project_loaded
 
-    def test_clear_project_emits_closed_signal(self, project_controller, project_model):
+    def test_clear_project_emits_closed_signal(
+        self, project_controller, project_model
+    ):
         """Test that clear_project emits project_closed signal."""
         signal_emitted = False
 
@@ -414,7 +546,9 @@ class TestClearProject:
 class TestGetProjectDictFromMainWindow:
     """Tests for get_project_dict_from_main_window method."""
 
-    def test_extracts_serializable_types(self, project_controller, mock_main_window):
+    def test_extracts_serializable_types(
+        self, project_controller, mock_main_window
+    ):
         """Test that method extracts only serializable types."""
         project_dict = project_controller.get_project_dict_from_main_window()
 
@@ -441,13 +575,19 @@ class TestGetProjectDictFromMainWindow:
 class TestModelSignalHandlers:
     """Tests for model signal handlers."""
 
-    def test_on_model_project_loaded_updates_window_title(self, project_controller, mock_main_window):
+    def test_on_model_project_loaded_updates_window_title(
+        self, project_controller, mock_main_window
+    ):
         """Test that project loaded handler updates window title."""
         project_controller.on_model_project_loaded("/path/to/my_project.ivy")
 
-        mock_main_window.setWindowTitle.assert_called_once_with("IVyTools - my_project")
+        mock_main_window.setWindowTitle.assert_called_once_with(
+            "IVyTools - my_project"
+        )
 
-    def test_on_model_project_closed_resets_window_title(self, project_controller, mock_main_window):
+    def test_on_model_project_closed_resets_window_title(
+        self, project_controller, mock_main_window
+    ):
         """Test that project closed handler resets window title."""
         project_controller.on_model_project_closed()
 

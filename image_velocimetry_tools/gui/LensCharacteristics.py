@@ -9,7 +9,6 @@ from image_velocimetry_tools.graphics import AnnotationView
 from image_velocimetry_tools.gui.dialogs import wLensCharacteristics
 
 
-
 class LensCharacteristics(QtWidgets.QDialog, wLensCharacteristics.Ui_Dialog):
     """Lens Characteristics Dialog class
 
@@ -46,7 +45,9 @@ class LensCharacteristics(QtWidgets.QDialog, wLensCharacteristics.Ui_Dialog):
 
         self.setWindowTitle("Lens Characteristics")
         self.setWindowIcon(
-            QtGui.QIcon(resource_path(self.__icon_path__ + os.sep + "IVy_logo.svg"))
+            QtGui.QIcon(
+                resource_path(self.__icon_path__ + os.sep + "IVy_logo.svg")
+            )
         )
         self.lensDistortionModel = AnnotationView()
         self.lensDistortionModel.setEnabled(True)
@@ -59,7 +60,9 @@ class LensCharacteristics(QtWidgets.QDialog, wLensCharacteristics.Ui_Dialog):
         # # Set the image
         # self.imageBrowser.scene.setImage(self.imagebrowser_image)
         self.lensDistortionModel_image = QtGui.QImage(
-            resource_path(self.__icon_path__ + os.sep + "barrel-distortion.png")
+            resource_path(
+                self.__icon_path__ + os.sep + "barrel-distortion.png"
+            )
         )
         self.lensDistortionModel.scene.setImage(self.lensDistortionModel_image)
         self._cx_raw = cx

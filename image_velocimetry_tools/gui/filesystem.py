@@ -1,5 +1,4 @@
-"""Module for controling file I/O functions
-"""
+"""Module for controling file I/O functions"""
 
 import sys
 import traceback
@@ -25,7 +24,9 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
 )
 
-from image_velocimetry_tools.image_processing_tools import create_grayscale_image_stack
+from image_velocimetry_tools.image_processing_tools import (
+    create_grayscale_image_stack,
+)
 
 
 class FileSystemModelManager:
@@ -36,7 +37,9 @@ class FileSystemModelManager:
         # Configure the file system model as needed
         self.file_system_model = QFileSystemModel()
         self.file_system_model.setRootPath(root_directory)
-        self.file_system_model.setHeaderData(1, Qt.Horizontal, "Project Structure")
+        self.file_system_model.setHeaderData(
+            1, Qt.Horizontal, "Project Structure"
+        )
         self.index = self.file_system_model.index(root_directory)
 
     def get_file_system_model(self):
@@ -110,7 +113,9 @@ class TableWidgetDragRows(QTableWidget):
             rows_to_move = [
                 [
                     QTableWidgetItem(
-                        self.format_string(self.item(row_index, column_index).text())
+                        self.format_string(
+                            self.item(row_index, column_index).text()
+                        )
                     )
                     for column_index in range(self.columnCount())
                 ]
@@ -145,7 +150,11 @@ class TableWidgetDragRows(QTableWidget):
         if not index.isValid():
             return self.rowCount()
 
-        return index.row() + 1 if self.is_below(event.pos(), index) else index.row()
+        return (
+            index.row() + 1
+            if self.is_below(event.pos(), index)
+            else index.row()
+        )
 
     def is_below(self, pos, index):
         """Test if the drop event was below the margins of the table
@@ -178,7 +187,9 @@ class TableWidgetDragRows(QTableWidget):
         rows = self.rowCount()
         columns = self.columnCount()
 
-        headers = [self.horizontalHeaderItem(col).text() for col in range(columns)]
+        headers = [
+            self.horizontalHeaderItem(col).text() for col in range(columns)
+        ]
 
         data = []
         for row in range(rows):
@@ -203,7 +214,9 @@ class TableWidgetDragRows(QTableWidget):
         rows = self.rowCount()
         columns = self.columnCount()
 
-        headers = [self.horizontalHeaderItem(col).text() for col in range(columns)]
+        headers = [
+            self.horizontalHeaderItem(col).text() for col in range(columns)
+        ]
 
         data_dict = {}
         for row in range(rows):
@@ -416,7 +429,9 @@ class Worker(QRunnable):
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
-            self.signals.result.emit(result)  # Return the result of the processing
+            self.signals.result.emit(
+                result
+            )  # Return the result of the processing
         finally:
             self.signals.finished.emit()  # Done
 
@@ -458,7 +473,11 @@ class ImageStackTask(QObject):
     # finished = pyqtSignal()
 
     def __init__(
-        self, processed_frames, map_file_path, map_file_size_thres, progress_callback
+        self,
+        processed_frames,
+        map_file_path,
+        map_file_size_thres,
+        progress_callback,
     ):
         """Class init
 

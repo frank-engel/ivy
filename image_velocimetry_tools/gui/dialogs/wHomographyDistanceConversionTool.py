@@ -26,7 +26,9 @@ class Ui_Dialog(object):
         self.l.addWidget(self.line_2, 5, 2, 1, 1)
         self.backgroundImage = QtWidgets.QLabel(Dialog)
         self.backgroundImage.setText("")
-        self.backgroundImage.setPixmap(QtGui.QPixmap("icons/4-point-diagram.png"))
+        self.backgroundImage.setPixmap(
+            QtGui.QPixmap("icons/4-point-diagram.png")
+        )
         self.backgroundImage.setScaledContents(True)
         self.backgroundImage.setObjectName("backgroundImage")
         self.l.addWidget(self.backgroundImage, 2, 0, 7, 1)
@@ -45,12 +47,16 @@ class Ui_Dialog(object):
         self.labelP.setFont(font)
         self.labelP.setAlignment(QtCore.Qt.AlignCenter)
         self.labelP.setObjectName("labelP")
-        self.layoutDistances.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelP)
+        self.layoutDistances.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelP
+        )
         self.lineeditP = QtWidgets.QLineEdit(Dialog)
         self.lineeditP.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditP.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditP.setObjectName("lineeditP")
-        self.layoutDistances.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.lineeditP)
+        self.layoutDistances.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.lineeditP
+        )
         self.labelQ = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -60,12 +66,16 @@ class Ui_Dialog(object):
         self.labelQ.setFont(font)
         self.labelQ.setAlignment(QtCore.Qt.AlignCenter)
         self.labelQ.setObjectName("labelQ")
-        self.layoutDistances.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelQ)
+        self.layoutDistances.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelQ
+        )
         self.lineeditQ = QtWidgets.QLineEdit(Dialog)
         self.lineeditQ.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditQ.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditQ.setObjectName("lineeditQ")
-        self.layoutDistances.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.lineeditQ)
+        self.layoutDistances.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.lineeditQ
+        )
         self.labelR = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -75,12 +85,16 @@ class Ui_Dialog(object):
         self.labelR.setFont(font)
         self.labelR.setAlignment(QtCore.Qt.AlignCenter)
         self.labelR.setObjectName("labelR")
-        self.layoutDistances.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelR)
+        self.layoutDistances.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelR
+        )
         self.lineeditR = QtWidgets.QLineEdit(Dialog)
         self.lineeditR.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditR.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditR.setObjectName("lineeditR")
-        self.layoutDistances.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lineeditR)
+        self.layoutDistances.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.lineeditR
+        )
         self.labelS = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -90,12 +104,16 @@ class Ui_Dialog(object):
         self.labelS.setFont(font)
         self.labelS.setAlignment(QtCore.Qt.AlignCenter)
         self.labelS.setObjectName("labelS")
-        self.layoutDistances.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelS)
+        self.layoutDistances.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelS
+        )
         self.lineeditS = QtWidgets.QLineEdit(Dialog)
         self.lineeditS.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditS.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditS.setObjectName("lineeditS")
-        self.layoutDistances.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.lineeditS)
+        self.layoutDistances.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.lineeditS
+        )
         self.labelT = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -105,7 +123,9 @@ class Ui_Dialog(object):
         self.labelT.setFont(font)
         self.labelT.setAlignment(QtCore.Qt.AlignCenter)
         self.labelT.setObjectName("labelT")
-        self.layoutDistances.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.labelT)
+        self.layoutDistances.setWidget(
+            4, QtWidgets.QFormLayout.LabelRole, self.labelT
+        )
         self.labelU = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -115,19 +135,30 @@ class Ui_Dialog(object):
         self.labelU.setFont(font)
         self.labelU.setAlignment(QtCore.Qt.AlignCenter)
         self.labelU.setObjectName("labelU")
-        self.layoutDistances.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.labelU)
+        self.layoutDistances.setWidget(
+            5, QtWidgets.QFormLayout.LabelRole, self.labelU
+        )
         self.lineeditU = QtWidgets.QLineEdit(Dialog)
         self.lineeditU.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditU.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditU.setObjectName("lineeditU")
-        self.layoutDistances.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.lineeditU)
+        self.layoutDistances.setWidget(
+            5, QtWidgets.QFormLayout.FieldRole, self.lineeditU
+        )
         self.lineeditT = QtWidgets.QLineEdit(Dialog)
         self.lineeditT.setMaximumSize(QtCore.QSize(100, 16777215))
         self.lineeditT.setAlignment(QtCore.Qt.AlignCenter)
         self.lineeditT.setObjectName("lineeditT")
-        self.layoutDistances.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.lineeditT)
+        self.layoutDistances.setWidget(
+            4, QtWidgets.QFormLayout.FieldRole, self.lineeditT
+        )
         self.l.addLayout(self.layoutDistances, 2, 2, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding,
+        )
         self.l.addItem(spacerItem, 8, 2, 1, 1)
         self.layoutCoordinates = QtWidgets.QFormLayout()
         self.layoutCoordinates.setObjectName("layoutCoordinates")
@@ -140,7 +171,9 @@ class Ui_Dialog(object):
         self.labelX1Y1.setFont(font)
         self.labelX1Y1.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX1Y1.setObjectName("labelX1Y1")
-        self.layoutCoordinates.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.labelX1Y1)
+        self.layoutCoordinates.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.labelX1Y1
+        )
         self.labelX1Y1value = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -148,7 +181,9 @@ class Ui_Dialog(object):
         self.labelX1Y1value.setFont(font)
         self.labelX1Y1value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX1Y1value.setObjectName("labelX1Y1value")
-        self.layoutCoordinates.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.labelX1Y1value)
+        self.layoutCoordinates.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.labelX1Y1value
+        )
         self.labelX2Y2 = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -158,7 +193,9 @@ class Ui_Dialog(object):
         self.labelX2Y2.setFont(font)
         self.labelX2Y2.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX2Y2.setObjectName("labelX2Y2")
-        self.layoutCoordinates.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.labelX2Y2)
+        self.layoutCoordinates.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.labelX2Y2
+        )
         self.labelX2Y2value = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -166,7 +203,9 @@ class Ui_Dialog(object):
         self.labelX2Y2value.setFont(font)
         self.labelX2Y2value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX2Y2value.setObjectName("labelX2Y2value")
-        self.layoutCoordinates.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.labelX2Y2value)
+        self.layoutCoordinates.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.labelX2Y2value
+        )
         self.labelX3Y3 = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -176,7 +215,9 @@ class Ui_Dialog(object):
         self.labelX3Y3.setFont(font)
         self.labelX3Y3.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX3Y3.setObjectName("labelX3Y3")
-        self.layoutCoordinates.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.labelX3Y3)
+        self.layoutCoordinates.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.labelX3Y3
+        )
         self.labelX3Y3value = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -184,7 +225,9 @@ class Ui_Dialog(object):
         self.labelX3Y3value.setFont(font)
         self.labelX3Y3value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX3Y3value.setObjectName("labelX3Y3value")
-        self.layoutCoordinates.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.labelX3Y3value)
+        self.layoutCoordinates.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.labelX3Y3value
+        )
         self.labelX4Y4 = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -194,7 +237,9 @@ class Ui_Dialog(object):
         self.labelX4Y4.setFont(font)
         self.labelX4Y4.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX4Y4.setObjectName("labelX4Y4")
-        self.layoutCoordinates.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.labelX4Y4)
+        self.layoutCoordinates.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.labelX4Y4
+        )
         self.labelX4Y4value = QtWidgets.QLabel(Dialog)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -202,7 +247,9 @@ class Ui_Dialog(object):
         self.labelX4Y4value.setFont(font)
         self.labelX4Y4value.setAlignment(QtCore.Qt.AlignCenter)
         self.labelX4Y4value.setObjectName("labelX4Y4value")
-        self.layoutCoordinates.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.labelX4Y4value)
+        self.layoutCoordinates.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.labelX4Y4value
+        )
         self.l.addLayout(self.layoutCoordinates, 4, 2, 1, 1)
         self.line = QtWidgets.QFrame(Dialog)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
@@ -215,14 +262,16 @@ class Ui_Dialog(object):
         self.gridLayout_2.addLayout(self.l, 0, 0, 1, 1)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(Dialog.reject) # type: ignore
+        self.buttonBox.accepted.connect(Dialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(Dialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Dialog)
         Dialog.setTabOrder(self.lineeditP, self.lineeditQ)
         Dialog.setTabOrder(self.lineeditQ, self.lineeditR)
@@ -230,12 +279,16 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.lineeditS, self.lineeditT)
         Dialog.setTabOrder(self.lineeditT, self.lineeditU)
         Dialog.setTabOrder(self.lineeditU, self.buttonComputeCoordinates)
-        Dialog.setTabOrder(self.buttonComputeCoordinates, self.buttonWriteCSVFile)
+        Dialog.setTabOrder(
+            self.buttonComputeCoordinates, self.buttonWriteCSVFile
+        )
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.buttonComputeCoordinates.setText(_translate("Dialog", "Compute Coordinates"))
+        self.buttonComputeCoordinates.setText(
+            _translate("Dialog", "Compute Coordinates")
+        )
         self.labelP.setText(_translate("Dialog", "p"))
         self.labelQ.setText(_translate("Dialog", "q"))
         self.labelR.setText(_translate("Dialog", "r"))
@@ -255,6 +308,7 @@ class Ui_Dialog(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()

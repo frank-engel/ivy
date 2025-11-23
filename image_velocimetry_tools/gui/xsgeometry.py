@@ -17,10 +17,14 @@ from areacomp.gui.plots.plotbathymetry import BathymetryPlot
 from areacomp.gui.plots.plotcharratings import RatingChar
 from areacomp.gui.projectdata import ProjectData
 from areacomp.gui.selectcircuitstouse import SelectCircuits
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5 import (
+    NavigationToolbar2QT as NavigationToolbar,
+)
 
 from image_velocimetry_tools.common_functions import units_conversion
-from image_velocimetry_tools.services.cross_section_service import CrossSectionService
+from image_velocimetry_tools.services.cross_section_service import (
+    CrossSectionService,
+)
 
 
 # ToDo Add table to the gui to display grid line data in the bathymetry tab
@@ -40,7 +44,9 @@ class CrossSectionGeometry:
         self.xs_service = CrossSectionService()
 
         # Connect action for loading AreaComp3 files.
-        self.parent.actionImport_Bathymetry.triggered.connect(self.load_areacomp)
+        self.parent.actionImport_Bathymetry.triggered.connect(
+            self.load_areacomp
+        )
 
         # Connect signals from the IVy parent app
         self.parent.signal_wse_changed.connect(self.ivy_wse_changed)
@@ -49,14 +55,20 @@ class CrossSectionGeometry:
         self.ivy_xs_tab_index = 3  # Index location for tabCrossSectionGeometry
 
         # signals for sub surveys
-        self.parent.stage_lineEdit.editingFinished.connect(self.update_stage_offset)
+        self.parent.stage_lineEdit.editingFinished.connect(
+            self.update_stage_offset
+        )
         self.parent.start_station_lineEdit.editingFinished.connect(
             self.update_starting_station
         )
-        self.parent.cb_file_name.currentIndexChanged.connect(self.update_survey_offsets)
+        self.parent.cb_file_name.currentIndexChanged.connect(
+            self.update_survey_offsets
+        )
         self.parent.pb_subsurvey_delete.clicked.connect(self.remove_sub_survey)
         self.parent.pb_flip.clicked.connect(self.change_survey_start)
-        self.parent.pb_xs_subsurvey_import.clicked.connect(self.load_sub_survey)
+        self.parent.pb_xs_subsurvey_import.clicked.connect(
+            self.load_sub_survey
+        )
 
         self.parent.tableCrossSectionCharacteristics.cellDoubleClicked.connect(
             self.edit_manning_n
@@ -67,7 +79,9 @@ class CrossSectionGeometry:
         self.parent.delete_pushButton.clicked.connect(self.delete_station)
 
         # signal for computation stage change
-        self.parent.char_stage_sb.editingFinished.connect(self.update_char_stage)
+        self.parent.char_stage_sb.editingFinished.connect(
+            self.update_char_stage
+        )
 
         # subsection signals
         self.parent.add_section_pb.clicked.connect(self.add_subsection)
@@ -87,7 +101,9 @@ class CrossSectionGeometry:
         self.parent.pb_bathymetry_home.clicked.connect(self.bathy_plot_home)
         self.parent.pb_bathymetry_zoom.clicked.connect(self.bathy_plot_zoom)
         self.parent.pb_bathymetry_pan.clicked.connect(self.bathy_plot_pan)
-        self.parent.pb_bathymetry_picker.clicked.connect(self.bathy_plot_data_cursor)
+        self.parent.pb_bathymetry_picker.clicked.connect(
+            self.bathy_plot_data_cursor
+        )
 
         self.parent.bathy_rb.clicked.connect(self.create_bathy_plot)
         self.parent.area_rb.clicked.connect(self.check_bathy_rb)
@@ -141,17 +157,23 @@ class CrossSectionGeometry:
             )
             shutil.copy(fname, destination_path)
         except Exception as e:
-            self.parent.update_statusbar(f"Failed to save calibration image: {e}")
+            self.parent.update_statusbar(
+                f"Failed to save calibration image: {e}"
+            )
 
         # try to load the matlab file.
         try:
-            self.xs_survey.load_areacomp(fname, units=self.parent.display_units)
+            self.xs_survey.load_areacomp(
+                fname, units=self.parent.display_units
+            )
             self.update_backend()
             self.update_subsurvey_cb()
 
             # If we got here, we have loaded bathy data, go ahead and enable
             # the Cross-Section Geometry Tab
-            self.parent.set_qwidget_state_by_name("tabCrossSectionGeometry", True)
+            self.parent.set_qwidget_state_by_name(
+                "tabCrossSectionGeometry", True
+            )
 
             # Also, go ahead and set a xs_line top width
             top_width = float(self.xs_survey.channel_char.Top_Width[0])
@@ -161,7 +183,9 @@ class CrossSectionGeometry:
 
             # Attempt to set the WSE based on the IVy WSE
             self.xs_survey.stage = self.parent.ortho_rectified_wse_m * 3.281
-            self.xs_survey.max_stage = self.parent.ortho_rectified_wse_m * 3.281
+            self.xs_survey.max_stage = (
+                self.parent.ortho_rectified_wse_m * 3.281
+            )
             self.update_backend()
 
             # Assign channel char out to the parent
@@ -170,13 +194,19 @@ class CrossSectionGeometry:
             self.parent.is_area_comp_loaded = True
             self.parent.toolBox_bathymetry.setEnabled(True)
 
-        except BaseException:
+        except BaseException as e:
             # Trigger message if file fails to load. This could result is
             # the file was not an AreaComp3 file.
 
+            # Log the actual error for debugging
+            logging.error(
+                f"Failed to load AreaComp file: {fname}", exc_info=True
+            )
+
             msg = QtWidgets.QMessageBox()
             msg.setInformativeText(
-                "File failed to load. \nPlease verify the " "file was an AreaComp file."
+                f"File failed to load. \nPlease verify the file was an AreaComp file.\n\n"
+                f"Error details: {type(e).__name__}: {str(e)}"
             )
             msg.setWindowTitle("Error")
             msg.setIcon(QtWidgets.QMessageBox.Critical)
@@ -228,7 +258,9 @@ class CrossSectionGeometry:
 
                 if len(choose_circuits.final_circuits) > 0:
                     self.xs_survey.load_svmaq_survey(
-                        fname, choose_circuits.final_circuits, units=select.units
+                        fname,
+                        choose_circuits.final_circuits,
+                        units=select.units,
                     )
 
             elif select.file_type == "sontek" or select.file_type == "trdi":
@@ -402,14 +434,18 @@ class CrossSectionGeometry:
                 tbl.setItem(
                     row,
                     0,
-                    QtWidgets.QTableWidgetItem(str(self.xs_survey.survey_info[row][0])),
+                    QtWidgets.QTableWidgetItem(
+                        str(self.xs_survey.survey_info[row][0])
+                    ),
                 )
 
                 # populate type
                 tbl.setItem(
                     row,
                     1,
-                    QtWidgets.QTableWidgetItem(str(self.xs_survey.survey_info[row][1])),
+                    QtWidgets.QTableWidgetItem(
+                        str(self.xs_survey.survey_info[row][1])
+                    ),
                 )
 
                 # populate start station
@@ -496,7 +532,9 @@ class CrossSectionGeometry:
             return
 
         tbl.setRowCount(self.xs_survey.survey.shape[0])
-        duplicates = self.xs_survey.check_for_duplicate_stations(self.xs_survey.survey)
+        duplicates = self.xs_survey.check_for_duplicate_stations(
+            self.xs_survey.survey
+        )
         dups = duplicates.index.tolist()
 
         # convert data frame to array then populate table
@@ -505,11 +543,15 @@ class CrossSectionGeometry:
                 # populate stations
                 station = self.xs_survey.survey.iloc[row]["Stations"]
                 tbl.setItem(
-                    row, 0, QtWidgets.QTableWidgetItem("{:.3f}".format(station))
+                    row,
+                    0,
+                    QtWidgets.QTableWidgetItem("{:.3f}".format(station)),
                 )
                 if dups:
                     if row in dups:
-                        tbl.item(row, 0).setBackground(QtGui.QColor(255, 255, 51))
+                        tbl.item(row, 0).setBackground(
+                            QtGui.QColor(255, 255, 51)
+                        )
                         # tbl.item(row, 0).setFont(self.parent.font_bold)
                         msg.append(str(station))
 
@@ -562,8 +604,12 @@ class CrossSectionGeometry:
         for col in range(len(headers)):
             item = tbl.horizontalHeaderItem(col)
             if item.text() in e_cols:
-                tbl.horizontalHeaderItem(col).setForeground(QtGui.QColor(0, 0, 255))
-                tbl.horizontalHeaderItem(col).setToolTip("Doubleclick cells to edit.")
+                tbl.horizontalHeaderItem(col).setForeground(
+                    QtGui.QColor(0, 0, 255)
+                )
+                tbl.horizontalHeaderItem(col).setToolTip(
+                    "Doubleclick cells to edit."
+                )
 
         # populate table if data is present
         if self.xs_survey.channel_char.shape[0] > 0:
@@ -604,7 +650,9 @@ class CrossSectionGeometry:
                     row,
                     3,
                     QtWidgets.QTableWidgetItem(
-                        "{:.2f}".format(self.xs_survey.channel_char.iloc[row]["Area"])
+                        "{:.2f}".format(
+                            self.xs_survey.channel_char.iloc[row]["Area"]
+                        )
                     ),
                 )
 
@@ -613,7 +661,9 @@ class CrossSectionGeometry:
                     4,
                     QtWidgets.QTableWidgetItem(
                         "{:.2f}".format(
-                            self.xs_survey.channel_char.iloc[row]["Percent_Area"]
+                            self.xs_survey.channel_char.iloc[row][
+                                "Percent_Area"
+                            ]
                         )
                     ),
                 )
@@ -623,7 +673,9 @@ class CrossSectionGeometry:
                     5,
                     QtWidgets.QTableWidgetItem(
                         "{:.2f}".format(
-                            self.xs_survey.channel_char.iloc[row]["Wetted_Perimeter"]
+                            self.xs_survey.channel_char.iloc[row][
+                                "Wetted_Perimeter"
+                            ]
                         )
                     ),
                 )
@@ -653,13 +705,17 @@ class CrossSectionGeometry:
                     8,
                     QtWidgets.QTableWidgetItem(
                         "{:.2f}".format(
-                            self.xs_survey.channel_char.iloc[row]["Hydraulic_Radius"]
+                            self.xs_survey.channel_char.iloc[row][
+                                "Hydraulic_Radius"
+                            ]
                         )
                     ),
                 )
 
                 if (
-                    np.isnan(self.xs_survey.channel_char.iloc[row]["ManningsN"])
+                    np.isnan(
+                        self.xs_survey.channel_char.iloc[row]["ManningsN"]
+                    )
                     or row == 0
                 ):
                     value = ""
@@ -721,7 +777,9 @@ class CrossSectionGeometry:
             plot_layout.setContentsMargins(1, 1, 1, 1)
             self.bathy_plot_canvas = MplCanvas(self.parent.label)
             plot_layout.addWidget(self.bathy_plot_canvas)
-            self.bathy_plot_tb = NavigationToolbar(self.bathy_plot_canvas, self.parent)
+            self.bathy_plot_tb = NavigationToolbar(
+                self.bathy_plot_canvas, self.parent
+            )
             self.bathy_plot_tb.hide()
 
         # Initiate the plot
@@ -739,7 +797,9 @@ class CrossSectionGeometry:
             units=self.parent.display_units,
         )
 
-        self.bathy_plot_fig.set_survey_tbl(self.parent.tableCrossSectionBathymetry)
+        self.bathy_plot_fig.set_survey_tbl(
+            self.parent.tableCrossSectionBathymetry
+        )
 
         # Draw canvas
         self.bathy_plot_canvas.draw()
@@ -755,7 +815,9 @@ class CrossSectionGeometry:
             plot_layout.setContentsMargins(1, 1, 1, 1)
             self.bathy_plot_canvas = MplCanvas(self.parent.label)
             plot_layout.addWidget(self.bathy_plot_canvas)
-            self.bathy_plot_tb = NavigationToolbar(self.bathy_plot_canvas, self.parent)
+            self.bathy_plot_tb = NavigationToolbar(
+                self.bathy_plot_canvas, self.parent
+            )
             self.bathy_plot_tb.hide()
 
         self.bathy_plot_canvas.figure.clear()
@@ -891,7 +953,9 @@ class CrossSectionGeometry:
         units = self.parent.display_units
 
         # get pixel distance
-        point_extents = self.parent.rectified_xs_image.lines_ndarray().reshape(2, 2)
+        point_extents = self.parent.rectified_xs_image.lines_ndarray().reshape(
+            2, 2
+        )
 
         # combine passes points with grid extends then project
         new_arr = np.insert(point_extents, 1, points, axis=0)
@@ -996,7 +1060,12 @@ class CrossSectionGeometry:
         )
 
     def find_station_for_adj_stage(
-        self, stations, adjusted_stages, target_adj_stage, mode="all", epsilon=1e-1
+        self,
+        stations,
+        adjusted_stages,
+        target_adj_stage,
+        mode="all",
+        epsilon=1e-1,
     ):
         """
         Calculate the station values for a specified Adjusted Stage using linear interpolation.
@@ -1023,7 +1092,11 @@ class CrossSectionGeometry:
             A list of station values where the adjusted stage intersects the target adjusted stage.
         """
         return self.xs_service.find_station_crossings(
-            stations, adjusted_stages, target_adj_stage, mode=mode, epsilon=epsilon
+            stations,
+            adjusted_stages,
+            target_adj_stage,
+            mode=mode,
+            epsilon=epsilon,
         )
 
     def update_char_stage(self):
@@ -1105,7 +1178,12 @@ class CrossSectionGeometry:
             self.xs_survey.sub_section_chars()
 
             self.change.update(
-                {"bathymetry": True, "plot": True, "sub-survey": True, "char": True}
+                {
+                    "bathymetry": True,
+                    "plot": True,
+                    "sub-survey": True,
+                    "char": True,
+                }
             )
 
             # call code to update gui

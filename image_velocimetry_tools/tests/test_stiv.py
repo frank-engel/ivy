@@ -43,7 +43,9 @@ class TestSTIV(unittest.TestCase):
         y_data = self.matlab_results["yGrid"]
         magMax_data = self.matlab_results["magMax"]
         # Direction in geo angle
-        phiMax_data = arithmetic_to_geographic(-1 * self.matlab_results["phiMax"])
+        phiMax_data = arithmetic_to_geographic(
+            -1 * self.matlab_results["phiMax"]
+        )
 
         # Ensure they have the expected shape (575, 1)
         assert x_data.shape == (575, 1)
@@ -56,8 +58,9 @@ class TestSTIV(unittest.TestCase):
 
         # Randomly sample ~10% (around 57 points)
         sample_size = int(0.1 * x_data.shape[0])  # 10% of 575
-        self.sample_indices = np.random.choice(x_data.shape[0], sample_size,
-                                               replace=False)
+        self.sample_indices = np.random.choice(
+            x_data.shape[0], sample_size, replace=False
+        )
 
         # Store sampled values for easy access
         self.sample_x = x_data[self.sample_indices]
@@ -86,7 +89,9 @@ class TestSTIV(unittest.TestCase):
             If the input arrays have different types or sizes.
         """
         if expected.shape != actual.shape or expected.dtype != actual.dtype:
-            raise AssertionError("Input arrays must have the same shape and data type.")
+            raise AssertionError(
+                "Input arrays must have the same shape and data type."
+            )
 
         diff = np.abs(expected - actual)
         max_diff = np.max(diff)
@@ -182,23 +187,26 @@ class TestSTIV(unittest.TestCase):
             dir_all_rad = np.radians(dir_all)
             directions_rad = np.radians(geographic_to_arithmetic(directions))
             image = plt.imread(self.image_paths[0])
-            scale_factor = max(np.max(self.matlab_results["magMax"]), np.max(
-                magnitudes))  # Normalize based on max magnitude
+            scale_factor = max(
+                np.max(self.matlab_results["magMax"]), np.max(magnitudes)
+            )  # Normalize based on max magnitude
             plt.imshow(image)
             plt.quiver(
                 self.matlab_results["xGrid"].astype(float),
                 self.matlab_results["yGrid"].astype(float),
-                self.matlab_results["magMax"] * np.cos(
-                    dir_all_rad) / scale_factor,
-                -1 * (self.matlab_results["magMax"] * -np.sin(
-                    dir_all_rad)) / scale_factor,
+                self.matlab_results["magMax"]
+                * np.cos(dir_all_rad)
+                / scale_factor,
+                -1
+                * (self.matlab_results["magMax"] * -np.sin(dir_all_rad))
+                / scale_factor,
                 # negated b/c imshow origin is upper left, not lower left
-                color='k',
+                color="k",
                 scale=1e-2,
-                scale_units='xy',
+                scale_units="xy",
                 width=2e-3,  # Ensure consistent arrow width
                 headwidth=4,
-                headlength=6
+                headlength=6,
             )
             plt.quiver(
                 self.sample_x.astype(float),
@@ -206,12 +214,12 @@ class TestSTIV(unittest.TestCase):
                 magnitudes * np.cos(directions_rad) / scale_factor,
                 -1 * (magnitudes * -np.sin(directions_rad)) / scale_factor,
                 # negated b/c imshow origin is upper left, not lower left
-                color='y',
+                color="y",
                 scale=1e-2,
-                scale_units='xy',
+                scale_units="xy",
                 width=2e-3,  # Ensure consistent arrow width
                 headwidth=4,
-                headlength=6
+                headlength=6,
             )
             plt.show()
 
@@ -251,23 +259,26 @@ class TestSTIV(unittest.TestCase):
             dir_all_rad = np.radians(dir_all)
             directions_rad = np.radians(geographic_to_arithmetic(directions))
             image = plt.imread(self.image_paths[0])
-            scale_factor = max(np.max(self.matlab_results["magMax"]), np.max(
-                magnitudes))  # Normalize based on max magnitude
+            scale_factor = max(
+                np.max(self.matlab_results["magMax"]), np.max(magnitudes)
+            )  # Normalize based on max magnitude
             plt.imshow(image)
             plt.quiver(
                 self.matlab_results["xGrid"].astype(float),
                 self.matlab_results["yGrid"].astype(float),
-                self.matlab_results["magMax"] * np.cos(
-                    dir_all_rad) / scale_factor,
-                -1 * (self.matlab_results["magMax"] * -np.sin(
-                    dir_all_rad)) / scale_factor,
+                self.matlab_results["magMax"]
+                * np.cos(dir_all_rad)
+                / scale_factor,
+                -1
+                * (self.matlab_results["magMax"] * -np.sin(dir_all_rad))
+                / scale_factor,
                 # negated b/c imshow origin is upper left, not lower left
-                color='k',
+                color="k",
                 scale=1e-2,
-                scale_units='xy',
+                scale_units="xy",
                 width=2e-3,  # Ensure consistent arrow width
                 headwidth=4,
-                headlength=6
+                headlength=6,
             )
             plt.quiver(
                 self.sample_x.astype(float),
@@ -275,12 +286,12 @@ class TestSTIV(unittest.TestCase):
                 magnitudes * np.cos(directions_rad) / scale_factor,
                 -1 * (magnitudes * -np.sin(directions_rad)) / scale_factor,
                 # negated b/c imshow origin is upper left, not lower left
-                color='y',
+                color="y",
                 scale=1e-2,
-                scale_units='xy',
+                scale_units="xy",
                 width=2e-3,  # Ensure consistent arrow width
                 headwidth=4,
-                headlength=6
+                headlength=6,
             )
             plt.show()
 

@@ -1,5 +1,4 @@
-"""Module for creating the IVy Tools PDF Summary Report
-"""
+"""Module for creating the IVy Tools PDF Summary Report"""
 
 import getpass
 import io
@@ -27,7 +26,10 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from image_velocimetry_tools.common_functions import resource_path, units_conversion
+from image_velocimetry_tools.common_functions import (
+    resource_path,
+    units_conversion,
+)
 
 
 class Report:
@@ -76,11 +78,16 @@ class Report:
             Object of SimpleDocTemplate, required
         """
 
-        icon = resource_path(self.parent.__icon_path__ + os.sep + "IVy_logo.png")
+        icon = resource_path(
+            self.parent.__icon_path__ + os.sep + "IVy_logo.png"
+        )
         self.tr("IVy Tools Summary")
 
         logo = Image(icon, width=30, height=30)
-        title = "<font size=14><b>IVy Tools Discharge " "Measurement Report</b></font>"
+        title = (
+            "<font size=14><b>IVy Tools Discharge "
+            "Measurement Report</b></font>"
+        )
 
         # Logo
         logo.wrapOn(page, self.width, self.height)
@@ -200,7 +207,9 @@ class Report:
         idx = self.parent.comboboxUserRating.currentIndex()
         value = self.parent.comboboxUserRating.itemText(idx)
         ptext = (
-            "<font size = 10><b>" + self.tr("User Rating:") + f"</b> {value} </font>"
+            "<font size = 10><b>"
+            + self.tr("User Rating:")
+            + f"</b> {value} </font>"
         )
         p = Paragraph(ptext, self.styles["Normal"])
         p.wrapOn(page, self.width, self.height)
@@ -208,7 +217,9 @@ class Report:
 
         # Saved
         ptext = (
-            "<font size = 10> <b>" + self.tr("Processed:") + f"</b> {self.saved}</font>"
+            "<font size = 10> <b>"
+            + self.tr("Processed:")
+            + f"</b> {self.saved}</font>"
         )
         p = Paragraph(ptext, self.styles["Normal"])
         p.wrapOn(page, self.width, self.height)
@@ -249,7 +260,9 @@ class Report:
         # format header
         data = []
         for item in header:
-            data.append(self.label(self.tr(item) + "<br/>" + self.tr(" "), bold=True))
+            data.append(
+                self.label(self.tr(item) + "<br/>" + self.tr(" "), bold=True)
+            )
 
         return data
 
@@ -339,11 +352,23 @@ class Report:
             [self.tr("Clip End") + ": " + self.video["end_time"], ""],
             [self.tr("Stabilized") + ":", self.video["stabilize"]],
             [self.tr("Total Frames") + ":", self.video["frame_count"]],
-            [self.tr("Processed Frames") + ":", self.parent.extraction_num_frames],
+            [
+                self.tr("Processed Frames") + ":",
+                self.parent.extraction_num_frames,
+            ],
             [self.tr("Frame Step"), self.video["extract_frame_step"]],
-            [self.tr("Orig. fps") + ":", f"{self.video['avg_frame_rate']:.3f}"],
-            [self.tr("Orig. Step") + " (ms):", f"{self.video['avg_timestep_ms']:.3f}"],
-            [self.tr("Proc. fps") + ":", f"{self.parent.extraction_frame_rate:.3f}"],
+            [
+                self.tr("Orig. fps") + ":",
+                f"{self.video['avg_frame_rate']:.3f}",
+            ],
+            [
+                self.tr("Orig. Step") + " (ms):",
+                f"{self.video['avg_timestep_ms']:.3f}",
+            ],
+            [
+                self.tr("Proc. fps") + ":",
+                f"{self.parent.extraction_frame_rate:.3f}",
+            ],
             [
                 self.tr("Proc. Step") + " (ms):",
                 f"{self.parent.extraction_timestep_ms:.3f}",
@@ -397,8 +422,7 @@ class Report:
         data = [
             [self.tr("Discharge Summary"), ""],
             [
-                self.tr("Discharge")
-                + " {}:".format(self.units["label_Q"]),
+                self.tr("Discharge") + " {}:".format(self.units["label_Q"]),
                 f'{self.parent.discharge_summary["total_discharge"] * self.units["Q"]:.2f}',
             ],
             [self.tr("Rect. Method") + ":" + self.parent.rectification_method],
@@ -476,7 +500,11 @@ class Report:
                 f"{self.parent.channel_char['Top_Width'][0] * self.units['L']:.2f}",
                 "",
             ],
-            [self.parent.tr("Area (ft2):"), f"{self.q_summary['total_area'] * self.units['A']:.2f}", ""],
+            [
+                self.parent.tr("Area (ft2):"),
+                f"{self.q_summary['total_area'] * self.units['A']:.2f}",
+                "",
+            ],
             [
                 self.parent.tr("Hydraulic Radius (ft):"),
                 f"{self.parent.channel_char['Hydraulic_Radius'][0] * self.units['L']:.2f}",
@@ -621,7 +649,10 @@ class Report:
             leftIndent=20,
         )
         bold_style = ParagraphStyle(
-            name="Bold", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=10
+            name="Bold",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=10,
         )
         italics_style = ParagraphStyle(
             name="Italic",
@@ -661,7 +692,9 @@ class Report:
         comments_table = Table(
             data, colWidths=7.3 * inch, rowHeights=None, repeatRows=1
         )
-        comments_table.setStyle([("FONT", (0, 0), (0, 0), "Helvetica-Bold", 10)])
+        comments_table.setStyle(
+            [("FONT", (0, 0), (0, 0), "Helvetica-Bold", 10)]
+        )
 
         return [heading, Spacer(1, 12), comments_table]
 
@@ -677,15 +710,15 @@ class Report:
 
         def format_row(row):
             return [
-                int(row['ID']),  # ID as int
-                row['Status'],  # Status as string
-                round(float(row['Station Distance']) * self.units["L"], 1),
-                round(float(row['Width']) * self.units["L"], 3),
-                round(float(row['Depth']) * self.units["L"], 3),
-                round(float(row['Area']) * self.units["A"], 3),
-                round(float(row['Surface Velocity']) * self.units["V"], 3),
-                round(float(row['α (alpha)']), 2),
-                round(float(row['Unit Discharge']) * self.units["Q"], 3)
+                int(row["ID"]),  # ID as int
+                row["Status"],  # Status as string
+                round(float(row["Station Distance"]) * self.units["L"], 1),
+                round(float(row["Width"]) * self.units["L"], 3),
+                round(float(row["Depth"]) * self.units["L"], 3),
+                round(float(row["Area"]) * self.units["A"], 3),
+                round(float(row["Surface Velocity"]) * self.units["V"], 3),
+                round(float(row["α (alpha)"]), 2),
+                round(float(row["Unit Discharge"]) * self.units["Q"], 3),
             ]
 
         df = pd.DataFrame(self.q).T
@@ -718,7 +751,9 @@ class Report:
         """Save the discharge plots"""
         # Define styles
         styles = getSampleStyleSheet()
-        heading = Paragraph("Discharge and Bathymetric Plot", styles["Heading2"])
+        heading = Paragraph(
+            "Discharge and Bathymetric Plot", styles["Heading2"]
+        )
         fig = self.fig2image(
             self.parent.discharge_plot_fig, max_width=7, max_height=8, dpi=300
         )
@@ -728,7 +763,9 @@ class Report:
         """Save the STIV results"""
         # Define styles
         styles = getSampleStyleSheet()
-        heading = Paragraph("Space-Time Image Velocimetry Results", styles["Heading2"])
+        heading = Paragraph(
+            "Space-Time Image Velocimetry Results", styles["Heading2"]
+        )
 
         # Include the image with vectors
         img = self.image2reportlab(
@@ -744,16 +781,24 @@ class Report:
         )
         data = [
             ["Parameter", "Value"],
-            [f"Search Line Distance {self.units['label_L']}:",
-             f"{self.parent.stiv_search_line_length_m * self.units['L']:.2f}"],
-            ["Estimated Flow Angle (deg):",
-             f"{self.parent.stiv_phi_origin:d}"],
+            [
+                f"Search Line Distance {self.units['label_L']}:",
+                f"{self.parent.stiv_search_line_length_m * self.units['L']:.2f}",
+            ],
+            [
+                "Estimated Flow Angle (deg):",
+                f"{self.parent.stiv_phi_origin:d}",
+            ],
             ["Search Angle Range (deg):", f"{self.parent.stiv_phi_range:d}"],
             ["Search Angle Increment (deg):", f"{self.parent.stiv_dphi:.2f}"],
-            [f"Max Vel. Threshold {self.units['label_V']}:",
-             f"{self.parent.stiv_max_vel_threshold_mps * self.units['V']:.2f}"],
-            ["Gaussian Blur Strength:",
-             f"{self.parent.stiv_gaussian_blur_sigma:.1f}"],
+            [
+                f"Max Vel. Threshold {self.units['label_V']}:",
+                f"{self.parent.stiv_max_vel_threshold_mps * self.units['V']:.2f}",
+            ],
+            [
+                "Gaussian Blur Strength:",
+                f"{self.parent.stiv_gaussian_blur_sigma:.1f}",
+            ],
         ]
         stiv_settings_table = Table(
             data, colWidths=[2.0 * inch, 0.65 * inch], rowHeights=None
@@ -839,7 +884,9 @@ class Report:
                     image = self.image2reportlab(
                         pixmap.toImage(), max_width=2, max_height=2, dpi=300
                     )
-                    data[row][1] = image  # Insert the image in the second column
+                    data[row][
+                        1
+                    ] = image  # Insert the image in the second column
 
         # Create style list
         style_list = [
@@ -903,7 +950,8 @@ class Report:
         )
         sub_head_1 = Paragraph("Rectification Images", styles["Heading3"])
         sub_head_2 = Paragraph(
-            f"Projection Matrix (" f"{self.parent.rectification_method.title()})",
+            f"Projection Matrix ("
+            f"{self.parent.rectification_method.title()})",
             styles["Heading3"],
         )
 
@@ -921,10 +969,14 @@ class Report:
             dpi=300,
         )
 
-        sub_head_3 = Paragraph("Ground Control Points Table", styles["Heading3"])
+        sub_head_3 = Paragraph(
+            "Ground Control Points Table", styles["Heading3"]
+        )
 
         # Convert the dataframe to a list of lists
-        df = self.parent.qtablewidget_to_dataframe(self.parent.orthoPointsTable)
+        df = self.parent.qtablewidget_to_dataframe(
+            self.parent.orthoPointsTable
+        )
         df2 = self.parent.orthotable_dataframe
         header = df2.columns.tolist()
         header[-2] = "Use Rect?"

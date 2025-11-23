@@ -118,12 +118,18 @@ class ImageBrowserWidget(QLabel):
             types = ["*.png", "*.jpg", "*.tif"]
             if glob_pattern:
                 self.image_sequence.extend(
-                    sorted(glob.glob(self.image_folder_path + os.sep + glob_pattern))
+                    sorted(
+                        glob.glob(
+                            self.image_folder_path + os.sep + glob_pattern
+                        )
+                    )
                 )
             else:
                 for images in types:
                     self.image_sequence.extend(
-                        sorted(glob.glob(self.image_folder_path + os.sep + images))
+                        sorted(
+                            glob.glob(self.image_folder_path + os.sep + images)
+                        )
                     )
 
             # Select first image
@@ -186,7 +192,9 @@ class ImageBrowserWidget(QLabel):
     def loadNextImage(self):
         """Load the next image in the sequence of images"""
         idx = self.image_sequence_index + 1
-        if idx < len(self.image_sequence):  # we still have images we can advance
+        if idx < len(
+            self.image_sequence
+        ):  # we still have images we can advance
             self.image_file_path = self.image_sequence[idx]
             self.image_sequence_index = idx
 
@@ -205,7 +213,9 @@ class ImageBrowserTab:
     signal_previous_image = pyqtSignal(
         int
     )  # When user clicks the previous image button
-    signal_next_image = pyqtSignal(int)  # When user clicks the next image button
+    signal_next_image = pyqtSignal(
+        int
+    )  # When user clicks the next image button
 
     def __init__(self, ivy_framework):
         """Class init
@@ -236,14 +246,17 @@ class ImageBrowserTab:
     def open_image_folder(self):
         """Open a folder of images for the image browser"""
         logging.debug(
-            f"Opening folder with images with pattern: '" f"{self.glob_pattern}'"
+            f"Opening folder with images with pattern: '"
+            f"{self.glob_pattern}'"
         )
         self.sequence_index = 0
         self.sequence = []
 
         try:
-            last_imagebrowser_folder_path = self.ivy_framework.sticky_settings.get(
-                "last_imagebrowser_folder_path"
+            last_imagebrowser_folder_path = (
+                self.ivy_framework.sticky_settings.get(
+                    "last_imagebrowser_folder_path"
+                )
             )
         except KeyError:
             last_imagebrowser_folder_path = None
@@ -269,12 +282,20 @@ class ImageBrowserTab:
             types = ["*.png", "*.jpg", "*.tif"]
             if self.glob_pattern:
                 self.sequence.extend(
-                    sorted(glob.glob(os.path.join(self.folder_path, self.glob_pattern)))
+                    sorted(
+                        glob.glob(
+                            os.path.join(self.folder_path, self.glob_pattern)
+                        )
+                    )
                 )
             else:
                 for image_type in types:
                     self.sequence.extend(
-                        sorted(glob.glob(os.path.join(self.folder_path, image_type)))
+                        sorted(
+                            glob.glob(
+                                os.path.join(self.folder_path, image_type)
+                            )
+                        )
                     )
 
             if self.sequence:
@@ -324,7 +345,9 @@ class ImageBrowserTab:
                 cv_image = image_file_to_opencv_image(current_image)
                 height, width, _ = cv_image.shape
                 if self.ivy_framework.checkboxApplyClahe.isChecked():
-                    clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
+                    clip = float(
+                        self.ivy_framework.lineeditClaheClipLimit.text()
+                    )
                     horz_tile_size = int(
                         self.ivy_framework.lineeditClaheHorzTileSize.text()
                     )
@@ -379,8 +402,12 @@ class ImageBrowserTab:
         do_clahe = self.ivy_framework.checkboxApplyClahe.isChecked()
         do_auto_contrast = self.ivy_framework.checkboxAutoContrast.isChecked()
         clip = float(self.ivy_framework.lineeditClaheClipLimit.text())
-        horz_tile_size = int(self.ivy_framework.lineeditClaheHorzTileSize.text())
-        vert_tile_size = int(self.ivy_framework.lineeditClaheVertTileSize.text())
+        horz_tile_size = int(
+            self.ivy_framework.lineeditClaheHorzTileSize.text()
+        )
+        vert_tile_size = int(
+            self.ivy_framework.lineeditClaheVertTileSize.text()
+        )
         clahe_parameters = (clip, horz_tile_size, vert_tile_size)
         auto_contrast_percent = float(
             self.ivy_framework.lineeditAutoContrastPercentClip.text()
@@ -457,7 +484,9 @@ class ImageBrowserTab:
                 Instructions.POLYGON_INSTRUCTION
             )
         else:
-            self.imageBrowser.scene.set_current_instruction(Instructions.NO_INSTRUCTION)
+            self.imageBrowser.scene.set_current_instruction(
+                Instructions.NO_INSTRUCTION
+            )
             self.ivy_framework.toolbuttonCreateMask.setChecked(False)
             self.ivy_framework.toolbuttonCreateMask.repaint()
 
@@ -504,7 +533,11 @@ class ImageBrowserTab:
         row = int(y)
         column = int(x)
         logging.debug(
-            "Clicked on image pixel (row=" + str(row) + ", column=" + str(column) + ")"
+            "Clicked on image pixel (row="
+            + str(row)
+            + ", column="
+            + str(column)
+            + ")"
         )
         # x = event.pos().x() / self.ortho_original_image_zoom_factor
         # y = event.pos().y() / self.ortho_original_image_zoom_factor
@@ -526,7 +559,9 @@ class ImageBrowserTab:
             c_hsv[2] * 100,
         )  # rgb2hsl returns normalized HSL despite docs saying otherwise
         # Set the color swatch
-        self.ivy_framework.labelColorPatch.setStyleSheet(f"background-color: {c_hex}")
+        self.ivy_framework.labelColorPatch.setStyleSheet(
+            f"background-color: {c_hex}"
+        )
 
         self.current_pixel = [x, y, c_rgb, c_hex, c_hsv]
         self.selected_color_hex = c_hex

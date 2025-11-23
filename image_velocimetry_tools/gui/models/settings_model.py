@@ -33,7 +33,9 @@ class SettingsModel(BaseModel):
     @display_units.setter
     def display_units(self, value: str):
         if value not in ["English", "Metric"]:
-            raise ValueError(f"Invalid display units: {value}. Must be 'English' or 'Metric'")
+            raise ValueError(
+                f"Invalid display units: {value}. Must be 'English' or 'Metric'"
+            )
         if self._display_units != value:
             self._display_units = value
             self._units_label = value
@@ -48,7 +50,9 @@ class SettingsModel(BaseModel):
     @units_label.setter
     def units_label(self, value: str):
         if value not in ["English", "Metric"]:
-            raise ValueError(f"Invalid units label: {value}. Must be 'English' or 'Metric'")
+            raise ValueError(
+                f"Invalid units label: {value}. Must be 'English' or 'Metric'"
+            )
         if self._units_label != value:
             self._units_label = value
             self._display_units = value

@@ -7,7 +7,9 @@ from typing import Optional, Dict, Any
 from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5 import QtWidgets
 
-from image_velocimetry_tools.gui.controllers.base_controller import BaseController
+from image_velocimetry_tools.gui.controllers.base_controller import (
+    BaseController,
+)
 from image_velocimetry_tools.gui.models.project_model import ProjectModel
 from image_velocimetry_tools.services.project_service import ProjectService
 
@@ -32,7 +34,7 @@ class ProjectController(BaseController):
         self,
         main_window,
         project_model: ProjectModel,
-        project_service: ProjectService
+        project_service: ProjectService,
     ):
         """Initialize the project controller.
 
@@ -51,7 +53,9 @@ class ProjectController(BaseController):
     def _connect_signals(self):
         """Connect UI signals to controller methods and model signals to UI updates."""
         # Model signals
-        self.project_model.project_created.connect(self.on_model_project_created)
+        self.project_model.project_created.connect(
+            self.on_model_project_created
+        )
         self.project_model.project_loaded.connect(self.on_model_project_loaded)
         self.project_model.project_saved.connect(self.on_model_project_saved)
         self.project_model.project_closed.connect(self.on_model_project_closed)
@@ -132,10 +136,14 @@ class ProjectController(BaseController):
         # Extract the zip file to the swap directory
         try:
             self.project_service.extract_project_archive(
-                project_filename,
-                mw.swap_directory
+                project_filename, mw.swap_directory
             )
-        except (zipfile.BadZipFile, IOError, FileNotFoundError, ValueError) as e:
+        except (
+            zipfile.BadZipFile,
+            IOError,
+            FileNotFoundError,
+            ValueError,
+        ) as e:
             mw.warning_dialog(
                 "Error Opening Project",
                 f"An error occurred while opening the project: {str(e)}",
@@ -148,7 +156,9 @@ class ProjectController(BaseController):
         # Load the project_dict from the JSON file in the swap directory
         json_filename = os.path.join(mw.swap_directory, "project_data.json")
         try:
-            project_dict = self.project_service.load_project_from_json(json_filename)
+            project_dict = self.project_service.load_project_from_json(
+                json_filename
+            )
             project_dict["project_file_path"] = project_filename
         except (FileNotFoundError, ValueError, IOError) as e:
             mw.warning_dialog(
@@ -162,7 +172,9 @@ class ProjectController(BaseController):
 
         # Update model
         self.project_model.project_filename = project_filename
-        self.project_model.project_name = os.path.splitext(os.path.basename(project_filename))[0]
+        self.project_model.project_name = os.path.splitext(
+            os.path.basename(project_filename)
+        )[0]
 
         # Save to sticky settings
         mw.sticky_settings.set("last_project_filename", project_filename)
@@ -203,13 +215,15 @@ class ProjectController(BaseController):
             return False  # User cancelled
 
         # Ensure .ivy extension
-        if not save_filename.endswith('.ivy'):
-            save_filename += '.ivy'
+        if not save_filename.endswith(".ivy"):
+            save_filename += ".ivy"
 
         # Save project_dict to JSON in swap directory
         json_filename = os.path.join(mw.swap_directory, "project_data.json")
         try:
-            self.project_service.save_project_to_json(project_dict, json_filename)
+            self.project_service.save_project_to_json(
+                project_dict, json_filename
+            )
         except (ValueError, IOError) as e:
             mw.warning_dialog(
                 "Error Saving Project",
@@ -226,7 +240,7 @@ class ProjectController(BaseController):
                 mw.swap_directory,
                 save_filename,
                 progress_callback=None,
-                exclude_extensions=[".dat"]
+                exclude_extensions=[".dat"],
             )
         except (IOError, ValueError) as e:
             mw.warning_dialog(
@@ -240,7 +254,9 @@ class ProjectController(BaseController):
 
         # Update model
         self.project_model.project_filename = save_filename
-        self.project_model.project_name = os.path.splitext(os.path.basename(save_filename))[0]
+        self.project_model.project_name = os.path.splitext(
+            os.path.basename(save_filename)
+        )[0]
 
         # Save to sticky settings
         mw.sticky_settings.set("last_project_filename", save_filename)
@@ -303,4 +319,6 @@ class ProjectController(BaseController):
 
         # This will be implemented to restore all project state
         # For now, just log that we would load the data
-        self.logger.debug(f"Would load project dict with {len(project_dict)} keys")
+        self.logger.debug(
+            f"Would load project dict with {len(project_dict)} keys"
+        )

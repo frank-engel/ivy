@@ -51,7 +51,9 @@ def find_matches_between_two_lists(list1: list, list2: list) -> list:
     return [[pos for pos, j in enumerate(list2) if i == j] for i in list1]
 
 
-def float_seconds_to_time_string(seconds: float, precision: str = "hundredth") -> str:
+def float_seconds_to_time_string(
+    seconds: float, precision: str = "hundredth"
+) -> str:
     """Converts seconds expressed as a float to a string of the given format (e.g. SS.ss -> MM:SS.ss)."""
     only_seconds = seconds
     hours, frac_hours = divmod(seconds / 3600, 1)
@@ -77,7 +79,9 @@ def seconds_to_hhmmss(seconds: float, precision="low") -> str:
     elif precision.lower() == "high":
         return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
     else:
-        raise ValueError("Invalid precision value. Valid values are 'low' and 'high'.")
+        raise ValueError(
+            "Invalid precision value. Valid values are 'low' and 'high'."
+        )
 
 
 def hhmmss_to_seconds(timestr: str) -> float:
@@ -89,12 +93,14 @@ def hhmmss_to_seconds(timestr: str) -> float:
     Returns:
         float: the number of sections in the string as a float
     """
-    timestr = timestr.strip().replace(',',
-                                      '.')  # Support comma as decimal separator
-    parts = timestr.split(':')
+    timestr = timestr.strip().replace(
+        ",", "."
+    )  # Support comma as decimal separator
+    parts = timestr.split(":")
     if len(parts) != 3:
         raise ValueError(
-            f"Invalid time format: '{timestr}'. Expected hh:mm:ss[.sss]")
+            f"Invalid time format: '{timestr}'. Expected hh:mm:ss[.sss]"
+        )
 
     try:
         hours = int(parts[0])
@@ -103,7 +109,8 @@ def hhmmss_to_seconds(timestr: str) -> float:
         return hours * 3600 + minutes * 60 + seconds
     except ValueError as e:
         raise ValueError(
-            f"Unable to parse time string '{timestr}' to seconds: {e}")
+            f"Unable to parse time string '{timestr}' to seconds: {e}"
+        )
 
 
 def seconds_to_frame_number(seconds, fps):
@@ -115,6 +122,7 @@ def framenum_to_seconds(frame_number, fps):
     """Return the seconds timestamp of a frame given fps"""
     return frame_number / fps
 
+
 def parse_creation_time(timestamp_str):
     if not isinstance(timestamp_str, str) or not timestamp_str.strip():
         return None
@@ -124,12 +132,14 @@ def parse_creation_time(timestamp_str):
         ("%Y%m%dT%H%M%S.%f", r"\d{8}T\d{6}\.\d+"),
         ("%Y%m%dT%H%M%S", r"\d{8}T\d{6}"),
         (
-        "%Y-%m-%dT%H:%M:%S.%fZ", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z"),
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z",
+        ),
         ("%Y-%m-%dT%H:%M:%SZ", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"),
         ("%Y%m%d-%H%M%S", r"20\d{6}-\d{6}"),
         ("%Y%m%d%H%M%S", r"\d{14}"),
         ("%Y%m%d", r"\d{8}"),
-        ("%b%d", r"[A-Za-z]{3}\d{1,2}")
+        ("%b%d", r"[A-Za-z]{3}\d{1,2}"),
     ]
 
     for fmt, regex in patterns:
@@ -143,6 +153,7 @@ def parse_creation_time(timestamp_str):
     # fallback to fuzzy parsing
     try:
         from dateutil import parser
+
         return parser.parse(timestamp_str, fuzzy=True)
     except Exception:
         return None
@@ -179,10 +190,13 @@ def centroid(points: np.ndarray) -> np.ndarray:
     return np.array([sum_x / length, sum_y / length])
 
 
-def scale_coordinates(coordinates: np.ndarray, scaleFactor: float = 1.0) -> list:
+def scale_coordinates(
+    coordinates: np.ndarray, scaleFactor: float = 1.0
+) -> list:
     """Scale input coordinates symmetrically by specified factor."""
     return [
-        (scaleFactor * (point[0]), scaleFactor * (point[1])) for point in coordinates
+        (scaleFactor * (point[0]), scaleFactor * (point[1]))
+        for point in coordinates
     ]
 
 
@@ -190,7 +204,10 @@ def translate_coordinates(
     coordinates: np.ndarray, translateX: float = 0, translateY: float = 0
 ) -> list:
     """Translate input coordinates by specified X and Y units."""
-    return [((point[0]) + translateX, (point[1]) + translateY) for point in coordinates]
+    return [
+        ((point[0]) + translateX, (point[1]) + translateY)
+        for point in coordinates
+    ]
 
 
 def bounding_box_naive(points: np.ndarray) -> list:
@@ -303,7 +320,10 @@ def get_normal_vectors(v1, v2, num_vectors=10):
 
     # Create the vector locations. evenly spaced points along the line
     vector_tails = np.vstack(
-        [np.linspace(v1[0], v2[0], num_vectors), np.linspace(v1[1], v2[1], num_vectors)]
+        [
+            np.linspace(v1[0], v2[0], num_vectors),
+            np.linspace(v1[1], v2[1], num_vectors),
+        ]
     ).T
 
     # Calculate the normal vectors (vector heads) for each point
@@ -358,13 +378,15 @@ def geographic_to_arithmetic(geographic_angle, signed180=False):
     Returns:
     float or ndarray: The corresponding arithmetic angle(s) in degrees.
     """
-    geographic_angle = np.where(geographic_angle < 0, 360 + geographic_angle,
-                                geographic_angle)
+    geographic_angle = np.where(
+        geographic_angle < 0, 360 + geographic_angle, geographic_angle
+    )
     arithmetic_angle = (450 - np.array(geographic_angle)) % 360
 
     if signed180:
-        arithmetic_angle = np.where(arithmetic_angle >= 180,
-                                    arithmetic_angle - 360, arithmetic_angle)
+        arithmetic_angle = np.where(
+            arithmetic_angle >= 180, arithmetic_angle - 360, arithmetic_angle
+        )
 
     return arithmetic_angle
 
@@ -582,7 +604,6 @@ def compute_vectors_with_projections(X, Y, U, V):
     if np.abs(normal_direction_geog_deg - mean_flow_dir_geog_deg) > 180:
         normal_direction_geog_deg -= 180
 
-
     # Find the unit vector in the normal direction
     # THIS IS ARITHMETIC ANGLE
     rotated_angle_ari_deg = geographic_to_arithmetic(normal_direction_geog_deg)
@@ -622,8 +643,12 @@ def compute_vectors_with_projections(X, Y, U, V):
             norm_vectors[i, 2] = rotated_u  # Image coords
             norm_vectors[i, 3] = rotated_v
 
-    tagline_dir_geog_deg = np.tile(tagline_dir_geog_deg, scalar_projections.shape)
-    mean_flow_dir_geog_deg = np.tile(mean_flow_dir_geog_deg, scalar_projections.shape)
+    tagline_dir_geog_deg = np.tile(
+        tagline_dir_geog_deg, scalar_projections.shape
+    )
+    mean_flow_dir_geog_deg = np.tile(
+        mean_flow_dir_geog_deg, scalar_projections.shape
+    )
 
     return (
         convert_to_image_frame(vectors),
@@ -703,6 +728,7 @@ def load_csv_with_numpy(csv_file_path):
 
     return headers, data
 
+
 def difference_between_angles_radians(a, b):
     """Returns the smallest difference between two angles in radians."""
     return np.arctan2(np.sin(a - b), np.cos(a - b))
@@ -731,15 +757,17 @@ def component_in_direction(magnitudes, directions_deg, tagline_angle_deg):
     perp2 = tagline_angle_rad - np.pi / 2  # 90° clockwise
 
     # Choose the perpendicular direction closer to directions_rad
-    if np.abs(difference_between_angles_radians(perp1, directions_rad)) < np.abs(
-            difference_between_angles_radians(perp2, directions_rad)):
+    if np.abs(
+        difference_between_angles_radians(perp1, directions_rad)
+    ) < np.abs(difference_between_angles_radians(perp2, directions_rad)):
         perpendicular_direction_rad = perp1
     else:
         perpendicular_direction_rad = perp2
 
     # Calculate the components of the vectors in the desired direction
-    components = magnitudes * np.cos(directions_rad -
-                                     perpendicular_direction_rad)
+    components = magnitudes * np.cos(
+        directions_rad - perpendicular_direction_rad
+    )
     return components
 
 
@@ -795,7 +823,9 @@ def set_column_contents(table: QTableWidget, column_index: int, data: dict):
         try:
             row_index = int(row)  # Convert row to an integer
         except ValueError:
-            raise ValueError(f"Row key {row} cannot be converted to an integer.")
+            raise ValueError(
+                f"Row key {row} cannot be converted to an integer."
+            )
 
         if row_index < 0 or row_index >= table.rowCount():
             raise IndexError(f"Row index {row_index} is out of range.")
@@ -816,9 +846,7 @@ def calculate_uv_components(magnitudes, directions):
     Returns:
         tuple: U and V components.
     """
-    directions_rad_ari = np.deg2rad(
-        geographic_to_arithmetic(directions)
-    )
+    directions_rad_ari = np.deg2rad(geographic_to_arithmetic(directions))
 
     # Calculate U and V components
     U = magnitudes * np.cos(directions_rad_ari)
@@ -869,4 +897,3 @@ def dict_arrays_to_list(dictionary):
         if type(dictionary[k]) == np.ndarray:
             dictionary[k] = np.array(v).tolist()
     return dictionary
-

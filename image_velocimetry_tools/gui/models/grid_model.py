@@ -41,8 +41,12 @@ class GridModel(BaseModel):
         self._line_mode: str = "line"  # "line" or "cross_section"
 
         # Grid results
-        self._results_grid: Optional[np.ndarray] = None  # Pixel coordinates (N x 2)
-        self._results_grid_world: Optional[np.ndarray] = None  # World coordinates (N x 2)
+        self._results_grid: Optional[np.ndarray] = (
+            None  # Pixel coordinates (N x 2)
+        )
+        self._results_grid_world: Optional[np.ndarray] = (
+            None  # World coordinates (N x 2)
+        )
         self._binary_mask: Optional[np.ndarray] = None  # ROI mask
 
         # Grid type flags
@@ -104,7 +108,9 @@ class GridModel(BaseModel):
     def line_mode(self, value: str):
         """Set line mode."""
         if value not in ["line", "cross_section"]:
-            raise ValueError(f"Invalid line mode: {value}. Must be 'line' or 'cross_section'")
+            raise ValueError(
+                f"Invalid line mode: {value}. Must be 'line' or 'cross_section'"
+            )
         self._line_mode = value
 
     # ==================== Grid Results Properties ====================

@@ -36,15 +36,21 @@ class ReportingTab:
 
     def connect_signals(self):
         """Connect all of the relevant signals between this class and the IVyTools instance"""
-        self.ivy_tools.stationNamelineEdit.textChanged.connect(self.station_name_change)
+        self.ivy_tools.stationNamelineEdit.textChanged.connect(
+            self.station_name_change
+        )
         self.ivy_tools.stationNumberLineEdit.textChanged.connect(
             self.station_number_change
         )
         self.ivy_tools.partyLineEdit.textChanged.connect(self.party_change)
         self.ivy_tools.weatherLineEdit.textChanged.connect(self.weather_change)
-        self.ivy_tools.gageHeightdoubleSpinBox.valueChanged.connect(self.gage_ht_change)
+        self.ivy_tools.gageHeightdoubleSpinBox.valueChanged.connect(
+            self.gage_ht_change
+        )
         self.ivy_tools.measDate.dateChanged.connect(self.meas_date_change)
-        self.ivy_tools.measStartTime.timeChanged.connect(self.start_time_change)
+        self.ivy_tools.measStartTime.timeChanged.connect(
+            self.start_time_change
+        )
         self.ivy_tools.measEndTime.timeChanged.connect(self.end_time_change)
         self.ivy_tools.measurementNumberspinBox.valueChanged.connect(
             self.meas_no_change
@@ -65,15 +71,23 @@ class ReportingTab:
             "party": "" if self.party is None else self.party,
             "weather": self.weather,
             "meas_date": (
-                self.meas_date.toString("MM/dd/yyyy") if self.meas_date else None
+                self.meas_date.toString("MM/dd/yyyy")
+                if self.meas_date
+                else None
             ),
             "meas_number": self.meas_number,
             "gage_ht": self.gage_ht,
             "start_time": (
-                self.start_time.toString("HH:mm:ss") if self.start_time else None
+                self.start_time.toString("HH:mm:ss")
+                if self.start_time
+                else None
             ),
-            "end_time": self.end_time.toString("HH:mm:ss") if self.end_time else None,
-            "mid_time": self.mid_time.toString("HH:mm:ss") if self.mid_time else None,
+            "end_time": (
+                self.end_time.toString("HH:mm:ss") if self.end_time else None
+            ),
+            "mid_time": (
+                self.mid_time.toString("HH:mm:ss") if self.mid_time else None
+            ),
             "meas_rating": self.meas_rating,
             "project_description": self.project_description,
         }

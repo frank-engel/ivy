@@ -16,7 +16,9 @@ class TestCommonFunctions(unittest.TestCase):
 
     def test_quotify_a_string_no_spaces(self):
         string = "C:/Path/No/Spaces/filename.ext"
-        self.assertEqual(quotify_a_string(string), "C:/Path/No/Spaces/filename.ext")
+        self.assertEqual(
+            quotify_a_string(string), "C:/Path/No/Spaces/filename.ext"
+        )
 
     def test_quotify_a_string_spaces(self):
         string = "C:/Path/With/Spaces Contained/In the file name.ext"
@@ -28,13 +30,15 @@ class TestCommonFunctions(unittest.TestCase):
     def test_quotify_a_string_no_spaces_single_quotes(self):
         string = "'C:/Path/No/Spaces/withSingleQuotes.ext'"
         self.assertEqual(
-            quotify_a_string(string), '"C:/Path/No/Spaces/withSingleQuotes.ext"'
+            quotify_a_string(string),
+            '"C:/Path/No/Spaces/withSingleQuotes.ext"',
         )
 
     def test_quotify_a_string_no_spaces_double_quotes(self):
         string = '"C:/Path/No/Spaces/withDoubleQuotes.ext"'
         self.assertEqual(
-            quotify_a_string(string), '"C:/Path/No/Spaces/withDoubleQuotes.ext"'
+            quotify_a_string(string),
+            '"C:/Path/No/Spaces/withDoubleQuotes.ext"',
         )
 
     def test_quotify_a_string_with_spaces(self):
@@ -57,9 +61,15 @@ class TestCommonFunctions(unittest.TestCase):
         )  # The {:d} format spec truncates, not rounds
         self.assertEqual(seconds_to_hhmmss(3600, "high"), "01:00:00.00")
         self.assertEqual(seconds_to_hhmmss(3661.4, "high"), "01:01:01.40")
-        self.assertEqual(seconds_to_hhmmss(3661.25, precision="high"), "01:01:01.25")
-        self.assertEqual(seconds_to_hhmmss(7200, precision="high"), "02:00:00.00")
-        self.assertEqual(seconds_to_hhmmss(43200.5, precision="high"), "12:00:00.50")
+        self.assertEqual(
+            seconds_to_hhmmss(3661.25, precision="high"), "01:01:01.25"
+        )
+        self.assertEqual(
+            seconds_to_hhmmss(7200, precision="high"), "02:00:00.00"
+        )
+        self.assertEqual(
+            seconds_to_hhmmss(43200.5, precision="high"), "12:00:00.50"
+        )
 
     def test_invalid_precision_str_to_float(self):
         with self.assertRaises(ValueError):
@@ -100,15 +110,21 @@ class TestCommonFunctions(unittest.TestCase):
 
     def test_hundredth_precision(self):
         self.assertEqual(
-            float_seconds_to_time_string(3661.23456, "hundredth"), "01:01:01.23"
+            float_seconds_to_time_string(3661.23456, "hundredth"),
+            "01:01:01.23",
         )
         self.assertEqual(
-            float_seconds_to_time_string(123.456789, "hundredth"), "00:02:03.46"
+            float_seconds_to_time_string(123.456789, "hundredth"),
+            "00:02:03.46",
         )
 
     def test_second_precision(self):
-        self.assertEqual(float_seconds_to_time_string(3661.23456, "second"), "01:01:01")
-        self.assertEqual(float_seconds_to_time_string(123.456789, "second"), "00:02:03")
+        self.assertEqual(
+            float_seconds_to_time_string(3661.23456, "second"), "01:01:01"
+        )
+        self.assertEqual(
+            float_seconds_to_time_string(123.456789, "second"), "00:02:03"
+        )
 
     def test_only_seconds_precision(self):
         self.assertEqual(
@@ -218,7 +234,9 @@ class TestCommonFunctions(unittest.TestCase):
             ]
         )
 
-        normals, vector_locations, distance = get_normal_vectors(v1, v2, num_vectors=15)
+        normals, vector_locations, distance = get_normal_vectors(
+            v1, v2, num_vectors=15
+        )
         # plt.quiver(vector_locations[:, 0], vector_locations[:, 1], normals[:, 0], normals[:, 1])
         # plt.show()
         assert np.allclose(normals, expected_output)
@@ -287,23 +305,29 @@ class TestCommonFunctions(unittest.TestCase):
 
         # Convert and back-convert to check consistency
         converted_arithmetic = geographic_to_arithmetic(
-            random_geographic_angles)
+            random_geographic_angles
+        )
         round_trip_geographic = arithmetic_to_geographic(converted_arithmetic)
-        np.testing.assert_almost_equal(round_trip_geographic % 360,
-                                       random_geographic_angles % 360)
+        np.testing.assert_almost_equal(
+            round_trip_geographic % 360, random_geographic_angles % 360
+        )
 
         converted_geographic = arithmetic_to_geographic(
-            random_arithmetic_angles)
+            random_arithmetic_angles
+        )
         round_trip_arithmetic = geographic_to_arithmetic(converted_geographic)
-        np.testing.assert_almost_equal(round_trip_arithmetic % 360,
-                                       random_arithmetic_angles % 360)
+        np.testing.assert_almost_equal(
+            round_trip_arithmetic % 360, random_arithmetic_angles % 360
+        )
 
     def test_load_mat_file(self):
         mat_file = "./img_seq_welton_main_drain/welton_main_drain_matlab_stiv_exuasitve_resutls.mat"
         loaded_variables = load_mat_file(mat_file)
 
         # Assert that the loaded variables match the expected values
-        np.testing.assert_array_equal(loaded_variables["pixSize"], np.array(0.0061))
+        np.testing.assert_array_equal(
+            loaded_variables["pixSize"], np.array(0.0061)
+        )
         self.assertEqual(loaded_variables["__version__"], "1.0")
 
     #
@@ -368,6 +392,7 @@ class TestParseCreationTime(unittest.TestCase):
         expected = datetime(2023, 2, 1, 12, 0)
         self.assertEqual(parse_creation_time(ts), expected)
 
+
 class TestCreateGrayscaleImageStack(unittest.TestCase):
     # Define a setup method to prepare any necessary resources or data for the tests
     def setUp(self):
@@ -391,7 +416,8 @@ class TestCreateGrayscaleImageStack(unittest.TestCase):
 
     def test_image_stack_shape(self):
         image_paths = [
-            os.path.join(self.temp_dir, f"test_image_{i}.jpg") for i in range(3)
+            os.path.join(self.temp_dir, f"test_image_{i}.jpg")
+            for i in range(3)
         ]
         image_stack = create_grayscale_image_stack(image_paths)
         self.assertEqual(
@@ -400,7 +426,8 @@ class TestCreateGrayscaleImageStack(unittest.TestCase):
 
     def test_image_stack_dtype(self):
         image_paths = [
-            os.path.join(self.temp_dir, f"test_image_{i}.jpg") for i in range(3)
+            os.path.join(self.temp_dir, f"test_image_{i}.jpg")
+            for i in range(3)
         ]
         image_stack = create_grayscale_image_stack(image_paths)
         self.assertEqual(
@@ -409,7 +436,8 @@ class TestCreateGrayscaleImageStack(unittest.TestCase):
 
     def test_image_stack_values(self):
         image_paths = [
-            os.path.join(self.temp_dir, f"test_image_{i}.jpg") for i in range(3)
+            os.path.join(self.temp_dir, f"test_image_{i}.jpg")
+            for i in range(3)
         ]
         image_stack = create_grayscale_image_stack(image_paths)
         # Ensure that all values are within the valid grayscale range [0, 255]
@@ -549,6 +577,7 @@ class TestSetColumnContents(unittest.TestCase):
         for row, value in data.items():
             self.assertEqual(self.table.item(row, 1).text(), value)
 
+
 # I separated this to expand on the testing. CJM
 class TestComputeVectorsAngles(unittest.TestCase):
     def test_tagline_and_flow_direction(self):
@@ -586,16 +615,28 @@ class TestComputeVectorsAngles(unittest.TestCase):
 
         # tagline_dir_geog_deg and mean_flow_dir_geog_deg
         # should be arrays of identical values. I'm not sure if I am checking this correctly >:(
-        self.assertAlmostEqual(tagline_dir_geog_deg[0], 180.0, delta=1e-6,
-                               msg="Expected tagline_dir_geog_deg to be ~180° for a vertical tagline in this coordinate setup.")
+        self.assertAlmostEqual(
+            tagline_dir_geog_deg[0],
+            180.0,
+            delta=1e-6,
+            msg="Expected tagline_dir_geog_deg to be ~180° for a vertical tagline in this coordinate setup.",
+        )
 
         # Mean flow direction: U>0, V=0 => arithmetic angle is 0 deg
         # geographic is (90 - 0) % 360 => 90°.
-        self.assertAlmostEqual(mean_flow_dir_geog_deg[0], 90.0, delta=1e-6,
-                               msg="Expected mean_flow_dir_geog_deg to be ~90° for purely +X flow under this definition.")
+        self.assertAlmostEqual(
+            mean_flow_dir_geog_deg[0],
+            90.0,
+            delta=1e-6,
+            msg="Expected mean_flow_dir_geog_deg to be ~90° for purely +X flow under this definition.",
+        )
 
         # to confirm the entire arrays are the same repeating values
-        self.assertTrue(np.allclose(tagline_dir_geog_deg, 180.0, atol=1e-6),
-                        "All tagline_dir_geog_deg entries should be 180.0")
-        self.assertTrue(np.allclose(mean_flow_dir_geog_deg, 90.0, atol=1e-6),
-                        "All mean_flow_dir_geog_deg entries should be 90.0")
+        self.assertTrue(
+            np.allclose(tagline_dir_geog_deg, 180.0, atol=1e-6),
+            "All tagline_dir_geog_deg entries should be 180.0",
+        )
+        self.assertTrue(
+            np.allclose(mean_flow_dir_geog_deg, 90.0, atol=1e-6),
+            "All mean_flow_dir_geog_deg entries should be 90.0",
+        )

@@ -41,7 +41,7 @@ class GridService(BaseService):
         clean: bool = True,
         kernel_size: int = 5,
         area_threshold: float = 0.03,
-        blur_sigma: float = 1.0
+        blur_sigma: float = 1.0,
     ) -> np.ndarray:
         """Create and optionally clean a binary mask from polygons.
 
@@ -69,7 +69,9 @@ class GridService(BaseService):
         )
 
         # Create initial binary mask
-        binary_mask = create_binary_mask(mask_polygons, image_width, image_height)
+        binary_mask = create_binary_mask(
+            mask_polygons, image_width, image_height
+        )
 
         # Clean the mask if requested
         if clean:
@@ -77,7 +79,7 @@ class GridService(BaseService):
                 binary_mask,
                 kernel_size=kernel_size,
                 area_threshold=area_threshold,
-                blur_sigma=blur_sigma
+                blur_sigma=blur_sigma,
             )
             self.logger.debug("Mask cleaned")
 
@@ -90,7 +92,7 @@ class GridService(BaseService):
         vertical_spacing: int,
         horizontal_spacing: int,
         mask_polygons: Optional[List[np.ndarray]] = None,
-        clean_mask: bool = True
+        clean_mask: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate a regular computational grid.
 
@@ -123,10 +125,7 @@ class GridService(BaseService):
         # Create mask (or empty mask if no polygons)
         if mask_polygons:
             binary_mask = self.create_mask(
-                mask_polygons,
-                image_width,
-                image_height,
-                clean=clean_mask
+                mask_polygons, image_width, image_height, clean=clean_mask
             )
         else:
             binary_mask = np.ones((image_height, image_width), dtype=bool)
@@ -137,7 +136,7 @@ class GridService(BaseService):
             image_height,
             vertical_spacing,
             horizontal_spacing,
-            binary_mask
+            binary_mask,
         )
 
         self.logger.info(f"Generated {len(grid_points)} grid points")
@@ -152,7 +151,7 @@ class GridService(BaseService):
         line_end: np.ndarray,
         num_points: int,
         mask_polygons: Optional[List[np.ndarray]] = None,
-        clean_mask: bool = True
+        clean_mask: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate evenly spaced points along a line.
 
@@ -191,10 +190,7 @@ class GridService(BaseService):
         # Create mask (or empty mask if no polygons)
         if mask_polygons:
             binary_mask = self.create_mask(
-                mask_polygons,
-                image_width,
-                image_height,
-                clean=clean_mask
+                mask_polygons, image_width, image_height, clean=clean_mask
             )
         else:
             binary_mask = np.ones((image_height, image_width), dtype=bool)
@@ -206,7 +202,7 @@ class GridService(BaseService):
             line_start,
             line_end,
             num_points,
-            binary_mask
+            binary_mask,
         )
 
         self.logger.info(f"Generated {len(line_points)} line points")
@@ -214,9 +210,7 @@ class GridService(BaseService):
         return line_points, binary_mask
 
     def calculate_grid_statistics(
-        self,
-        grid_points: np.ndarray,
-        pixel_gsd: Optional[float] = None
+        self, grid_points: np.ndarray, pixel_gsd: Optional[float] = None
     ) -> Dict[str, Any]:
         """Calculate statistics about a generated grid.
 
@@ -267,7 +261,7 @@ class GridService(BaseService):
         image_width: int,
         image_height: int,
         spacing_or_num_points: int,
-        grid_type: str = "regular"
+        grid_type: str = "regular",
     ) -> List[str]:
         """Validate grid generation parameters.
 
@@ -289,8 +283,12 @@ class GridService(BaseService):
             errors.append(f"Image height must be positive, got {image_height}")
 
         if spacing_or_num_points <= 0:
-            param_name = "spacing" if grid_type == "regular" else "number of points"
-            errors.append(f"Grid {param_name} must be positive, got {spacing_or_num_points}")
+            param_name = (
+                "spacing" if grid_type == "regular" else "number of points"
+            )
+            errors.append(
+                f"Grid {param_name} must be positive, got {spacing_or_num_points}"
+            )
 
         if grid_type == "regular":
             # Check if spacing is reasonable (not larger than image)

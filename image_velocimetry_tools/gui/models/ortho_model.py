@@ -30,7 +30,9 @@ class OrthoModel(BaseModel):
     gcp_table_loaded = pyqtSignal(str)  # file_path
     gcp_table_changed = pyqtSignal()
     gcp_image_loaded = pyqtSignal(str)  # file_path
-    rectification_calculated = pyqtSignal(str)  # method: scale/homography/camera
+    rectification_calculated = pyqtSignal(
+        str
+    )  # method: scale/homography/camera
     rectification_applied = pyqtSignal()
 
     def __init__(self):
@@ -63,7 +65,9 @@ class OrthoModel(BaseModel):
         }
 
         # Rectification Method and Flags
-        self._rectification_method: Optional[str] = None  # "scale", "homography", "camera matrix"
+        self._rectification_method: Optional[str] = (
+            None  # "scale", "homography", "camera matrix"
+        )
         self._is_homography_matrix: bool = False
         self._is_camera_matrix: bool = False
 
@@ -308,8 +312,12 @@ class OrthoModel(BaseModel):
             return None, None
 
         # Assuming GCP table has columns: X_pixel, Y_pixel, X_world, Y_world, Z_world
-        pixel_coords = self._orthotable_dataframe[["X_pixel", "Y_pixel"]].to_numpy()
-        world_coords = self._orthotable_dataframe[["X_world", "Y_world", "Z_world"]].to_numpy()
+        pixel_coords = self._orthotable_dataframe[
+            ["X_pixel", "Y_pixel"]
+        ].to_numpy()
+        world_coords = self._orthotable_dataframe[
+            ["X_world", "Y_world", "Z_world"]
+        ].to_numpy()
 
         return pixel_coords, world_coords
 

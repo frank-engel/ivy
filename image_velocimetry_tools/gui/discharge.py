@@ -1,5 +1,4 @@
-"""IVy module for computing discharge
-"""
+"""IVy module for computing discharge"""
 
 import copy
 import logging
@@ -9,12 +8,19 @@ import numpy as np
 import pandas as pd
 from PyQt5 import QtWidgets, QtGui, QtCore
 from areacomp.gui.mplcanvas import MplCanvas
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5 import (
+    NavigationToolbar2QT as NavigationToolbar,
+)
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
 from matplotlib.figure import Figure
 
 from image_velocimetry_tools.gui.dischargeplot import QPlot
-from image_velocimetry_tools.gui.filesystem import TableWidgetDragRows, DataFrameModel
+from image_velocimetry_tools.gui.filesystem import (
+    TableWidgetDragRows,
+    DataFrameModel,
+)
 from image_velocimetry_tools.services.discharge_service import DischargeService
 
 global icons_path
@@ -62,18 +68,26 @@ class DischargeTab:
         self.dischargeTable.setGridStyle(1)
         self.dischargeTable.setCornerButtonEnabled(False)
         self.dischargeTable.setShowGrid(True)
-        self.dischargeTable.horizontalHeader().setBackgroundRole(QtGui.QPalette.Window)
+        self.dischargeTable.horizontalHeader().setBackgroundRole(
+            QtGui.QPalette.Window
+        )
         self.dischargeTable.selectionModel().selectionChanged.connect(
             self.table_make_all_white
         )
         self.dischargeTable.itemClicked.connect(self.table_get_item)
-        self.dischargeTable.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked)
+        self.dischargeTable.setEditTriggers(
+            QtWidgets.QAbstractItemView.DoubleClicked
+        )
         self.dischargeTable.cellChanged.connect(self.table_finished_edit)
         self.dischargeTableLineEdit = QtWidgets.QLineEdit()
         self.dischargeTableLineEdit.setToolTip("edit and press ENTER")
         self.dischargeTableLineEdit.setStatusTip("edit and press ENTER")
-        self.dischargeTableLineEdit.returnPressed.connect(self.table_update_cell)
-        self.ivy_framework.layoutDischargeStationsTable.addWidget(self.dischargeTable)
+        self.dischargeTableLineEdit.returnPressed.connect(
+            self.table_update_cell
+        )
+        self.ivy_framework.layoutDischargeStationsTable.addWidget(
+            self.dischargeTable
+        )
 
         self.ivy_framework.pushbuttonUsedInMeasurement.clicked.connect(
             self.station_type_used
@@ -104,7 +118,9 @@ class DischargeTab:
         self.dischargeTable.setColumnCount(len(headers))
         self.table_has_headers = True
         self.dischargeTable.setHorizontalHeaderLabels(headers)
-        self.dischargeTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.dischargeTable.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectRows
+        )
         self.table_is_changed = False
         self.dischargeTable.resizeColumnsToContents()
         self.dischargeTable.resizeRowsToContents()
@@ -150,11 +166,15 @@ class DischargeTab:
 
     def table_selected_row(self):
         if self.dischargeTable.selectionModel().hasSelection():
-            row = self.dischargeTable.selectionModel().selectedIndexes()[0].row()
+            row = (
+                self.dischargeTable.selectionModel().selectedIndexes()[0].row()
+            )
             return int(row)
 
     def table_selected_column(self):
-        column = self.dischargeTable.selectionModel().selectedIndexes()[0].column()
+        column = (
+            self.dischargeTable.selectionModel().selectedIndexes()[0].column()
+        )
         return int(column)
 
     def table_remove_row(self):
@@ -219,21 +239,20 @@ class DischargeTab:
 
         # Get the current discharge table
         csv_file = (
-                self.ivy_framework.swap_discharge_directory
-                + os.sep
-                + "discharge_table.csv"
+            self.ivy_framework.swap_discharge_directory
+            + os.sep
+            + "discharge_table.csv"
         )
         discharge_results_df = self.load_discharge_csv_to_dataframe(csv_file)
 
         if new_alpha is not None:
             for row_idx, alpha_value in new_alpha.items():
                 if row_idx < len(discharge_results_df):
-                    discharge_results_df.at[row_idx, 'α (alpha)'] = alpha_value
+                    discharge_results_df.at[row_idx, "α (alpha)"] = alpha_value
 
             # Save the modified DataFrame
             discharge_results_df.to_csv(csv_file, index=False)
             self.discharge_data_dataframe = discharge_results_df
-
 
         # Clear existing data in dischargeTable
         self.dischargeTable.clearContents()
@@ -245,12 +264,12 @@ class DischargeTab:
 
         # Mapping of column names to their unit keys in the `units` dictionary
         unit_column_map = {
-            'Station Distance': 'L',
-            'Width': 'L',
-            'Depth': 'L',
-            'Area': 'A',
-            'Surface Velocity': 'V',
-            'Unit Discharge': 'Q',
+            "Station Distance": "L",
+            "Width": "L",
+            "Depth": "L",
+            "Area": "A",
+            "Surface Velocity": "V",
+            "Unit Discharge": "Q",
         }
 
         self.dischargeTable.setRowCount(len(discharge_results_df))
@@ -267,7 +286,8 @@ class DischargeTab:
                         value *= units[unit_key]
                     except Exception as e:
                         print(
-                            f"Conversion error in column '{column_name}': {e}")
+                            f"Conversion error in column '{column_name}': {e}"
+                        )
 
                 # Format value based on data type
                 if dtype == "float64":
@@ -307,17 +327,20 @@ class DischargeTab:
     def station_set_type(self, m_type):
         """Update the  type of the selected stations."""
 
-        idx = set(index.row() for index in self.dischargeTable.selectedIndexes())
+        idx = set(
+            index.row() for index in self.dischargeTable.selectedIndexes()
+        )
 
         if len(idx) < 1:
             return
 
         for row in idx:
             # Update table widget
-            self.dischargeTable.setItem(row, 1,
-                                        QtWidgets.QTableWidgetItem(m_type))
+            self.dischargeTable.setItem(
+                row, 1, QtWidgets.QTableWidgetItem(m_type)
+            )
             # Update backend dataframe
-            self.discharge_data_dataframe.at[row, 'Status'] = m_type
+            self.discharge_data_dataframe.at[row, "Status"] = m_type
 
         self.compute_discharge_results()
         self.update_measurement_results_table()
@@ -339,9 +362,10 @@ class DischargeTab:
         surf_vel_column = 6
         new_alphas = {}
 
-
         if self.ivy_framework.checkboxGlobalAlphaApplySelected.isChecked():
-            idx = set(index.row() for index in self.dischargeTable.selectedIndexes())
+            idx = set(
+                index.row() for index in self.dischargeTable.selectedIndexes()
+            )
 
             if len(idx) < 1:
                 return
@@ -350,7 +374,9 @@ class DischargeTab:
 
         for row in idx:
             area = float(self.dischargeTable.item(row, area_column).text())
-            surf_vel = float(self.dischargeTable.item(row, surf_vel_column).text())
+            surf_vel = float(
+                self.dischargeTable.item(row, surf_vel_column).text()
+            )
             self.dischargeTable.setItem(
                 row, alpha_column, QtWidgets.QTableWidgetItem(f"{alpha}")
             )
@@ -363,7 +389,6 @@ class DischargeTab:
 
         self.table_load_data(new_alpha=new_alphas)
 
-
     def compute_uncertainty(self):
         """Compute discharge uncertainty - delegates to DischargeService."""
         # Delegate uncertainty computation to service
@@ -371,7 +396,7 @@ class DischargeTab:
             self.ivy_framework.discharge_results,
             self.ivy_framework.discharge_summary["total_discharge"],
             self.ivy_framework.rectification_rmse_m,
-            self.ivy_framework.cross_section_top_width_m
+            self.ivy_framework.cross_section_top_width_m,
         )
 
         # Extract uncertainty results
@@ -409,15 +434,25 @@ class DischargeTab:
 
         # Set results back to parent object
         self.ivy_framework.u_iso = uncertainty_results["u_iso"]
-        self.ivy_framework.u_iso_contribution = uncertainty_results["u_iso_contribution"]
+        self.ivy_framework.u_iso_contribution = uncertainty_results[
+            "u_iso_contribution"
+        ]
         self.ivy_framework.u_ive = uncertainty_results["u_ive"]
-        self.ivy_framework.u_ive_contribution = uncertainty_results["u_ive_contribution"]
-        self.ivy_framework.discharge_summary["ISO_uncertainty"] = u_iso["u95_q"]
-        self.ivy_framework.discharge_summary["IVE_uncertainty"] = u_ive["u95_q"]
+        self.ivy_framework.u_ive_contribution = uncertainty_results[
+            "u_ive_contribution"
+        ]
+        self.ivy_framework.discharge_summary["ISO_uncertainty"] = u_iso[
+            "u95_q"
+        ]
+        self.ivy_framework.discharge_summary["IVE_uncertainty"] = u_ive[
+            "u95_q"
+        ]
 
     def compute_discharge_results(self):
         """Compute discharge results - delegates to DischargeService."""
-        df = self.discharge_data_dataframe  # Work directly with the backend (metric) data
+        df = (
+            self.discharge_data_dataframe
+        )  # Work directly with the backend (metric) data
 
         if not df.empty:
             # Delegate discharge computation to service
@@ -436,7 +471,9 @@ class DischargeTab:
             self.compute_uncertainty()
             self.create_plot()
         else:
-            logging.error(f"update_discharge_results: no discharge data to update")
+            logging.error(
+                f"update_discharge_results: no discharge data to update"
+            )
 
     def get_station_and_depth(self):
         """Get station and depth from cross-section - delegates to DischargeService."""
@@ -446,14 +483,11 @@ class DischargeTab:
         # to it is in SI
         # Use .get() with fallback for backwards compatibility with older projects
         wse = self.ivy_framework.rectification_parameters.get(
-            "water_surface_elev",
-            self.ivy_framework.ortho_rectified_wse_m
+            "water_surface_elev", self.ivy_framework.ortho_rectified_wse_m
         )
 
         stations, depths = self.discharge_service.get_station_and_depth(
-            self.ivy_framework.xs_survey,
-            xy_pixel,
-            wse
+            self.ivy_framework.xs_survey, xy_pixel, wse
         )
 
         return stations, depths
@@ -483,14 +517,12 @@ class DischargeTab:
             what_source = "stiv"  # replace with call to check user comboBox
             if what_source == "stiv":
                 sur_vel = self.discharge_service.extract_velocity_from_stiv(
-                    self.ivy_framework.stiv,
-                    add_edge_zeros=True
+                    self.ivy_framework.stiv, add_edge_zeros=True
                 )
                 self.discharge["surf_vel"] = sur_vel
             if what_source == "stiv_opt":
                 sur_vel = self.discharge_service.extract_velocity_from_stiv(
-                    self.ivy_framework.stiv_opt,
-                    add_edge_zeros=True
+                    self.ivy_framework.stiv_opt, add_edge_zeros=True
                 )
                 # Use NaN instead of 0 for stiv_opt edges
                 sur_vel[0] = np.nan
@@ -536,9 +568,7 @@ class DischargeTab:
 
         # Compute summary statistics using service
         stats = self.discharge_service.compute_summary_statistics(
-            discharge_results,
-            total_discharge,
-            total_area
+            discharge_results, total_discharge, total_area
         )
 
         # Create DataFrame, convert values to display units here
@@ -548,8 +578,12 @@ class DischargeTab:
             "Total Area": [total_area * units["A"]],
             "Average Velocity (Q/A)": [stats["average_velocity"] * units["V"]],
             "Average Alpha": [stats["average_alpha"]],
-            "Average Surface Velocity": [stats["average_surface_velocity"] * units["V"]],
-            "Max Surface Velocity": [stats["max_surface_velocity"] * units["V"]],
+            "Average Surface Velocity": [
+                stats["average_surface_velocity"] * units["V"]
+            ],
+            "Max Surface Velocity": [
+                stats["max_surface_velocity"] * units["V"]
+            ],
         }
         df = pd.DataFrame(data)
 
@@ -597,7 +631,9 @@ class DischargeTab:
                 self.ivy_framework.labelDischargePlotsPlaceholder
             )
             plot_layout.addWidget(self.plot_canvas)
-            self.plot_tb = NavigationToolbar(self.plot_canvas, self.ivy_framework)
+            self.plot_tb = NavigationToolbar(
+                self.plot_canvas, self.ivy_framework
+            )
             self.plot_tb.hide()
 
         # get q results
@@ -616,27 +652,29 @@ class DischargeTab:
         # The used_df should be in display units
         used_df = df.loc[df["Status"] == "Used"]
         unit_column_map = {
-            'Station Distance': 'L',
-            'Width': 'L',
-            'Depth': 'L',
-            'Area': 'A',
-            'Surface Velocity': 'V',
-            'Unit Discharge': 'Q',
+            "Station Distance": "L",
+            "Width": "L",
+            "Depth": "L",
+            "Area": "A",
+            "Surface Velocity": "V",
+            "Unit Discharge": "Q",
         }
         # Convert units in-place on used_df
         for col, unit_key in unit_column_map.items():
             if col in used_df.columns:
                 used_df[col] = used_df[col].astype(float) * units[unit_key]
 
-
         total_q = np.nansum(used_df["Unit Discharge"].astype(float))
 
         # Make the plot
         self.plot_fig = QPlot(
-            canvas=self.plot_canvas, sum_tbl=self.dischargeTable, units="English"
+            canvas=self.plot_canvas,
+            sum_tbl=self.dischargeTable,
+            units="English",
         )
         self.plot_fig.load_data(
-            cross_section=self.ivy_framework.xs_survey, discharge_summary=used_df
+            cross_section=self.ivy_framework.xs_survey,
+            discharge_summary=used_df,
         )
         self.ivy_framework.discharge_plot_fig = self.plot_fig.create_plot()
 
@@ -661,7 +699,9 @@ class DischargeTab:
 
                 # Mark 'Status' as 'Not Used' where 'Unit Discharge' is "nan"
                 df["Status"].where(
-                    df["Unit Discharge"] != "nan", other="Not Used", inplace=True
+                    df["Unit Discharge"] != "nan",
+                    other="Not Used",
+                    inplace=True,
                 )
 
                 # Restore the first and last row status
@@ -671,23 +711,29 @@ class DischargeTab:
             used_df = df[df["Status"] == "Used"]
             used_index = df.index[df.index.isin(used_df.index)].to_numpy()
             existing_status = np.where(
-                np.isin(np.arange(num_stations), used_index), "Used", "Not Used"
+                np.isin(np.arange(num_stations), used_index),
+                "Used",
+                "Not Used",
             )
         else:
             existing_status = None
 
         # Delegate dataframe creation to service
-        self.discharge_data_dataframe = self.discharge_service.create_discharge_dataframe(
-            self.discharge["stations"],
-            self.discharge["depths"],
-            self.discharge["surf_vel"],
-            alpha=0.85,
-            existing_status=existing_status
+        self.discharge_data_dataframe = (
+            self.discharge_service.create_discharge_dataframe(
+                self.discharge["stations"],
+                self.discharge["depths"],
+                self.discharge["surf_vel"],
+                alpha=0.85,
+                existing_status=existing_status,
+            )
         )
 
         # Write this table to a CSV file
         csv_file = (
-            self.ivy_framework.swap_discharge_directory + os.sep + "discharge_table.csv"
+            self.ivy_framework.swap_discharge_directory
+            + os.sep
+            + "discharge_table.csv"
         )
         self.discharge_data_dataframe.to_csv(csv_file, index=False)
 
@@ -737,13 +783,17 @@ class MplCanvas(FigureCanvas):
         """
 
         # Initialize figure
-        self.figure = Figure(figsize=(width, height), tight_layout=True, dpi=dpi)
+        self.figure = Figure(
+            figsize=(width, height), tight_layout=True, dpi=dpi
+        )
 
         # Configure FigureCanvas
         FigureCanvas.__init__(self, self.figure)
         self.setParent(parent)
 
         FigureCanvas.setSizePolicy(
-            self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+            self,
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Expanding,
         )
         FigureCanvas.updateGeometry(self)

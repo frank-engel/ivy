@@ -103,10 +103,14 @@ class TestComputeDischarge(unittest.TestCase):
             0.28,
             0.0,
         ]
-        expected_area = 143.6 # From fig. 2 in TM 3-A8
+        expected_area = 143.6  # From fig. 2 in TM 3-A8
         expected_discharge = 73.39
-        result, _ = compute_discharge_midsection(dist_from_start, avg_velocities, vertical_depths)
-        self.assertAlmostEqualWithinPercentage(result, expected_discharge, percentage=1)
+        result, _ = compute_discharge_midsection(
+            dist_from_start, avg_velocities, vertical_depths
+        )
+        self.assertAlmostEqualWithinPercentage(
+            result, expected_discharge, percentage=1
+        )
 
         # Test case 2, vertical wall scenario. edge depths are 1.0 and 5.0
         dist_from_start = [0, 3, 7, 9, 10]
@@ -114,9 +118,9 @@ class TestComputeDischarge(unittest.TestCase):
         vertical_depths = [1.0, 2.0, 3.0, 4.0, 5.0]
         expected_discharge = 105.0
         expected_area = 26.0
-        discharge, area = compute_discharge_midsection(dist_from_start,
-                                                       avg_velocities,
-                                                       vertical_depths)
+        discharge, area = compute_discharge_midsection(
+            dist_from_start, avg_velocities, vertical_depths
+        )
         self.assertAlmostEqual(discharge, expected_discharge, places=2)
         self.assertAlmostEqual(area, expected_area, places=2)
 
@@ -125,7 +129,9 @@ class TestComputeDischarge(unittest.TestCase):
         avg_velocities = [1.0, 2.0, 3.0]
         vertical_depths = [1.0, 2.0, 3.0, 4.0]
         with self.assertRaises(ValueError):
-            compute_discharge_midsection(dist_from_start, avg_velocities, vertical_depths)
+            compute_discharge_midsection(
+                dist_from_start, avg_velocities, vertical_depths
+            )
 
         # Test 4: with only three points in the section.
         # The minimum for Mid-section is 3 points but the way this computes
@@ -135,9 +141,9 @@ class TestComputeDischarge(unittest.TestCase):
         cumulative_distances = [0, 1, 2]
         average_velocities = [0.0, 0.0, 0.0]
         vertical_depths = [0.0, 0.0, 0.0]
-        discharge, area = compute_discharge_midsection(cumulative_distances,
-                                                       average_velocities,
-                                                       vertical_depths)
+        discharge, area = compute_discharge_midsection(
+            cumulative_distances, average_velocities, vertical_depths
+        )
 
         # Expected results are zero since there is no depth or velocity
         self.assertEqual(discharge, 0)
@@ -150,7 +156,9 @@ class TestComputeDischarge(unittest.TestCase):
         cumulative_distances = [0, 1, 2, 3]
         average_velocities = [0.0, np.nan, 2.0, 0.0]
         vertical_depths = [0.0, 1.2, 1.5, 0.0]
-        discharge, area = compute_discharge_midsection(cumulative_distances, average_velocities, vertical_depths)
+        discharge, area = compute_discharge_midsection(
+            cumulative_distances, average_velocities, vertical_depths
+        )
 
         # NaN velocities are treated as zero -- calculated manually -- CJM
         expected_discharge = 3.0
@@ -171,17 +179,22 @@ class TestComputeDischarge(unittest.TestCase):
         expected_areas = [1.5, 7.0, 9.0, 6.0, 2.5]
         expected_unit_discharges = [3.0, 21.0, 36.0, 30.0, 15.0]
 
-        discharge, area, widths, areas, unit_discharges = compute_discharge_midsection(
-            cumulative_distances, average_velocities, vertical_depths,
-            return_details=True
+        discharge, area, widths, areas, unit_discharges = (
+            compute_discharge_midsection(
+                cumulative_distances,
+                average_velocities,
+                vertical_depths,
+                return_details=True,
+            )
         )
 
         self.assertAlmostEqual(discharge, expected_discharge, places=2)
         self.assertAlmostEqual(area, expected_area, places=2)
         np.testing.assert_almost_equal(widths, expected_widths, decimal=2)
         np.testing.assert_almost_equal(areas, expected_areas, decimal=2)
-        np.testing.assert_almost_equal(unit_discharges,
-                                       expected_unit_discharges, decimal=2)
+        np.testing.assert_almost_equal(
+            unit_discharges, expected_unit_discharges, decimal=2
+        )
 
     def test_convert_surface_velocity_rantz(self):
         surface_velocity = 2.0
@@ -193,7 +206,9 @@ class TestComputeDischarge(unittest.TestCase):
         # test case 2
         surface_velocity = np.array([2.0, 3.0, 4.0])
         alpha_val = 0.80
-        mean_velocity = convert_surface_velocity_rantz(surface_velocity, alpha_val)
+        mean_velocity = convert_surface_velocity_rantz(
+            surface_velocity, alpha_val
+        )
 
         # Verify the converted velocities
         expected = np.array(surface_velocity * alpha_val)
@@ -205,7 +220,9 @@ class TestComputeDischarge(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             convert_surface_velocity_rantz(surface_velocity)
 
-        self.assertIn("Input must be a float or a numpy array", str(context.exception))
+        self.assertIn(
+            "Input must be a float or a numpy array", str(context.exception)
+        )
 
 
 if __name__ == "__main__":

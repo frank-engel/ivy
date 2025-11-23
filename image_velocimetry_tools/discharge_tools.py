@@ -2,10 +2,13 @@
 
 import numpy as np
 
-def compute_discharge_midsection(cumulative_distances,
-                                 average_velocities,
-                                 vertical_depths,
-                                 return_details=False):
+
+def compute_discharge_midsection(
+    cumulative_distances,
+    average_velocities,
+    vertical_depths,
+    return_details=False,
+):
     """
     Compute discharge using the mid-section method as described in ISO 748.
 
@@ -32,7 +35,11 @@ def compute_discharge_midsection(cumulative_distances,
     vertical_depths = np.asarray(vertical_depths, dtype=float)
 
     # Ensure input arrays have the same length
-    if not (len(cumulative_distances) == len(average_velocities) == len(vertical_depths)):
+    if not (
+        len(cumulative_distances)
+        == len(average_velocities)
+        == len(vertical_depths)
+    ):
         raise ValueError("Input arrays must have the same length.")
 
     n = len(average_velocities)
@@ -40,14 +47,15 @@ def compute_discharge_midsection(cumulative_distances,
     # Compute widths (vectorized)
     widths = np.empty(n)
     # First station
-    widths[0] = np.abs(
-        cumulative_distances[1] - cumulative_distances[0]) / 2
+    widths[0] = np.abs(cumulative_distances[1] - cumulative_distances[0]) / 2
     # Last station
-    widths[-1] = np.abs(cumulative_distances[-1] - cumulative_distances[
-        -2]) / 2
+    widths[-1] = (
+        np.abs(cumulative_distances[-1] - cumulative_distances[-2]) / 2
+    )
     # Interior stations
-    widths[1:-1] = np.abs(cumulative_distances[2:] - cumulative_distances[
-                                                     :-2]) / 2
+    widths[1:-1] = (
+        np.abs(cumulative_distances[2:] - cumulative_distances[:-2]) / 2
+    )
 
     # Compute areas and unit discharges
     areas = widths * vertical_depths
@@ -69,4 +77,6 @@ def convert_surface_velocity_rantz(surface_velocity, alpha=0.85):
     elif isinstance(surface_velocity, np.ndarray):
         return alpha * surface_velocity
     else:
-        raise ValueError("Input must be a float or a numpy array with dtype float.")
+        raise ValueError(
+            "Input must be a float or a numpy array with dtype float."
+        )
