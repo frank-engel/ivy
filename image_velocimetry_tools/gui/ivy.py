@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 import time
+import warnings
 import webbrowser
 import zipfile
 from contextlib import contextmanager
@@ -5802,6 +5803,11 @@ class IvyTools(QtWidgets.QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     try:
+        # Suppress NumbaDeprecationWarnings from areacomp3
+        # These warnings are due to areacomp3's @numba.jit decorators missing 'nopython' argument
+        # We can't fix them as they're in the external areacomp3 package
+        warnings.filterwarnings('ignore', category=DeprecationWarning, module='numba')
+
         # import cProfile, pstats
         app = QtWidgets.QApplication(sys.argv)
         # cProfile.run('IvyTools()', 'PROFILE.txt')

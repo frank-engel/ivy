@@ -922,7 +922,8 @@ def draw_line_on_pixmap(original_pixmap, angle_degrees=np.nan, color=Qt.yellow):
     start_y = center_y - dy
 
     # Draw the line on the modified QPixmap
-    painter.drawLine(start_x, start_y, end_x, end_y)
+    # Convert numpy types to Python floats for PyQt5 compatibility
+    painter.drawLine(float(start_x), float(start_y), float(end_x), float(end_y))
 
     # End painting
     painter.end()
