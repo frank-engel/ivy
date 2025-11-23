@@ -90,14 +90,37 @@ This should be fixed in the current version. If you still see it, please report 
 
 ## Development Installation
 
-For development with frozen dependencies:
+For development with testing and linting tools:
 
 ```bash
 # Install in editable mode
 pip install -e .
 
-# Install development tools
-pip install pytest black flake8 sphinx
+# Install development dependencies (includes pytest, black, flake8, etc.)
+pip install -r requirements-dev.txt
+```
+
+**Note**: The `requirements-dev.txt` file overrides qrev's ancient `py==1.8.0` requirement with a modern version compatible with Python 3.11 and pytest. You'll see dependency warnings - these are expected and safe to ignore.
+
+### Running Tests
+
+After installing dev dependencies:
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test directory
+pytest image_velocimetry_tools/tests/test_batch
+
+# Run integration tests (requires batch_test_data)
+pytest image_velocimetry_tools/tests/test_integration
+
+# Run with coverage
+pytest --cov=image_velocimetry_tools --cov-report=html
+
+# Run with verbose output
+pytest -v
 ```
 
 ## Rebuilding Dependencies
