@@ -234,3 +234,4 @@ fabric.properties
 
 # VS Code Counter
 .VSCodeCounter/
+/batch_test_data/
