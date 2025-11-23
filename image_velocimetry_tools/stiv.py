@@ -568,6 +568,7 @@ def two_dimensional_stiv_exhaustive(
     max_vel_threshold: Union[float, None] = 10.0,
     # map_file_path: Union[str, None] = None,
     progress_signal: Union[pyqtSignal, None] = None,
+    **kwargs
 ):
     """Perform 2D Space-Time Image Velocimetry (STIV) using exhaustive orientation search
 
@@ -628,6 +629,20 @@ def two_dimensional_stiv_exhaustive(
         If provided, this will enable emitting a signal of [int, int] out of
         the function to track progress. The default is to not use progress
         signal (=None)
+    **kwargs : optional keyword arguments
+        Additional options for extended functionality (backward compatible):
+
+        sti_format : str, optional
+            Format for STI generation. Options:
+            - 'grayscale' (default): raw uint8 grayscale STIs (0-255)
+            - 'normalized': z-score normalized STIs (float64)
+            Note: Both formats produce identical velocity results. Grayscale is
+            recommended for better compatibility with image saving and ML workflows.
+
+        return_all_stis : bool, optional
+            If True, returns full 4D array of all STIs for all nodes and angles.
+            If False (default), returns only the best STI for each node.
+            Default maintains current behavior.
 
     Returns
     -------
@@ -664,6 +679,24 @@ def two_dimensional_stiv_exhaustive(
 
 
     """
+    # Extract kwargs with defaults (backward compatible)
+    # Default to 'grayscale' for better compatibility with image saving
+    # and ML workflows. Grayscale STIs are uint8 (0-255) which work better for
+    # visualization and don't require rescaling when saving as images.
+    sti_format = kwargs.get('sti_format', 'grayscale')
+    return_all_stis = kwargs.get('return_all_stis', False)
+
+    # Determine normalization method based on sti_format
+    if sti_format == 'normalized':
+        normalize_method = 'zscore'
+    elif sti_format == 'grayscale':
+        normalize_method = 'none'
+    else:
+        raise ValueError(
+            f"Unknown sti_format: {sti_format}. "
+            f"Use 'normalized' or 'grayscale'."
+        )
+
     # Initiate a progress tracker
     progress_emitter = ProgressEmitter()
     if progress_signal is not None:
@@ -692,44 +725,8 @@ def two_dimensional_stiv_exhaustive(
     # in Han et al. (2021)
     p = np.zeros(phi.shape)
 
-    # Need to compute the time and space lags such that the center of the
-    # ACF array is at a lag of (0,0), which has a correlation of 1 by
-    # definition. The following should confirm this: R(nPix,nFrame). Get
-    # lags in native units of pixels and frames
-    pixel_lag = np.arange(-num_pixels, num_pixels + 1)
+    # Get number of frames from image stack
     num_frames = image_stack.shape[2]
-    frame_lag = np.arange(-num_frames, num_frames + 1)
-
-    # Crop to central portion of the ACF
-    # We know that the center of the surface is at nPix,nFrame where the lag
-    # vector is (0,0) and the ACF has a value of 1, so go out by half the
-    # maximum lag in each direction from this center point
-    pixel_lag_sub = pixel_lag[num_pixels // 2 : -num_pixels // 2]
-    frame_lag_sub = frame_lag[num_frames // 2 : -num_frames // 2]
-
-    # Convert to polar coordinates using native units of frames and pixels
-    # Use a vectorized approach that doesn't need to double loop
-    pixel_lag_expanded = pixel_lag_sub[:, np.newaxis]
-    frame_lag_expanded = frame_lag_sub[np.newaxis, :]
-    theta_grid, rho_grid = cartesian_to_polar(
-        frame_lag_expanded, pixel_lag_expanded
-    )
-
-    # Prepare for numerical integration of the ACF over rho in polar
-    # coordinates
-    rho_max = np.min([np.max(pixel_lag_sub), np.max(frame_lag_sub)])
-
-    # Create a vector of rho (magnitude) values we can use to interpolate the
-    # ACF onto for a given angle theta.
-    rho = np.arange(0, rho_max + d_rho, d_rho)
-
-    # Set up the range of theta values for which we will be integrating over
-    # rho
-    theta = np.arange(0, 180 + d_theta, d_theta)
-
-    # Get the index of lag (0, 0)
-    x_lag_0 = num_pixels // 2 - 1
-    t_lag_0 = num_frames // 2 - 1
 
     # Create the interpolator object
     image_interpolator = create_image_interpolator(image_stack, sigma=sigma)
@@ -750,127 +747,34 @@ def two_dimensional_stiv_exhaustive(
         mag[:] = np.nan
         theta_max_i[:] = np.nan
         for i_phi in range(len(phi)):
-            # Given the origin and current angle, define search line end points
-            x1, y1 = polar_to_cartesian(
-                np.deg2rad(phi[i_phi]), num_pixels, isImage=True
-            )
-            x_end_points = np.array([x_origin[i_node], x_origin[i_node] + x1])
-            y_end_points = np.array([y_origin[i_node], y_origin[i_node] + y1])
-
-            # Get length of this line in pixel units, which should be the
-            # same as our nPix input, but recalculate here just to be safe
-            dist = np.hypot(
-                np.abs(np.diff(y_end_points, axis=0)),
-                np.abs(np.diff(x_end_points, axis=0)),
-            ).astype(int)
-
-            # Create regularly spaced points along this line
-            xi = np.linspace(x_end_points[0], x_end_points[1], dist.item() + 1)
-            yi = np.linspace(y_end_points[0], y_end_points[1], dist.item() + 1)
-
-            # To ensure that we can set up the STI, and hence the ACF,
-            # such that the center of the ACF array at a lag of (0,0) has a
-            # value of 1, we need to make the profile lines have an even
-            # number of points, so if the length of xi and yi is not even,
-            # drop the last point to make it even in length
-            if len(xi) % 2 != 0:
-                xi = xi[:-1]
-                yi = yi[:-1]
-
-            # Use the gridded interpolant for the image stack that we set up
-            # outside the loop to extract pixel values along search line for
-            # each frame to build the STI. This is a vectorized approach
-            # that removes the extra loop.
-            sti = np.zeros([len(xi), num_frames])
-            sti_w, sti_h = sti.shape
-            frame_indices = np.arange(num_frames)
-            frame_indices_repeat = np.tile(frame_indices, xi.shape[0])
-            yi = np.repeat(yi, num_frames)
-            xi = np.repeat(xi, num_frames)
-
-            coordinates = np.column_stack((yi, xi, frame_indices_repeat))
-            sti = image_interpolator(coordinates).reshape(sti_w, sti_h)
-
-            # Apply Fujita's standardization filter, basically subtracting
-            # the time average (mean of each row) and then dividing by the
-            # standard deviation of that row, where the rows are time series
-            # for a fixed spatial position. Note that this is essentially a
-            # z-score, so we can use a standard normalization approach for
-            # this.
-            normalized_sti = zscore(sti, axis=1, ddof=1)
-
-            # Remap the STIs into a square array of length num_pixels. This
-            # can be saved and plotted to verify STI accuracy.
-            # stis[i_node,:,:] = remap_stiv_to_square_array(normalized_sti,
-            #                                         num_pixels, num_frames)
-            # stis[i_node,:,:] = normalized_sti
-            # Store the normalized STI in the 4D stis array
-            stis[i_node, i_phi, :, :] = normalized_sti
-
-            # Calculate the ACF of the STI and
-            reversed_normalized_sti = np.flip(normalized_sti, axis=(0, 1))
-            R = fftconvolve(
-                normalized_sti, reversed_normalized_sti, mode="full"
-            )
-            R = R / np.max(R)
-
-            # Crop to central portion of the ACF We know that the center of
-            # the surface is at nPix,nFrame where the lag vector is (0,
-            # 0) and the ACF has a value of 1, so go out by half the maximum
-            # lag in each direction from this center point
-            R_sub = R[
-                num_pixels
-                - num_pixels // 2 : num_pixels
-                + num_pixels // 2
-                + 1,
-                num_frames
-                - num_frames // 2 : num_frames
-                + num_frames // 2
-                + 1,
-            ]
-
-            # Radiate rays on the ACF from the origin at lag (0,0)
-            theta_rad = np.deg2rad(theta)
-            theta_expanded = np.tile(theta_rad, (len(rho), 1)).T
-            t_ray, x_ray = polar_to_cartesian(theta_expanded, rho)
-
-            # Set up gridded interpolant for extracting ACF values along each
-            # ray.
-            acf_interpolator = RegularGridInterpolator(
-                (np.arange(R_sub.shape[0]), np.arange(R_sub.shape[1])),
-                R_sub,
-                method="linear",
-                bounds_error=False,
-                fill_value=None,
+            # Extract STI using new modular function
+            sti = extract_space_time_image(
+                image_interpolator=image_interpolator,
+                x_origin=x_origin[i_node],
+                y_origin=y_origin[i_node],
+                search_angle_arithmetic=phi[i_phi],
+                num_pixels=num_pixels,
+                num_frames=num_frames,
+                normalize=normalize_method,
             )
 
-            # We want all the rho values for each theta and then use those
-            # as the integrand. This is a vectorized approach to do it.
-            F_theta = np.zeros(len(theta))
+            # Store the STI in the 4D stis array
+            # Grayscale STIs (uint8) work better for image saving and visualization
+            # The GUI can save them directly as JPG without rescaling
+            stis[i_node, i_phi, :, :] = sti
 
-            # Create arrays for all theta values
-            x_coords = x_ray + x_lag_0
-            t_coords = t_ray + t_lag_0
-
-            # Stack the x and t coordinates along with the corresponding
-            # theta values
-            coordinates = np.column_stack(
-                (x_coords.flatten(), t_coords.flatten())
+            # Compute velocity from STI using new modular function
+            velocity, theta_max, p_value = compute_velocity_from_sti(
+                sti=sti,
+                pixel_gsd=pixel_gsd,
+                d_t=d_t,
+                d_rho=d_rho,
+                d_theta=d_theta,
             )
 
-            # Interpolate the ACF values along all rays
-            acfRay = acf_interpolator(coordinates).reshape(len(theta), -1)
-            F_theta = np.trapz(acfRay, axis=1) * d_rho
-
-            # Now get the peak value of the integrals and the angle with the
-            # maximum autocorrelation
-            p[i_phi] = np.max(F_theta)
-            i_max = np.argmax(F_theta)
-            theta_max = theta[i_max]
-
-            # Now calculate velocity by bringing in the pixel size and frame
-            # interval See equation 16 of Fujita et al. (2007)
-            mag[i_phi] = np.tan(np.deg2rad(theta_max)) * (pixel_gsd / d_t)
+            # Store results
+            p[i_phi] = p_value
+            mag[i_phi] = velocity
             theta_max_i[i_phi] = theta_max
 
         # Get search line orientation angle for which radial integral of the
