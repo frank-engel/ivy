@@ -19,9 +19,8 @@ imutils
 qimage2ndarray>=1.9.0,<2.0
 
 # Machine learning (for STIV)
-# Note: Trying numba 0.58.x as a compromise between Python 3.11 support and areacomp3 compatibility
-# 0.56.x doesn't support Python 3.11, 0.62+ is too strict for areacomp3
-numba>=0.58.0,<0.59.0
+# Note: numba is a dependency of areacomp3 and scikit-image
+# Let areacomp3 manage the numba version to avoid dependency conflicts
 scikit-image
 
 # GUI
