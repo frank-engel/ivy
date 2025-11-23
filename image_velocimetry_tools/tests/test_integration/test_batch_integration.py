@@ -323,11 +323,22 @@ def test_discharge_output_files_created(batch_processor, output_dir):
         # Note: Directory name is "job_" + job_id (which already contains "job_")
         job_dir = output_dir / f"job_{job.job_id}"
 
-        # Check for discharge CSV file in 5-discharge subdirectory
-        discharge_files = list(job_dir.glob("**/discharge_*.csv"))
+        # Check for job results JSON file (batch processor saves as JSON, not CSV)
+        results_file = job_dir / "job_results.json"
         assert (
-            len(discharge_files) > 0
-        ), f"No discharge CSV files found for job {job.job_id} in {job_dir}"
+            results_file.exists()
+        ), f"No job_results.json file found for job {job.job_id} in {job_dir}"
+
+        # Verify the file is not empty and contains discharge data
+        import json
+
+        with open(results_file, "r") as f:
+            results = json.load(f)
+
+        assert "discharge" in results, "Results file missing discharge field"
+        assert (
+            results["discharge"] > 0
+        ), f"Discharge value is {results['discharge']}, expected > 0"
 
 
 @pytest.mark.parametrize("save_projects", [True, False])
