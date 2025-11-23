@@ -3,6 +3,7 @@
 docs/word/
 bin/
 /bin/
+image_velocimetry_tools/tests/test_integration/batch_test_data/integration_test_output
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
