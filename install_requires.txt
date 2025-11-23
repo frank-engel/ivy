@@ -6,7 +6,8 @@
 # are NOT included here - install separately if needed for development.
 
 # Core scientific computing
-numpy==1.26.2
+# Note: numpy 1.26.x versions are compatible; relaxed to avoid conflicts with numba
+numpy>=1.26.2,<1.27.0
 pandas==1.4.0
 scipy==1.10.0
 matplotlib==3.6.3
@@ -19,8 +20,11 @@ imutils
 qimage2ndarray>=1.9.0,<2.0
 
 # Machine learning (for STIV)
-# Note: numba is a dependency of areacomp3 and scikit-image
-# Let areacomp3 manage the numba version to avoid dependency conflicts
+# Note: We explicitly pin numba 0.58.x to work around areacomp3 JIT compilation issues
+# areacomp3 declares numba~=0.61.0, but that version has stricter JIT rules that fail
+# with areacomp3's @numba.jit decorated methods. Pip will install our version (0.58.x)
+# and show dependency conflict warnings - these are expected and can be ignored.
+numba>=0.58.0,<0.59.0
 scikit-image
 
 # GUI
