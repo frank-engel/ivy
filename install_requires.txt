@@ -17,7 +17,7 @@ opencv-python-headless
 pillow
 imageio
 imutils
-qimage2ndarray>=1.9.0,<2.0
+# qimage2ndarray>=1.9.0,<2.0  # GUI only, moved to extras_require['gui']
 
 # Machine learning (for STIV)
 # Note: We explicitly pin numba 0.58.x to work around areacomp3 JIT compilation issues
@@ -27,8 +27,9 @@ qimage2ndarray>=1.9.0,<2.0
 numba
 scikit-image
 
-# GUI
-PyQt5>=5.15.6,<6.0
+# GUI (moved to extras_require['gui'] in setup.py)
+# PyQt5>=5.15.6,<6.0
+# Note: PyQt5 is now optional. Install with: pip install image_velocimetry_tools[gui]
 
 # Video processing
 # Note: ffmpeg binary must be installed separately and available in PATH

@@ -18,6 +18,7 @@ from image_velocimetry_tools.common_functions import (
     resource_path,
     quotify_a_string,
 )
+from image_velocimetry_tools.utils.platform import get_executable_extension
 
 # Priority: ENV var > System PATH > local ./bin fallback
 ffmpeg_cmd = os.environ.get("FFMPEG-IVyTools") or shutil.which("ffmpeg")
@@ -26,24 +27,34 @@ IVY_ENV = os.environ.get("IVY_ENV")
 
 if IVY_ENV == "development":
     fallback_path = Path(resource_path("bin"))
-    ffmpeg_fallback = fallback_path / "ffmpeg.exe"
-    ffprobe_fallback = fallback_path / "ffprobe.exe"
+    exe_ext = get_executable_extension()
+    ffmpeg_fallback = fallback_path / f"ffmpeg{exe_ext}"
+    ffprobe_fallback = fallback_path / f"ffprobe{exe_ext}"
 
     if ffmpeg_fallback.exists() and ffprobe_fallback.exists():
-        ffmpeg_cmd = str(ffmpeg_fallback)[:-4]
-        ffprobe_cmd = str(ffprobe_fallback)[:-4]
+        ffmpeg_cmd = str(ffmpeg_fallback)
+        if exe_ext:  # Only strip extension on Windows
+            ffmpeg_cmd = ffmpeg_cmd[:-4]
+            ffprobe_cmd = str(ffprobe_fallback)[:-4]
+        else:
+            ffprobe_cmd = str(ffprobe_fallback)
         logging.warning(
             "[ffmpeg] Using local ./bin/ fallback; system binaries not found."
         )
 else:
     if not ffmpeg_cmd or not ffprobe_cmd:
         fallback_path = Path(resource_path("bin"))
-        ffmpeg_fallback = fallback_path / "ffmpeg.exe"
-        ffprobe_fallback = fallback_path / "ffprobe.exe"
+        exe_ext = get_executable_extension()
+        ffmpeg_fallback = fallback_path / f"ffmpeg{exe_ext}"
+        ffprobe_fallback = fallback_path / f"ffprobe{exe_ext}"
 
         if ffmpeg_fallback.exists() and ffprobe_fallback.exists():
-            ffmpeg_cmd = str(ffmpeg_fallback)[:-4]
-            ffprobe_cmd = str(ffprobe_fallback)[:-4]
+            ffmpeg_cmd = str(ffmpeg_fallback)
+            if exe_ext:  # Only strip extension on Windows
+                ffmpeg_cmd = ffmpeg_cmd[:-4]
+                ffprobe_cmd = str(ffprobe_fallback)[:-4]
+            else:
+                ffprobe_cmd = str(ffprobe_fallback)
             logging.warning(
                 "[ffmpeg] Using local ./bin/ fallback; system binaries not found."
             )

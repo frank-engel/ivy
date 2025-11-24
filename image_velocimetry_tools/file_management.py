@@ -15,6 +15,7 @@ import requests
 from PyQt5 import QtCore
 from packaging.version import Version
 from image_velocimetry_tools.common_functions import units_conversion
+from image_velocimetry_tools.utils.filesystem import make_safe_filename
 
 
 def create_temp_directory():
@@ -65,40 +66,31 @@ def clean_up_temp_directory(temp_dir_path):
 
 def make_windows_safe_filename(input_string):
     """
-    Make a string safe for use as a Windows filename by replacing disallowed characters and spaces.
+    DEPRECATED: Use image_velocimetry_tools.utils.filesystem.make_safe_filename instead.
+
+    Make a string safe for use as a filename on any platform.
+
+    This function is maintained for backwards compatibility but delegates to the
+    new cross-platform implementation in utils.filesystem.
 
     Parameters:
     input_string (str): The input string containing the desired filename.
 
     Returns:
-    str: A sanitized version of the input string with disallowed characters and spaces replaced by underscores.
-
-    The function replaces the following disallowed characters with underscores:
-    - '/' (forward slash)
-    - '\' (backslash)
-    - ':' (colon)
-    - '*' (asterisk)
-    - '?' (question mark)
-    - '"' (double quotation marks)
-    - '<' (less than)
-    - '>' (greater than)
-    - '|' (pipe)
-
-    It also replaces spaces with underscores. Additionally, it removes leading and trailing underscores if present.
+    str: A sanitized version of the input string safe for use on any platform.
 
     Example:
     >>> make_windows_safe_filename("My:File?Name/with Spaces<and|bars>")
-    'My_File_Name_with_Spaces_and_bars_'
+    'My_File_Name_with_Spaces_and_bars'
     """
-    # Define a regex pattern to match disallowed characters in Windows filenames
-    disallowed_chars = r'[\/:*?"<>|]'
-
-    # Replace disallowed characters and spaces with underscores
-    safe_filename = re.sub(disallowed_chars, "_", input_string)
-
-    # Replace spaces with underscores
-    safe_filename = safe_filename.replace(" ", "_")
-    return safe_filename
+    import warnings
+    warnings.warn(
+        "make_windows_safe_filename is deprecated. "
+        "Use image_velocimetry_tools.utils.filesystem.make_safe_filename instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return make_safe_filename(input_string)
 
 
 def format_windows_path(path):

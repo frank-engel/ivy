@@ -1,0 +1,16 @@
+# Linux-specific requirements for IVyTools
+# This file adds Linux-specific packages on top of base requirements
+
+# Include base requirements
+-r requirements-base.txt
+
+# Linux-specific packages
+# (Currently none - all base packages work on Linux)
+
+# System dependencies (install with apt/dnf/yum):
+# - python3-dev
+# - ffmpeg
+# - libavcodec-extra
+# - libopencv-dev (optional, for better performance)
+
+# Note: pywin32-ctypes is Windows-only and NOT included here

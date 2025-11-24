@@ -1,0 +1,31 @@
+# Raspberry Pi specific requirements for IVyTools
+# Optimized for Raspberry Pi 4 and Raspberry Pi 5
+
+# Include Linux requirements
+-r requirements-linux.txt
+
+# Raspberry Pi optimizations and notes:
+#
+# 1. Install system dependencies first:
+#    sudo apt-get update
+#    sudo apt-get install -y python3-dev python3-pip python3-venv
+#    sudo apt-get install -y ffmpeg libavcodec-extra libopencv-dev
+#    sudo apt-get install -y libatlas-base-dev  # For NumPy/SciPy performance
+#
+# 2. Some packages may need to be built from source on ARM64:
+#    - This can take 10-30 minutes on Raspberry Pi 4
+#    - Raspberry Pi 5 is significantly faster
+#
+# 3. Memory considerations:
+#    - Raspberry Pi 4 4GB: Can process 1080p videos
+#    - Raspberry Pi 4 8GB: Recommended for larger videos
+#    - Consider using swap space for large videos
+#
+# 4. Performance tuning:
+#    - Use lower resolution videos when possible
+#    - Process videos in batches overnight
+#    - Consider using external SSD for faster I/O
+#
+# 5. Optional: Install pre-built wheels for faster installation
+#    pip3 install --upgrade pip
+#    pip3 install --prefer-binary -r requirements-rpi.txt

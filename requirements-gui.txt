@@ -1,0 +1,13 @@
+# GUI requirements for IVyTools
+# These packages are only needed for the Qt-based GUI application
+
+# Include base requirements
+-r requirements-base.txt
+
+# Qt GUI framework
+PyQt5>=5.15.6,<6.0
+PyQt5-stubs>=5.15.6.0
+qimage2ndarray>=1.9.0,<2.0
+
+# Note: The headless API does NOT require these packages
+# For headless operation, use: pip install image_velocimetry_tools[api]

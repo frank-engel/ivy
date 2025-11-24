@@ -31,7 +31,11 @@ setup(
     version='1.0.0.2',
     packages=[
         'image_velocimetry_tools',
+        'image_velocimetry_tools.utils',
         'image_velocimetry_tools.gui',
+        'image_velocimetry_tools.gui.models',
+        'image_velocimetry_tools.gui.controllers',
+        'image_velocimetry_tools.gui.dialogs',
         'image_velocimetry_tools.batch',
         'image_velocimetry_tools.batch.models',
         'image_velocimetry_tools.services',
@@ -48,15 +52,36 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=requirements,
+    extras_require={
+        # Headless API only (no GUI) - for servers, Raspberry Pi, batch processing
+        'api': [],
+        # GUI application with Qt widgets
+        'gui': [
+            'PyQt5>=5.15.6,<6.0',
+            'PyQt5-stubs>=5.15.6.0',
+            'qimage2ndarray>=1.9.0,<2.0',
+        ],
+        # Development tools
+        'dev': [
+            'pytest>=9.0.0',
+            'pytest-cov>=4.0.0',
+            'black>=24.0.0',
+            'pylint>=3.0.0',
+        ],
+    },
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'ivytools-batch=image_velocimetry_tools.api.batch_api:main',
+        ],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Natural Language :: English',
-        'Operating System :: OS Independent',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: MacOS',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.11',
         'Topic :: Scientific/Engineering :: Hydrology',

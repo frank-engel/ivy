@@ -1,0 +1,69 @@
+# Git attributes for cross-platform development
+# Ensures consistent line endings across Windows, Linux, and macOS
+
+# Auto-detect text files and normalize line endings to LF in repository
+* text=auto
+
+# Explicitly declare text files with LF line endings
+*.py text eol=lf
+*.md text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.toml text eol=lf
+
+# Shell scripts should always use LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows scripts should use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Documentation
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.xml text eol=lf
+
+# Binary files (explicitly declare to avoid git trying to diff them)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wmv binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.pyc binary
+*.pyd binary
+*.whl binary
+
+# Python-specific
+*.ipynb text eol=lf
+
+# Qt UI files
+*.ui text eol=lf
+*.qrc text eol=lf
+
+# Git files
+.gitignore text eol=lf
+.gitattributes text eol=lf
